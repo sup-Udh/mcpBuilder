@@ -1,3 +1,4 @@
+// api cleint for data ingestion
 import { NextRequest, NextResponse } from 'next/server';
 import { processUrl } from '@/lib/ingestion';
 

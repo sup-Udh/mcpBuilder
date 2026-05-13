@@ -1,3 +1,5 @@
+// main datamodel for all the ingestion models(text based)
+
 export interface IngestedItem {
   id?: string;
   title: string;
