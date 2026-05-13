@@ -5,13 +5,13 @@ import { chunkItems } from '@/lib/processing/chunker';
 
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json();
+    const { url, crawlSubpages = true } = await req.json();
 
     if (!url) {
       return NextResponse.json({ error: 'URL is required' }, { status: 400 });
     }
 
-    const items = await processUrl(url);
+    const items = await processUrl(url, crawlSubpages);
     const chunks = chunkItems(items, 400, 50);
 
     return NextResponse.json({
