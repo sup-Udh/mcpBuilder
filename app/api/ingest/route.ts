@@ -2,7 +2,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { processUrl } from '@/lib/ingestion';
 import { chunkItems } from '@/lib/processing/chunker';
-import { embedChunksGemini } from '@/lib/processing/embedder';
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,15 +13,12 @@ export async function POST(req: NextRequest) {
 
     const items = await processUrl(url, crawlSubpages);
     const chunks = chunkItems(items, 400, 50);
-    
-    // Embed the chunks! (Swappable with embedChunksOpenAI)
-    const embeddedChunks = await embedChunksGemini(chunks);
 
     return NextResponse.json({
       success: true,
-      message: `Successfully ingested ${items.length} items, generated ${chunks.length} chunks, and embedded them!`,
+      message: `Successfully ingested ${items.length} items and generated ${chunks.length} chunks.`,
       items,
-      chunks: embeddedChunks,
+      chunks,
     });
   } catch (error: any) {
     return NextResponse.json(

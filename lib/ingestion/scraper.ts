@@ -62,7 +62,7 @@ export async function scrapeWebpage(url: string, crawlSubpages = true): Promise<
       const urlsToCrawl = subpageUrls.slice(0, 10);
 
       for (const subUrl of urlsToCrawl) {
-        if (!subUrl || visited.has(subUrl)) continue;
+        if (visited.has(subUrl) || !subUrl) continue;
         visited.add(subUrl);
 
         try {

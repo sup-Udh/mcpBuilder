@@ -9,7 +9,6 @@ export interface TextChunk {
     chunkIndex: number;
     [key: string]: any;
   };
-  embedding?: number[];
 }
 
 /**
