@@ -34,7 +34,20 @@ Web scraping
 
 2. Processing Pipeline (Chunk & Embed)
 - Chunker: Split transcript text into chunks of ~400 words with a 50-word overlap
+
+Chunker depth working:
+
+Split any text into chunks of approximately 400 words
+ Add 50 word overlap between consecutive chunks so context isn't lost at boundaries
+ Tag every chunk with metadata: source title, source URL, date, chunk index
+ Handle texts shorter than 400 words as a single chunk without breaking
+
+
+
 - Embedder: Convert each text chunk into a vector using an embedding model (e.g., OpenAI text-embedding-3-small)
+
+
+
 - Vector DB: Set up Cloudflare Vectorize (or Supabase pgvector) to store chunks, vectors, and metadata (episode title, date, podcast name)
 
 3. MCP Server Code Generation

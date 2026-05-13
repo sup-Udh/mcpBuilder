@@ -11,3 +11,6 @@ Text cleaning
  Remove excessive whitespace, repeated newlines, special characters
  Normalize unicode (smart quotes, em dashes etc.) to plain text
  Detect and skip pages or items with no meaningful text content (under 50 words)
+
+
+  transcribing the downloaded MP3 files using Whisper!

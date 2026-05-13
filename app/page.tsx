@@ -7,14 +7,17 @@ export default function Home() {
   const [status, setStatus] = useState('');
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
+  const [chunks, setChunks] = useState<any[] | null>(null);
+  const [activeTab, setActiveTab] = useState<'items' | 'chunks'>('items');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
 
     setLoading(true);
-    setStatus('Fetching and processing...');
+    setStatus('Fetching, processing, and chunking...');
     setResults(null);
+    setChunks(null);
 
     try {
       const response = await fetch('/api/ingest', {
@@ -29,8 +32,10 @@ export default function Home() {
         throw new Error(data.error || 'Ingestion failed');
       }
 
-      setStatus(`Success! Processed ${data.items.length} items.`);
+      setStatus(data.message);
       setResults(data.items);
+      setChunks(data.chunks);
+      setActiveTab('chunks'); // Default to showing chunks to highlight the new pipeline step
     } catch (error: any) {
       setStatus(`Error: ${error.message}`);
     } finally {
@@ -72,25 +77,63 @@ export default function Home() {
           </div>
         )}
 
-        {results && results.length > 0 && (
-          <div className="mt-8 space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-            <h2 className="text-xl font-semibold mb-4 text-gray-200">Ingested Items ({results.length})</h2>
-            {results.map((item, i) => (
-              <div key={i} className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-5 hover:bg-gray-800 transition-colors">
-                <h3 className="font-medium text-blue-400 mb-1">{item.title}</h3>
-                <a href={item.url} target="_blank" rel="noreferrer" className="text-xs text-gray-500 hover:text-gray-300 transition-colors mb-3 block truncate">
-                  {item.url}
-                </a>
-                <p className="text-sm text-gray-300 line-clamp-3 leading-relaxed">
-                  {item.content}
-                </p>
-                {item.date && (
-                  <div className="mt-3 text-xs text-gray-500">
-                    Published: {new Date(item.date).toLocaleDateString()}
+        {results && results.length > 0 && chunks && (
+          <div className="mt-8">
+            <div className="flex gap-4 border-b border-gray-800 mb-6 pb-2">
+              <button 
+                onClick={() => setActiveTab('items')}
+                className={`pb-2 px-2 font-medium transition-colors ${activeTab === 'items' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Raw Items ({results.length})
+              </button>
+              <button 
+                onClick={() => setActiveTab('chunks')}
+                className={`pb-2 px-2 font-medium transition-colors ${activeTab === 'chunks' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-gray-500 hover:text-gray-300'}`}
+              >
+                Generated Chunks ({chunks.length})
+              </button>
+            </div>
+
+            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              {activeTab === 'items' && results.map((item, i) => (
+                <div key={i} className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-5 hover:bg-gray-800 transition-colors">
+                  <h3 className="font-medium text-blue-400 mb-1">{item.title}</h3>
+                  <a href={item.url} target="_blank" rel="noreferrer" className="text-xs text-gray-500 hover:text-gray-300 transition-colors mb-3 block truncate">
+                    {item.url}
+                  </a>
+                  <p className="text-sm text-gray-300 line-clamp-3 leading-relaxed">
+                    {item.content}
+                  </p>
+                  {item.date && (
+                    <div className="mt-3 text-xs text-gray-500">
+                      Published: {new Date(item.date).toLocaleDateString()}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {activeTab === 'chunks' && chunks.map((chunk, i) => (
+                <div key={i} className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-5 hover:bg-gray-800 transition-colors">
+                  <div className="flex justify-between items-center mb-3">
+                    <span className="text-xs font-mono bg-blue-900/50 text-blue-300 px-2 py-1 rounded">
+                      Chunk #{chunk.metadata.chunkIndex}
+                    </span>
+                    <span className="text-xs text-gray-500 truncate max-w-[200px]" title={chunk.metadata.sourceTitle}>
+                      {chunk.metadata.sourceTitle}
+                    </span>
                   </div>
-                )}
-              </div>
-            ))}
+                  <p className="text-sm text-gray-300 leading-relaxed font-serif bg-gray-900 p-3 rounded border border-gray-800">
+                    "{chunk.text}"
+                  </p>
+                  <div className="mt-3 flex justify-between text-[10px] text-gray-500 font-mono">
+                    <span>Words: {chunk.text.split(' ').length}</span>
+                    <a href={chunk.metadata.sourceUrl} target="_blank" rel="noreferrer" className="hover:text-gray-300 truncate ml-4">
+                      {chunk.metadata.sourceUrl}
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
