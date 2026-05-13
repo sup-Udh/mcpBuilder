@@ -1,0 +1,172 @@
+The v1 to-do list
+Phase 1 — Data pipeline (backend only, no UI yet)
+RSS ingestion
+
+ Given any RSS URL, fetch the feed
+ Extract title, date, description, and link for every item
+ Handle malformed or slow feeds gracefully with a timeout
+ Return a clean list of episodes/posts with their full text content
+
+Web scraping
+
+ Given any webpage URL, fetch the HTML
+ Strip all HTML tags, navigation, headers, footers — extract only the readable body text
+ If the URL has links to subpages (like a documentation site), crawl one level deep and collect all linked pages
+ Detect if a URL is an RSS feed or a webpage and route accordingly
+
+PDF extraction
+
+ Accept a PDF URL or file upload
+ Extract all text content from the PDF preserving paragraph structure
+ Handle multi-page PDFs without losing content between pages
+
+Text cleaning
+
+ Remove excessive whitespace, repeated newlines, special characters
+ Normalize unicode (smart quotes, em dashes etc.) to plain text
+ Detect and skip pages or items with no meaningful text content (under 50 words)
+
+
+Phase 2 — Processing pipeline
+Chunker
+
+ Split any text into chunks of approximately 400 words
+ Add 50 word overlap between consecutive chunks so context isn't lost at boundaries
+ Tag every chunk with metadata: source title, source URL, date, chunk index
+ Handle texts shorter than 400 words as a single chunk without breaking
+
+Embedder
+
+ Take a list of text chunks and convert each to a vector using OpenAI embeddings
+ Batch the requests (OpenAI allows up to 2048 inputs per call) to avoid rate limits
+ Store the vector alongside the chunk text and metadata
+
+Vector database
+
+ Set up Supabase with the pgvector extension enabled
+ Create a chunks table with columns: id, server_id, text, embedding, metadata, created_at
+ Create a similarity search function that takes a query vector and returns the top 5 closest chunks for a given server
+ Create an index on the embedding column for fast search
+
+
+Phase 3 — MCP server generation
+Code generator
+
+ Take a server config (name, description, server ID, DB credentials) and produce a complete TypeScript MCP server as a string
+ The generated server exposes one tool: search(query: string)
+ The search tool embeds the query, runs similarity search, returns the top results as formatted text
+ The generated code handles errors — if the DB is unreachable or the query fails, return a helpful message not a crash
+
+Cloudflare Workers deployment
+
+ Bundle the generated TypeScript into a single deployable JS file using esbuild
+ Push the bundle to Cloudflare Workers via their REST API
+ Assign each deployed server a unique subdomain URL
+ Verify the deployment succeeded before returning the URL to the user
+ Store the endpoint URL and server metadata in your own database
+
+
+Phase 4 — API layer
+Ingest endpoint POST /api/ingest
+
+ Accept: RSS URL or webpage URL or PDF URL, plus a server name
+ Detect the source type automatically
+ Run the full pipeline: fetch → clean → chunk → embed → store
+ Return progress updates (how many chunks processed, how many stored)
+ Return an error message if any step fails — never a raw stack trace
+
+Deploy endpoint POST /api/deploy
+
+ Take a server ID (already ingested)
+ Generate the MCP server code
+ Deploy to Cloudflare
+ Return the live endpoint URL
+
+Status endpoint GET /api/status/:serverId
+
+ Return current state: ingesting / processing / deployed / failed
+ Return chunk count, source URL, date created
+ This is what the UI polls to show the progress bar
+
+List endpoint GET /api/servers
+
+ Return all servers belonging to the current user
+ Include name, source URL, endpoint URL, created date, status
+
+Delete endpoint DELETE /api/servers/:serverId
+
+ Remove all chunks from the vector DB for that server
+ Delete the Cloudflare Worker
+ Remove the server record from your DB
+
+
+Phase 5 — UI (three screens)
+Screen 1 — Create new server
+
+ A clean centered form: server name field, source URL field, submit button
+ A short explanation of what each field means (one line each)
+ On submit, show a progress bar with status messages: "Fetching content… Chunking text… Creating embeddings… Deploying server…"
+ On success, automatically navigate to the result screen
+ On failure, show a plain English error message with a retry button
+
+Screen 2 — Result / endpoint screen
+
+ Show the live MCP endpoint URL in a large box with a one-click copy button
+ Show step-by-step instructions for adding it to Claude Desktop (literally: open this file, paste this JSON)
+ Include a test panel — a text input where the user can type a query and see the raw search results come back, so they can verify it works before leaving the page
+ Show basic stats: how many chunks ingested, what source URL was used
+
+Screen 3 — Dashboard
+
+ List all the user's deployed servers as cards
+ Each card shows: name, source URL, date created, endpoint URL with copy button
+ A delete button on each card with a confirmation step
+ A prominent "create new server" button at the top
+ Empty state for new users — a friendly message and a direct link to create their first server
+
+
+Phase 6 — Polish and edge cases
+Error handling throughout
+
+ What happens if the RSS URL returns nothing
+ What happens if the webpage blocks scraping (403 error)
+ What happens if the PDF is scanned/image-based with no extractable text
+ What happens if Cloudflare deployment fails
+ What happens if the user pastes a YouTube URL or audio file — show a clear "text sources only in v1" message
+
+Loading and feedback
+
+ Every action that takes more than 1 second shows a loading state
+ The ingestion pipeline shows real progress not just a spinning wheel
+ Deployed servers show a green "live" badge
+ Failed servers show a red "failed" badge with a retry option
+
+Basic auth
+
+ Users need an account so their servers are private to them
+ Use Clerk or NextAuth — don't build auth yourself
+ Each user can only see and manage their own servers
+
+
+What v1 deliberately does NOT include
+
+Audio or video transcription
+The drag and drop canvas (that's v2)
+Multiple tool types (search only for now)
+Scheduling or auto-refresh when new content is published
+Analytics on how the MCP server is being used
+Team sharing or collaboration
+Custom tool names or descriptions (auto-generated from the source name)
+
+
+Definition of done for v1
+A complete stranger can:
+
+Visit your site
+Paste an RSS feed URL or a documentation URL
+Wait 2 minutes
+Get a working MCP endpoint URL
+Paste it into Claude Desktop
+Ask Claude a question about that content and get a real answer back
+
+That's it. That's done. Everything else is v2.
