@@ -10,7 +10,25 @@ export async function processUrl(url: string, crawlSubpages = true): Promise<Ing
 
   if (isLikelyRss) {
     try {
-      return await ingestRss(url);
+      const rssItems = await ingestRss(url);
+      
+      // Auto-scrape the full articles for the first 3 RSS items to prevent long timeouts
+      const topItems = rssItems.slice(0, 3);
+      const scrapedTopItems = await Promise.all(
+        topItems.map(async (item) => {
+          try {
+            const scraped = await scrapeWebpage(item.url, false);
+            if (scraped.length > 0) {
+              return { ...item, content: scraped[0].content };
+            }
+          } catch (e) {
+            console.warn(`Auto-scrape failed for ${item.url}`, e);
+          }
+          return item;
+        })
+      );
+      
+      return [...scrapedTopItems, ...rssItems.slice(3)];
     } catch (e) {
       console.log('Failed as RSS, falling back to web scrape', e);
       return await scrapeWebpage(url, crawlSubpages);
