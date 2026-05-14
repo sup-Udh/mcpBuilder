@@ -213,6 +213,7 @@ async function scrapeSinglePage(
       },
     };
   } catch (error) {
+
     console.warn(`Failed scraping ${url}`, error);
 
     return null;
@@ -238,7 +239,7 @@ export async function scrapeWebpage(
   const mainPage = await scrapeSinglePage(url);
 
   if (!mainPage) {
-    throw new Error('Failed to scrape main page');
+    throw new Error(`Failed to scrape main page, ${url}`);
   }
 
   items.push(mainPage);

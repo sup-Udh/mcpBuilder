@@ -8,6 +8,9 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [results, setResults] = useState<any[] | null>(null);
 
+  // chunk loader
+  const [chunks, setChunks] = useState<any[] | null>(null);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!url) return;
