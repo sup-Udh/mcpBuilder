@@ -148,7 +148,7 @@ export async function processUrl(
   
   const embeddedChunks = await embedChunks(chunks);
 
-  await searchChunks('how do machines imitate human thinking', embeddedChunks);
+  await searchChunks('why does virat kohli think his career will end soon', embeddedChunks);
 
 
   // ==========================================
