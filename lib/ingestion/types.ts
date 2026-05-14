@@ -7,4 +7,5 @@ export interface IngestedItem {
   content: string; // The full text content
   date?: string;
   metadata?: Record<string, any>;
+  sourceType?: 'rss' | 'webpage' | 'docs' | 'pdf';
 }
