@@ -17,8 +17,8 @@ export async function loadBGEModel() {
 
     extractor = await pipeline(
       'feature-extraction',
-      'Xenova/BAAI-bge-small-en-v1.5'
-    );
+        'Xenova/all-MiniLM-L6-v2'
+);
 
     console.log('BGE model loaded');
   }

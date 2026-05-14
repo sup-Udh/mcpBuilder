@@ -57,6 +57,8 @@ export async function POST(req: NextRequest) {
       documents: result.documents,
 
       chunks: result.chunks,
+
+      embeddedChunks: result.embeddedChunks,
     });
   } catch (error: any) {
     console.error('\n====================================');

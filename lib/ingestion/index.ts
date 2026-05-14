@@ -9,9 +9,15 @@ import { IngestedItem } from './types';
 import { chunkDocuments } from '../processing/chunker';
 import { Chunk } from '../processing/types';
 
+import { embedChunks } from '../embeddings/embedder';
+import { EmbeddingChunk } from '../embeddings/types';
+
+
+
 export interface ProcessedResult {
   documents: IngestedItem[];
   chunks: Chunk[];
+  embeddedChunks: EmbeddingChunk[];
 }
 
 export async function processUrl(
@@ -136,6 +142,9 @@ export async function processUrl(
   console.log('====================================');
 
   const chunks = chunkDocuments(documents);
+  
+  const embeddedChunks = await embedChunks(chunks);
+
 
   // ==========================================
   // CHUNK DEBUGGING
@@ -165,5 +174,6 @@ export async function processUrl(
   return {
     documents,
     chunks,
+    embeddedChunks,
   };
 }
