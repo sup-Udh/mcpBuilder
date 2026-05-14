@@ -74,6 +74,8 @@ function cleanText(text: string): string {
       .replace(/[\u200B-\u200D\uFEFF]/g, '')
 
       // markdown links → keep text only
+
+      .replace(/https?:\/\/\S+/g, '')
       .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
 
       // collapse spaces

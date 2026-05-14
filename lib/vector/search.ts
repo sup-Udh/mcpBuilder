@@ -1,6 +1,6 @@
 // lib/vector/search.ts
 
-import { embedText } from "../embeddings/proivders/bge";
+import { embedText } from "../embeddings/proivders/openai";
 
 import { searchSimilarChunks } from './supabase';
 

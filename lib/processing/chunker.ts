@@ -7,7 +7,8 @@ import { Chunk } from './types';
 // CONFIG
 // ==========================================
 
-const TARGET_WORDS = 300;
+const TARGET_WORDS = 220;
+
 const MIN_WORDS = 80;
 
 // ==========================================
@@ -28,8 +29,13 @@ function countWords(text: string): number {
 function splitIntoBlocks(content: string): string[] {
   return content
     .split(/\n\s*\n/g)
+
     .map((block) => block.trim())
-    .filter((block) => block.length > 0);
+
+    .filter((block) => block.length > 0)
+
+    // remove tiny garbage blocks
+    .filter((block) => countWords(block) >= 5);
 }
 
 // ==========================================
@@ -37,9 +43,16 @@ function splitIntoBlocks(content: string): string[] {
 // ==========================================
 
 function isHeading(block: string): boolean {
+  const trimmed = block.trim();
+
   return (
-    block.startsWith('#') ||
-    block.length < 80 && /^[A-Z0-9\s\-\:]+$/.test(block)
+    trimmed.startsWith('#') ||
+
+    (
+      trimmed.length < 120 &&
+      /^[A-Z0-9][A-Za-z0-9\s\-\:\(\)]+$/.test(trimmed) &&
+      countWords(trimmed) <= 12
+    )
   );
 }
 
@@ -49,17 +62,70 @@ function isHeading(block: string): boolean {
 
 function cleanChunkText(text: string): string {
   return text
+
+    // remove markdown images
+    .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
+
+    // remove raw urls
+    .replace(/https?:\/\/\S+/g, '')
+
+    // remove markdown links but keep text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+
+    // remove repeated separators
+    .replace(/[-=_]{4,}/g, '')
+
+    // collapse excessive newlines
     .replace(/\n{3,}/g, '\n\n')
+
+    // collapse spaces
     .replace(/[ \t]+/g, ' ')
+
+    // remove empty markdown headings
+    .replace(/^#+\s*$/gm, '')
+
+    // trim each line
+    .split('\n')
+    .map((line) => line.trim())
+
+    // remove empty lines
+    .filter(Boolean)
+
+    .join('\n')
+
     .trim();
+}
+
+// ==========================================
+// BUILD CHUNK TEXT
+// ==========================================
+
+function buildChunkText(
+  document: IngestedItem,
+  heading: string,
+  chunkBlocks: string[]
+): string {
+  return cleanChunkText(
+    [
+      `Title: ${document.title}`,
+
+      heading
+        ? `Heading: ${heading}`
+        : '',
+
+      ...chunkBlocks,
+    ].join('\n\n')
+  );
 }
 
 // ==========================================
 // MAIN CHUNKER
 // ==========================================
 
-export function chunkDocument(document: IngestedItem): Chunk[] {
-  console.log(`Chunking document: ${document.title}`);
+export function chunkDocument(
+  document: IngestedItem
+): Chunk[] {
+  console.log(`\nChunking document: ${document.title}`);
 
   const blocks = splitIntoBlocks(document.content);
 
@@ -68,6 +134,7 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
   const chunks: Chunk[] = [];
 
   let currentChunk: string[] = [];
+
   let currentWordCount = 0;
 
   let currentHeading = '';
@@ -85,6 +152,8 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
 
     if (isHeading(block)) {
       currentHeading = block;
+
+      continue;
     }
 
     // ======================================
@@ -92,17 +161,18 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
     // ======================================
 
     if (
-      currentWordCount + blockWordCount > TARGET_WORDS &&
+      currentWordCount + blockWordCount >
+        TARGET_WORDS &&
       currentChunk.length > 0
     ) {
-      const chunkText = cleanChunkText(
-        [
-          currentHeading,
-          ...currentChunk,
-        ].join('\n\n')
+      const chunkText = buildChunkText(
+        document,
+        currentHeading,
+        currentChunk
       );
 
-      const finalWordCount = countWords(chunkText);
+      const finalWordCount =
+        countWords(chunkText);
 
       if (finalWordCount >= MIN_WORDS) {
         chunks.push({
@@ -118,12 +188,18 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
 
           sourceUrl: document.url,
 
-          sourceType: document.sourceType || 'webpage',
+          sourceType:
+            document.sourceType || 'webpage',
 
           heading: currentHeading,
 
-          metadata: document.metadata || {},
+          metadata:
+            document.metadata || {},
         });
+
+        console.log(
+          `Created chunk ${chunkIndex} (${finalWordCount} words)`
+        );
 
         chunkIndex++;
       }
@@ -134,9 +210,13 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
       // ======================================
 
       const overlapBlock =
-        currentChunk[currentChunk.length - 1];
+        currentChunk[
+          currentChunk.length - 1
+        ];
 
-      currentChunk = overlapBlock ? [overlapBlock] : [];
+      currentChunk = overlapBlock
+        ? [overlapBlock]
+        : [];
 
       currentWordCount = overlapBlock
         ? countWords(overlapBlock)
@@ -144,7 +224,7 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
     }
 
     // ======================================
-    // ADD BLOCK TO CHUNK
+    // ADD BLOCK
     // ======================================
 
     currentChunk.push(block);
@@ -157,14 +237,14 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
   // ==========================================
 
   if (currentChunk.length > 0) {
-    const chunkText = cleanChunkText(
-      [
-        currentHeading,
-        ...currentChunk,
-      ].join('\n\n')
+    const chunkText = buildChunkText(
+      document,
+      currentHeading,
+      currentChunk
     );
 
-    const finalWordCount = countWords(chunkText);
+    const finalWordCount =
+      countWords(chunkText);
 
     if (finalWordCount >= MIN_WORDS) {
       chunks.push({
@@ -180,17 +260,27 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
 
         sourceUrl: document.url,
 
-        sourceType: document.sourceType || 'webpage',
+        sourceType:
+          document.sourceType || 'webpage',
 
         heading: currentHeading,
 
-        metadata: document.metadata || {},
+        metadata:
+          document.metadata || {},
       });
+
+      console.log(
+        `Created final chunk ${chunkIndex} (${finalWordCount} words)`
+      );
     }
   }
 
   console.log(
-    `Created ${chunks.length} chunks from ${document.title}`
+    `Finished chunking ${document.title}`
+  );
+
+  console.log(
+    `Created ${chunks.length} chunks`
   );
 
   return chunks;
@@ -203,6 +293,10 @@ export function chunkDocument(document: IngestedItem): Chunk[] {
 export function chunkDocuments(
   documents: IngestedItem[]
 ): Chunk[] {
+  console.log('\n====================================');
+  console.log('STARTING CHUNKING');
+  console.log('====================================');
+
   const allChunks: Chunk[] = [];
 
   for (const document of documents) {
@@ -211,7 +305,13 @@ export function chunkDocuments(
     allChunks.push(...chunks);
   }
 
-  console.log(`Total chunks created: ${allChunks.length}`);
+  console.log('\n====================================');
+  console.log('CHUNKING COMPLETE');
+  console.log('====================================');
+
+  console.log(
+    `Total chunks created: ${allChunks.length}`
+  );
 
   return allChunks;
 }
