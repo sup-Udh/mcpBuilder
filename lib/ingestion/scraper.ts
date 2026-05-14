@@ -123,7 +123,7 @@ function extractReadableContent(html: string, url: string) {
     throw new Error('Failed to extract readable content');
   }
 
-  const markdown = turndownService.turndown(article.content);
+  const markdown = turndownService.turndown(article.content ?? '');
 
   const cleaned = cleanText(markdown);
 
