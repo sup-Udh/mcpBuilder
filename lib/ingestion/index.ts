@@ -16,8 +16,12 @@ import { EmbeddingChunk } from '../embeddings/types';
 // testing cosine similarity here: (delete later!!)
 import { searchChunks } from '../search/similarity';
 
+
+//supabase saving code
 import { storeEmbeddedChunks } from '../vector/supabase';
 
+//supbase searching function(db retrival)
+import { semanticSearch } from '../vector/search';
 
 export interface ProcessedResult {
   documents: IngestedItem[];
@@ -153,8 +157,9 @@ export async function processUrl(
   //storing in the vector database
   await storeEmbeddedChunks(embeddedChunks);
 
-  await searchChunks('why does virat kohli think his career will end soon', embeddedChunks);
-
+  await semanticSearch(
+  'how do machines imitate human thinking'
+);
 
   // ==========================================
   // CHUNK DEBUGGING
