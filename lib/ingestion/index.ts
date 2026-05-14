@@ -4,7 +4,7 @@ import { ingestRss } from './rss';
 import { scrapeWebpage } from './scraper';
 import { IngestedItem } from './types';
 
-export async function processUrl(url: string, crawlSubpages = true): Promise<IngestedItem[]> {
+export async function processUrl(url: string): Promise<IngestedItem[]> {
   // Simple heuristic to detect RSS feeds
   const isLikelyRss = url.endsWith('.xml') || url.endsWith('.rss') || url.includes('/feed');
 
@@ -13,7 +13,7 @@ export async function processUrl(url: string, crawlSubpages = true): Promise<Ing
       return await ingestRss(url);
     } catch (e) {
       console.log('Failed as RSS, falling back to web scrape', e);
-      return await scrapeWebpage(url, crawlSubpages);
+      return await scrapeWebpage(url);
     }
   } else {
     try {
@@ -31,6 +31,6 @@ export async function processUrl(url: string, crawlSubpages = true): Promise<Ing
       // HEAD request failed, just continue to web scrape
     }
 
-    return await scrapeWebpage(url, crawlSubpages);
+    return await scrapeWebpage(url);
   }
 }
