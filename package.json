@@ -23,9 +23,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/cheerio": "^0.22.35",
+    "@types/jsdom": "^28.0.3",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/turndown": "^5.0.6",
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
