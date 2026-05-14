@@ -98,7 +98,7 @@ ${item.content}
           role: 'system',
 
           content: `
-You are a retrieval-augmented assistant.
+You are a retrieval-augmented assistant..
 
 Answer the user's question ONLY using the provided context.
 
