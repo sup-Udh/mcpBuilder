@@ -2,16 +2,18 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-import { EmbeddingChunk} from '../embeddings/types';
+import { EmbeddingChunk } from '../embeddings/types';
 
 // ==========================================
 // ENV VALIDATION
 // ==========================================
 
-const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseUrl =
+  process.env.SUPABASE_URL;
 
 const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY;
+  process.env
+    .SUPABASE_SERVICE_ROLE_KEY;
 
 if (!supabaseUrl) {
   throw new Error(
@@ -29,10 +31,11 @@ if (!supabaseKey) {
 // CLIENT
 // ==========================================
 
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseKey
-);
+export const supabase =
+  createClient(
+    supabaseUrl,
+    supabaseKey
+  );
 
 // ==========================================
 // STORE EMBEDDED CHUNKS
@@ -41,55 +44,90 @@ export const supabase = createClient(
 export async function storeEmbeddedChunks(
   chunks: EmbeddingChunk[]
 ) {
-  console.log('\n====================================');
-  console.log('STORING EMBEDDINGS');
-  console.log('====================================');
+  console.log(
+    '\n===================================='
+  );
 
-  console.log(`Chunks to store: ${chunks.length}`);
+  console.log(
+    'STORING EMBEDDINGS'
+  );
+
+  console.log(
+    '===================================='
+  );
+
+  console.log(
+    `Chunks to store: ${chunks.length}`
+  );
 
   if (chunks.length === 0) {
-    console.warn('No chunks provided');
+    console.warn(
+      'No chunks provided'
+    );
 
     return;
   }
 
   // ======================================
-  // FORMAT FOR DB
+  // FORMAT DB ROWS
   // ======================================
 
-  const rows = chunks.map((chunk) => ({
-    source_url: chunk.sourceUrl,
+  const rows = chunks.map(
+    (chunk) => ({
+      chunk_id: chunk.id,
 
-    source_title: chunk.sourceTitle,
+      source_url:
+        chunk.sourceUrl,
 
-    source_type: chunk.sourceType,
+      source_title:
+        chunk.sourceTitle,
 
-    heading: chunk.heading || null,
+      source_type:
+        chunk.sourceType,
 
-    chunk_index: chunk.chunkIndex,
+      heading:
+        chunk.heading ||
+        null,
 
-    content: chunk.text,
+      chunk_index:
+        chunk.chunkIndex,
 
-    word_count: chunk.wordCount,
+      content: chunk.text,
 
-    embedding: chunk.embedding,
+      word_count:
+        chunk.wordCount,
 
-    embedding_model: chunk.embedingModel,
-  }));
+      embedding:
+        chunk.embedding,
 
-  console.log('Prepared database rows');
+      embedding_model:
+        chunk.embedingModel,
+    })
+  );
+
+  console.log(
+    'Prepared database rows'
+  );
 
   // ======================================
-  // INSERT
+  // UPSERT
   // ======================================
 
-  const { error } = await supabase
-    .from('documents')
-    .insert(rows);
+  const { error } =
+    await supabase
+      .from('documents')
+
+      .upsert(rows, {
+        onConflict:
+          'chunk_id',
+
+        ignoreDuplicates:
+          false,
+      });
 
   if (error) {
     console.error(
-      'Supabase insert failed',
+      'Supabase upsert failed',
       error
     );
 
@@ -102,9 +140,17 @@ export async function storeEmbeddedChunks(
     `Successfully stored ${rows.length} chunks`
   );
 
-  console.log('\n====================================');
-  console.log('VECTOR STORAGE COMPLETE');
-  console.log('====================================');
+  console.log(
+    '\n===================================='
+  );
+
+  console.log(
+    'VECTOR STORAGE COMPLETE'
+  );
+
+  console.log(
+    '===================================='
+  );
 }
 
 // ==========================================
@@ -113,22 +159,34 @@ export async function storeEmbeddedChunks(
 
 export async function searchSimilarChunks(
   queryEmbedding: number[],
-  topK = 5
+  topK = 10
 ) {
-  console.log('\n====================================');
-  console.log('VECTOR SEARCH');
-  console.log('====================================');
-
-  console.log(`Top K: ${topK}`);
-
-  const { data, error } = await supabase.rpc(
-    'match_documents',
-    {
-      query_embedding: queryEmbedding,
-
-      match_count: topK,
-    }
+  console.log(
+    '\n===================================='
   );
+
+  console.log(
+    'VECTOR SEARCH'
+  );
+
+  console.log(
+    '===================================='
+  );
+
+  console.log(
+    `Top K: ${topK}`
+  );
+
+  const { data, error } =
+    await supabase.rpc(
+      'match_documents',
+      {
+        query_embedding:
+          queryEmbedding,
+
+        match_count: topK,
+      }
+    );
 
   if (error) {
     console.error(
@@ -141,29 +199,109 @@ export async function searchSimilarChunks(
     );
   }
 
-  console.log(
-    `Retrieved ${data?.length || 0} matches`
-  );
+  // ======================================
+  // DEDUPE RESULTS
+  // ======================================
 
-  if (data?.length) {
-    console.log('\nTOP MATCHES:\n');
+  const deduped: any[] = [];
 
-    data.forEach((item: any, index: number) => {
-      console.log(`#${index + 1}`);
+  const seenChunkIds =
+    new Set<string>();
 
-      console.log(
-        `Similarity: ${item.similarity.toFixed(4)}`
-      );
+  const seenContents =
+    new Set<string>();
 
-      console.log(`Title: ${item.source_title}`);
+  for (const item of data || []) {
+    // dedupe chunk id
+    if (
+      seenChunkIds.has(
+        item.chunk_id
+      )
+    ) {
+      continue;
+    }
 
-      console.log(`Heading: ${item.heading}`);
+    // dedupe similar content
+    const normalizedContent =
+      item.content
+        .slice(0, 300)
+        .trim();
 
-      console.log(
-        `Preview:\n${item.content.slice(0, 250)}...\n`
-      );
-    });
+    if (
+      seenContents.has(
+        normalizedContent
+      )
+    ) {
+      continue;
+    }
+
+    seenChunkIds.add(
+      item.chunk_id
+    );
+
+    seenContents.add(
+      normalizedContent
+    );
+
+    deduped.push(item);
+
+    // stop once enough
+    if (
+      deduped.length >= topK
+    ) {
+      break;
+    }
   }
 
-  return data;
+  console.log(
+    `Retrieved ${deduped.length} unique matches`
+  );
+
+  // ======================================
+  // DEBUG OUTPUT
+  // ======================================
+
+  if (deduped.length) {
+    console.log(
+      '\nTOP MATCHES:\n'
+    );
+
+    deduped.forEach(
+      (
+        item: any,
+        index: number
+      ) => {
+        console.log(
+          `#${index + 1}`
+        );
+
+        console.log(
+          `Similarity: ${item.similarity.toFixed(
+            4
+          )}`
+        );
+
+        console.log(
+          `Title: ${item.source_title}`
+        );
+
+        console.log(
+          `Heading: ${item.heading}`
+        );
+
+        console.log(
+          `Chunk ID: ${item.chunk_id}`
+        );
+
+        console.log(
+          `Preview:\n${item.content.slice(
+            0,
+            250
+          )}...\n`
+        );
+      }
+    );
+  }
+
+  return deduped;
 }
