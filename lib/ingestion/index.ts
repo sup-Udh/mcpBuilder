@@ -16,6 +16,8 @@ import { EmbeddingChunk } from '../embeddings/types';
 // testing cosine similarity here: (delete later!!)
 import { searchChunks } from '../search/similarity';
 
+import { storeEmbeddedChunks } from '../vector/supabase';
+
 
 export interface ProcessedResult {
   documents: IngestedItem[];
@@ -147,6 +149,9 @@ export async function processUrl(
   const chunks = chunkDocuments(documents);
   
   const embeddedChunks = await embedChunks(chunks);
+
+  //storing in the vector database
+  await storeEmbeddedChunks(embeddedChunks);
 
   await searchChunks('why does virat kohli think his career will end soon', embeddedChunks);
 
