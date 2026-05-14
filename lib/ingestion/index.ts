@@ -13,6 +13,9 @@ import { embedChunks } from '../embeddings/embedder';
 import { EmbeddingChunk } from '../embeddings/types';
 
 
+// testing cosine similarity here: (delete later!!)
+import { searchChunks } from '../search/similarity';
+
 
 export interface ProcessedResult {
   documents: IngestedItem[];
@@ -144,6 +147,8 @@ export async function processUrl(
   const chunks = chunkDocuments(documents);
   
   const embeddedChunks = await embedChunks(chunks);
+
+  await searchChunks('how do machines imitate human thinking', embeddedChunks);
 
 
   // ==========================================
