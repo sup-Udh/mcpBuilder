@@ -10,9 +10,26 @@ export async function POST(req: NextRequest) {
     console.log('API INGEST REQUEST RECEIVED');
     console.log('====================================');
 
-    const { url } = await req.json();
+    // ======================================
+    // PARSE BODY
+    // ======================================
+
+    const {
+      url,
+      crawlSubpages,
+    } = await req.json();
 
     console.log(`Incoming URL: ${url}`);
+
+    console.log(
+      `Crawl Subpages: ${
+        crawlSubpages ? 'YES' : 'NO'
+      }`
+    );
+
+    // ======================================
+    // VALIDATION
+    // ======================================
 
     if (!url) {
       console.log('No URL provided');
@@ -31,7 +48,10 @@ export async function POST(req: NextRequest) {
     // RUN INGESTION PIPELINE
     // ======================================
 
-    const result = await processUrl(url);
+    const result = await processUrl(
+      url,
+      crawlSubpages
+    );
 
     console.log('\n====================================');
     console.log('INGESTION FINISHED');
@@ -45,6 +65,10 @@ export async function POST(req: NextRequest) {
       `Chunks created: ${result.chunks.length}`
     );
 
+    console.log(
+      `Embedded chunks: ${result.embeddedChunks.length}`
+    );
+
     // ======================================
     // RETURN RESPONSE
     // ======================================
@@ -54,6 +78,8 @@ export async function POST(req: NextRequest) {
 
       message: `Successfully processed ${result.documents.length} documents into ${result.chunks.length} chunks`,
 
+      crawlSubpages,
+
       documents: result.documents,
 
       chunks: result.chunks,
@@ -62,8 +88,14 @@ export async function POST(req: NextRequest) {
     });
   } catch (error: any) {
     console.error('\n====================================');
-    console.error('INGESTION PIPELINE FAILED');
-    console.error('====================================');
+
+    console.error(
+      'INGESTION PIPELINE FAILED'
+    );
+
+    console.error(
+      '===================================='
+    );
 
     console.error(error);
 

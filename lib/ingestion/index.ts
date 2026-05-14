@@ -1,42 +1,80 @@
 // lib/ingestion/index.ts
 
-// main detection router for rss/scraper mode analyzer
+// ==========================================
+// MAIN INGESTION PIPELINE
+// ==========================================
 
 import { ingestRss } from './rss';
+
 import { scrapeWebpage } from './scraper';
+
 import { IngestedItem } from './types';
 
+// ==========================================
+// CHUNKING
+// ==========================================
+
 import { chunkDocuments } from '../processing/chunker';
+
 import { Chunk } from '../processing/types';
 
+// ==========================================
+// EMBEDDINGS
+// ==========================================
+
 import { embedChunks } from '../embeddings/embedder';
+
 import { EmbeddingChunk } from '../embeddings/types';
 
+// ==========================================
+// VECTOR STORAGE
+// ==========================================
 
-// testing cosine similarity here: (delete later!!)
-import { searchChunks } from '../search/similarity';
-
-
-//supabase saving code
 import { storeEmbeddedChunks } from '../vector/supabase';
 
-//supbase searching function(db retrival)
+// ==========================================
+// VECTOR SEARCH TESTING
+// ==========================================
+
 import { semanticSearch } from '../vector/search';
+
+// ==========================================
+// TYPES
+// ==========================================
 
 export interface ProcessedResult {
   documents: IngestedItem[];
+
   chunks: Chunk[];
+
   embeddedChunks: EmbeddingChunk[];
 }
 
+// ==========================================
+// MAIN PROCESSOR
+// ==========================================
+
 export async function processUrl(
-  url: string
+  url: string,
+  crawlSubpages = false
 ): Promise<ProcessedResult> {
   console.log('\n====================================');
-  console.log('STARTING INGESTION PIPELINE');
-  console.log('====================================');
+
+  console.log(
+    'STARTING INGESTION PIPELINE'
+  );
+
+  console.log(
+    '===================================='
+  );
 
   console.log(`Target URL: ${url}`);
+
+  console.log(
+    `Crawl Subpages: ${
+      crawlSubpages ? 'YES' : 'NO'
+    }`
+  );
 
   let documents: IngestedItem[] = [];
 
@@ -49,11 +87,19 @@ export async function processUrl(
     url.endsWith('.rss') ||
     url.includes('/feed');
 
-  console.log(`RSS heuristic result: ${isLikelyRss}`);
+  console.log(
+    `RSS heuristic result: ${isLikelyRss}`
+  );
+
+  // ==========================================
+  // RSS MODE
+  // ==========================================
 
   if (isLikelyRss) {
     try {
-      console.log('Attempting RSS ingestion...');
+      console.log(
+        'Attempting RSS ingestion...'
+      );
 
       documents = await ingestRss(url);
 
@@ -66,17 +112,29 @@ export async function processUrl(
         e
       );
 
-      documents = await scrapeWebpage(url);
+      documents = await scrapeWebpage(
+        url,
+        crawlSubpages
+      );
 
       console.log(
         `Web scraping successful (${documents.length} documents)`
       );
     }
-  } else {
-    try {
-      console.log('Checking content-type via HEAD request...');
+  }
 
-      const controller = new AbortController();
+  // ==========================================
+  // WEBPAGE MODE
+  // ==========================================
+
+  else {
+    try {
+      console.log(
+        'Checking content-type via HEAD request...'
+      );
+
+      const controller =
+        new AbortController();
 
       const timeoutId = setTimeout(
         () => controller.abort(),
@@ -91,15 +149,25 @@ export async function processUrl(
       clearTimeout(timeoutId);
 
       const contentType =
-        res.headers.get('content-type') || '';
+        res.headers.get(
+          'content-type'
+        ) || '';
 
-      console.log(`Detected content-type: ${contentType}`);
+      console.log(
+        `Detected content-type: ${contentType}`
+      );
+
+      // ======================================
+      // RSS CONTENT-TYPE DETECTED
+      // ======================================
 
       if (
         contentType.includes('xml') ||
         contentType.includes('rss')
       ) {
-        console.log('Detected RSS content-type');
+        console.log(
+          'Detected RSS content-type'
+        );
 
         documents = await ingestRss(url);
 
@@ -113,11 +181,19 @@ export async function processUrl(
       );
     }
 
-    // fallback if documents still empty
-    if (documents.length === 0) {
-      console.log('Starting webpage scraping...');
+    // ======================================
+    // FALLBACK TO SCRAPING
+    // ======================================
 
-      documents = await scrapeWebpage(url);
+    if (documents.length === 0) {
+      console.log(
+        'Starting webpage scraping...'
+      );
+
+      documents = await scrapeWebpage(
+        url,
+        crawlSubpages
+      );
 
       console.log(
         `Web scraping successful (${documents.length} documents)`
@@ -126,19 +202,33 @@ export async function processUrl(
   }
 
   // ==========================================
-  // DOCUMENT DEBUGGING
+  // DOCUMENT ANALYSIS
   // ==========================================
 
   console.log('\n====================================');
+
   console.log('DOCUMENT ANALYSIS');
-  console.log('====================================');
+
+  console.log(
+    '===================================='
+  );
 
   documents.forEach((doc, index) => {
     console.log(`\nDocument ${index + 1}`);
+
     console.log(`Title: ${doc.title}`);
+
     console.log(`URL: ${doc.url}`);
+
     console.log(
       `Content Length: ${doc.content.length} chars`
+    );
+
+    console.log(
+      `Preview:\n${doc.content.slice(
+        0,
+        250
+      )}...`
     );
   });
 
@@ -147,48 +237,136 @@ export async function processUrl(
   // ==========================================
 
   console.log('\n====================================');
+
   console.log('STARTING CHUNKING');
-  console.log('====================================');
 
-  const chunks = chunkDocuments(documents);
-  
-  const embeddedChunks = await embedChunks(chunks);
+  console.log(
+    '===================================='
+  );
 
-  //storing in the vector database
-  await storeEmbeddedChunks(embeddedChunks);
-
-  await semanticSearch(
-  'how do machines imitate human thinking'
-);
+  const chunks = chunkDocuments(
+    documents
+  );
 
   // ==========================================
-  // CHUNK DEBUGGING
+  // CHUNK ANALYSIS
   // ==========================================
 
   console.log('\n====================================');
-  console.log('CHUNK ANALYSIS');
-  console.log('====================================');
 
-  console.log(`Total chunks created: ${chunks.length}`);
+  console.log('CHUNK ANALYSIS');
+
+  console.log(
+    '===================================='
+  );
+
+  console.log(
+    `Total chunks created: ${chunks.length}`
+  );
 
   chunks.forEach((chunk, index) => {
     console.log(`\nChunk ${index + 1}`);
-    console.log(`Chunk ID: ${chunk.id}`);
-    console.log(`Heading: ${chunk.heading}`);
-    console.log(`Word Count: ${chunk.wordCount}`);
 
     console.log(
-      `Preview:\n${chunk.text.slice(0, 250)}...`
+      `Chunk ID: ${chunk.id}`
+    );
+
+    console.log(
+      `Heading: ${chunk.heading}`
+    );
+
+    console.log(
+      `Word Count: ${chunk.wordCount}`
+    );
+
+    console.log(
+      `Preview:\n${chunk.text.slice(
+        0,
+        250
+      )}...`
     );
   });
 
+  // ==========================================
+  // EMBEDDINGS
+  // ==========================================
+
   console.log('\n====================================');
-  console.log('PIPELINE COMPLETE');
-  console.log('====================================\n');
+
+  console.log(
+    'STARTING EMBEDDINGS'
+  );
+
+  console.log(
+    '===================================='
+  );
+
+  const embeddedChunks =
+    await embedChunks(chunks);
+
+  console.log(
+    `Generated embeddings for ${embeddedChunks.length} chunks`
+  );
+
+  // ==========================================
+  // STORE IN VECTOR DB
+  // ==========================================
+
+  console.log('\n====================================');
+
+  console.log(
+    'STORING EMBEDDINGS IN SUPABASE'
+  );
+
+  console.log(
+    '===================================='
+  );
+
+  await storeEmbeddedChunks(
+    embeddedChunks
+  );
+
+  console.log(
+    'Embeddings stored successfully'
+  );
+
+  // ==========================================
+  // TEST SEARCH
+  // ==========================================
+
+  console.log('\n====================================');
+
+  console.log(
+    'RUNNING TEST SEMANTIC SEARCH'
+  );
+
+  console.log(
+    '===================================='
+  );
+
+  await semanticSearch(
+    'how do machines imitate human thinking'
+  );
+
+  // ==========================================
+  // PIPELINE COMPLETE
+  // ==========================================
+
+  console.log('\n====================================');
+
+  console.log(
+    'PIPELINE COMPLETE'
+  );
+
+  console.log(
+    '====================================\n'
+  );
 
   return {
     documents,
+
     chunks,
+
     embeddedChunks,
   };
 }

@@ -39,6 +39,22 @@ function splitIntoBlocks(content: string): string[] {
 }
 
 // ==========================================
+// CLEAN HEADING
+// ==========================================
+
+function cleanHeading(text: string): string {
+  return text
+
+    // remove markdown heading syntax
+    .replace(/^#+\s*/, '')
+
+    // collapse spaces
+    .replace(/[ \t]+/g, ' ')
+
+    .trim();
+}
+
+// ==========================================
 // DETECT HEADINGS
 // ==========================================
 
@@ -46,8 +62,10 @@ function isHeading(block: string): boolean {
   const trimmed = block.trim();
 
   return (
+    // markdown headings
     trimmed.startsWith('#') ||
 
+    // wiki/docs style headings
     (
       trimmed.length < 120 &&
       /^[A-Z0-9][A-Za-z0-9\s\-\:\(\)]+$/.test(trimmed) &&
@@ -69,7 +87,7 @@ function cleanChunkText(text: string): string {
     // remove raw urls
     .replace(/https?:\/\/\S+/g, '')
 
-    // remove markdown links but keep text
+    // markdown links → keep text only
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
 
     // remove repeated separators
@@ -84,7 +102,7 @@ function cleanChunkText(text: string): string {
     // remove empty markdown headings
     .replace(/^#+\s*$/gm, '')
 
-    // trim each line
+    // trim lines
     .split('\n')
     .map((line) => line.trim())
 
@@ -109,9 +127,7 @@ function buildChunkText(
     [
       `Title: ${document.title}`,
 
-      heading
-        ? `Heading: ${heading}`
-        : '',
+      `Heading: ${heading || document.title}`,
 
       ...chunkBlocks,
     ].join('\n\n')
@@ -137,7 +153,8 @@ export function chunkDocument(
 
   let currentWordCount = 0;
 
-  let currentHeading = '';
+  // default heading fallback
+  let currentHeading = document.title;
 
   let chunkIndex = 0;
 
@@ -147,11 +164,15 @@ export function chunkDocument(
     const blockWordCount = countWords(block);
 
     // ======================================
-    // TRACK HEADINGS
+    // DETECT HEADING
     // ======================================
 
     if (isHeading(block)) {
-      currentHeading = block;
+      currentHeading = cleanHeading(block);
+
+      console.log(
+        `Detected heading: ${currentHeading}`
+      );
 
       continue;
     }
@@ -191,7 +212,8 @@ export function chunkDocument(
           sourceType:
             document.sourceType || 'webpage',
 
-          heading: currentHeading,
+          heading:
+            currentHeading || document.title,
 
           metadata:
             document.metadata || {},
@@ -206,7 +228,6 @@ export function chunkDocument(
 
       // ======================================
       // OVERLAP STRATEGY
-      // KEEP LAST BLOCK
       // ======================================
 
       const overlapBlock =
@@ -224,7 +245,7 @@ export function chunkDocument(
     }
 
     // ======================================
-    // ADD BLOCK
+    // ADD BLOCK TO CHUNK
     // ======================================
 
     currentChunk.push(block);
@@ -263,7 +284,8 @@ export function chunkDocument(
         sourceType:
           document.sourceType || 'webpage',
 
-        heading: currentHeading,
+        heading:
+          currentHeading || document.title,
 
         metadata:
           document.metadata || {},

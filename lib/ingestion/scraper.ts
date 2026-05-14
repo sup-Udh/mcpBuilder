@@ -1,14 +1,25 @@
+// lib/ingestion/scraper.ts
+
 import * as cheerio from 'cheerio';
+
 import { JSDOM } from 'jsdom';
+
 import { Readability } from '@mozilla/readability';
+
 import TurndownService from 'turndown';
 
 import { IngestedItem } from './types';
 
-const turndownService = new TurndownService({
-  headingStyle: 'atx',
-  codeBlockStyle: 'fenced',
-});
+// ==========================================
+// TURNDOWN
+// ==========================================
+
+const turndownService =
+  new TurndownService({
+    headingStyle: 'atx',
+
+    codeBlockStyle: 'fenced',
+  });
 
 // ==========================================
 // CONFIG
@@ -22,8 +33,11 @@ const MIN_CONTENT_LENGTH = 300;
 // FETCH HTML
 // ==========================================
 
-async function fetchHtml(url: string): Promise<string> {
-  const controller = new AbortController();
+async function fetchHtml(
+  url: string
+): Promise<string> {
+  const controller =
+    new AbortController();
 
   const timeoutId = setTimeout(() => {
     controller.abort();
@@ -42,15 +56,21 @@ async function fetchHtml(url: string): Promise<string> {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(
+        `HTTP ${response.status}`
+      );
     }
 
     const contentType =
-      response.headers.get('content-type') || '';
+      response.headers.get(
+        'content-type'
+      ) || '';
 
     if (
       !contentType.includes('text/html') &&
-      !contentType.includes('application/xhtml+xml')
+      !contentType.includes(
+        'application/xhtml+xml'
+      )
     ) {
       throw new Error(
         `Unsupported content type: ${contentType}`
@@ -70,25 +90,39 @@ async function fetchHtml(url: string): Promise<string> {
 function cleanText(text: string): string {
   return (
     text
+
       // invisible unicode
-      .replace(/[\u200B-\u200D\uFEFF]/g, '')
+      .replace(
+        /[\u200B-\u200D\uFEFF]/g,
+        ''
+      )
 
-      // markdown links → keep text only
+      // markdown images
+      .replace(
+        /!\[[^\]]*\]\([^)]+\)/g,
+        ''
+      )
 
+      // raw urls
       .replace(/https?:\/\/\S+/g, '')
-      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+
+      // markdown links -> keep text
+      .replace(
+        /\[([^\]]+)\]\([^)]+\)/g,
+        '$1'
+      )
+
+      // repeated separators
+      .replace(/[-=_]{4,}/g, '')
+
+      // excessive markdown junk
+      .replace(/^\s*>\s*$/gm, '')
 
       // collapse spaces
       .replace(/[ \t]+/g, ' ')
 
       // collapse huge newlines
       .replace(/\n{3,}/g, '\n\n')
-
-      // remove repeated separators
-      .replace(/[-=_]{4,}/g, '')
-
-      // remove excessive markdown artifacts
-      .replace(/^\s*>\s*$/gm, '')
 
       // trim lines
       .split('\n')
@@ -97,10 +131,10 @@ function cleanText(text: string): string {
       // remove empty lines
       .filter(Boolean)
 
-      // remove tiny garbage
+      // remove tiny garbage lines
       .filter((line) => line.length > 2)
 
-      // remove nav junk
+      // remove junk nav text
       .filter(
         (line) =>
           ![
@@ -112,7 +146,9 @@ function cleanText(text: string): string {
             'contents',
             'navigation',
             'menu',
-          ].includes(line.toLowerCase())
+          ].includes(
+            line.toLowerCase()
+          )
       )
 
       .join('\n')
@@ -124,7 +160,9 @@ function cleanText(text: string): string {
 // REMOVE JUNK ELEMENTS
 // ==========================================
 
-function removeJunkElements(document: Document) {
+function removeJunkElements(
+  document: Document
+) {
   const selectors = [
     // layout
     'script',
@@ -176,12 +214,14 @@ function removeJunkElements(document: Document) {
   ];
 
   document
-    .querySelectorAll(selectors.join(','))
+    .querySelectorAll(
+      selectors.join(',')
+    )
     .forEach((el) => el.remove());
 }
 
 // ==========================================
-// CONTENT QUALITY FILTER
+// LOW QUALITY DETECTION
 // ==========================================
 
 function isLowQualityContent(
@@ -189,22 +229,27 @@ function isLowQualityContent(
   content: string,
   url: string
 ): boolean {
-  const lowerTitle = title.toLowerCase();
+  const lowerTitle =
+    title.toLowerCase();
 
-  const lowerContent = content.toLowerCase();
+  const lowerContent =
+    content.toLowerCase();
 
   const lowerUrl = url.toLowerCase();
 
   // ======================================
-  // LOW CONTENT
+  // TOO SMALL
   // ======================================
 
-  if (content.length < MIN_CONTENT_LENGTH) {
+  if (
+    content.length <
+    MIN_CONTENT_LENGTH
+  ) {
     return true;
   }
 
   // ======================================
-  // WIKIPEDIA META PAGES
+  // WIKI META PAGES
   // ======================================
 
   const blockedWikiPatterns = [
@@ -250,7 +295,7 @@ function isLowQualityContent(
   }
 
   // ======================================
-  // CONTENT JUNK DETECTION
+  // CONTENT JUNK SIGNALS
   // ======================================
 
   const junkSignals = [
@@ -266,9 +311,10 @@ function isLowQualityContent(
     'jump to search',
   ];
 
-  const junkMatches = junkSignals.filter((signal) =>
-    lowerContent.includes(signal)
-  ).length;
+  const junkMatches =
+    junkSignals.filter((signal) =>
+      lowerContent.includes(signal)
+    ).length;
 
   if (junkMatches >= 2) {
     return true;
@@ -278,7 +324,7 @@ function isLowQualityContent(
 }
 
 // ==========================================
-// EXTRACT MAIN CONTENT
+// EXTRACT READABLE CONTENT
 // ==========================================
 
 function extractReadableContent(
@@ -289,11 +335,13 @@ function extractReadableContent(
     url,
   });
 
-  const document = dom.window.document;
+  const document =
+    dom.window.document;
 
   removeJunkElements(document);
 
-  const reader = new Readability(document);
+  const reader =
+    new Readability(document);
 
   const article = reader.parse();
 
@@ -303,18 +351,23 @@ function extractReadableContent(
     );
   }
 
-  const markdown = turndownService.turndown(
-    article.content ?? ''
-  );
+  const markdown =
+    turndownService.turndown(
+      article.content ?? ''
+    );
 
-  const cleaned = cleanText(markdown);
+  const cleaned =
+    cleanText(markdown);
 
   return {
-    title: article.title || 'Untitled Page',
+    title:
+      article.title ||
+      'Untitled Page',
 
     content: cleaned,
 
-    excerpt: article.excerpt || '',
+    excerpt:
+      article.excerpt || '',
   };
 }
 
@@ -322,8 +375,11 @@ function extractReadableContent(
 // VALID SUBPAGE FILTER
 // ==========================================
 
-function isValidSubpage(url: string): boolean {
-  const lower = url.toLowerCase();
+function isValidSubpage(
+  url: string
+): boolean {
+  const lower =
+    url.toLowerCase();
 
   // ======================================
   // BLOCK FILES
@@ -370,19 +426,26 @@ function isValidSubpage(url: string): boolean {
     '/privacy',
     '/terms',
     '/contact',
-    '/about',
     '/account',
     '/settings',
     '/cart',
     '/checkout',
-    '#',
   ];
 
   if (
-    blockedPatterns.some((pattern) =>
-      lower.includes(pattern)
+    blockedPatterns.some(
+      (pattern) =>
+        lower.includes(pattern)
     )
   ) {
+    return false;
+  }
+
+  // ======================================
+  // BLOCK HASH URLS
+  // ======================================
+
+  if (lower.includes('#')) {
     return false;
   }
 
@@ -419,22 +482,40 @@ function isValidSubpage(url: string): boolean {
 function scoreUrl(url: string): number {
   let score = 0;
 
-  const lower = url.toLowerCase();
+  const lower =
+    url.toLowerCase();
 
   // docs boost
-  if (lower.includes('/docs')) score += 10;
-  if (lower.includes('/guide')) score += 8;
-  if (lower.includes('/learn')) score += 8;
-  if (lower.includes('/tutorial')) score += 7;
-  if (lower.includes('/api')) score += 6;
+  if (lower.includes('/docs'))
+    score += 10;
 
-  // wikipedia actual article boost
-  if (lower.includes('/wiki/')) score += 5;
+  if (lower.includes('/guide'))
+    score += 8;
 
-  // penalize utility pages
-  if (lower.includes('help')) score -= 10;
-  if (lower.includes('privacy')) score -= 10;
-  if (lower.includes('terms')) score -= 10;
+  if (lower.includes('/learn'))
+    score += 8;
+
+  if (
+    lower.includes('/tutorial')
+  )
+    score += 7;
+
+  if (lower.includes('/api'))
+    score += 6;
+
+  // wiki article boost
+  if (lower.includes('/wiki/'))
+    score += 5;
+
+  // penalties
+  if (lower.includes('help'))
+    score -= 10;
+
+  if (lower.includes('privacy'))
+    score -= 10;
+
+  if (lower.includes('terms'))
+    score -= 10;
 
   return score;
 }
@@ -447,18 +528,22 @@ async function scrapeSinglePage(
   url: string
 ): Promise<IngestedItem | null> {
   try {
-    console.log(`\nScraping page: ${url}`);
+    console.log(
+      `\nScraping page: ${url}`
+    );
 
-    const html = await fetchHtml(url);
+    const html =
+      await fetchHtml(url);
 
     console.log(
       `Fetched HTML (${html.length} chars)`
     );
 
-    const extracted = extractReadableContent(
-      html,
-      url
-    );
+    const extracted =
+      extractReadableContent(
+        html,
+        url
+      );
 
     console.log(
       `Extracted content (${extracted.content.length} chars)`
@@ -482,23 +567,30 @@ async function scrapeSinglePage(
       return null;
     }
 
-    console.log(`Accepted page: ${extracted.title}`);
+    console.log(
+      `Accepted page: ${extracted.title}`
+    );
 
     return {
       title: extracted.title,
 
       url,
 
-      content: extracted.content,
+      content:
+        extracted.content,
 
       sourceType: 'webpage',
 
       metadata: {
-        excerpt: extracted.excerpt,
+        excerpt:
+          extracted.excerpt,
       },
     };
   } catch (error) {
-    console.warn(`Failed scraping ${url}`, error);
+    console.warn(
+      `Failed scraping ${url}`,
+      error
+    );
 
     return null;
   }
@@ -510,21 +602,39 @@ async function scrapeSinglePage(
 
 export async function scrapeWebpage(
   url: string,
-  crawlSubpages = true
+  crawlSubpages = false
 ): Promise<IngestedItem[]> {
   console.log('\n====================================');
-  console.log('STARTING WEB SCRAPE');
-  console.log('====================================');
 
-  const items: IngestedItem[] = [];
+  console.log(
+    'STARTING WEB SCRAPE'
+  );
 
-  const visited = new Set<string>();
+  console.log(
+    '===================================='
+  );
+
+  console.log(
+    `Crawl mode: ${
+      crawlSubpages
+        ? 'MULTI PAGE'
+        : 'SINGLE PAGE'
+    }`
+  );
+
+  const items: IngestedItem[] =
+    [];
+
+  const visited = new Set<
+    string
+  >();
 
   // ======================================
   // MAIN PAGE
   // ======================================
 
-  const mainPage = await scrapeSinglePage(url);
+  const mainPage =
+    await scrapeSinglePage(url);
 
   if (!mainPage) {
     throw new Error(
@@ -537,32 +647,51 @@ export async function scrapeWebpage(
   visited.add(url);
 
   // ======================================
+  // SINGLE PAGE MODE
+  // ======================================
+
+  if (!crawlSubpages) {
+    console.log(
+      'Single-page mode enabled. Skipping subpage crawling.'
+    );
+
+    return items;
+  }
+
+  // ======================================
   // SUBPAGE CRAWLING
   // ======================================
 
-  if (crawlSubpages) {
-    try {
-      const html = await fetchHtml(url);
+  try {
+    const html =
+      await fetchHtml(url);
 
-      const $ = cheerio.load(html);
+    const $ =
+      cheerio.load(html);
 
-      const baseUrl = new URL(url);
+    const baseUrl =
+      new URL(url);
 
-      const links = $('a')
-        .map((_, el) => $(el).attr('href'))
-        .get()
-        .filter(Boolean);
+    const links = $('a')
+      .map((_, el) =>
+        $(el).attr('href')
+      )
+      .get()
+      .filter(Boolean);
 
-      const normalizedUrls = Array.from(
+    const normalizedUrls =
+      Array.from(
         new Set(
           links
             .map((link) => {
               try {
-                const fullUrl = new URL(
-                  link!,
-                  url
-                );
+                const fullUrl =
+                  new URL(
+                    link!,
+                    url
+                  );
 
+                // remove hash fragments
                 fullUrl.hash = '';
 
                 return fullUrl.href;
@@ -574,47 +703,74 @@ export async function scrapeWebpage(
         )
       ) as string[];
 
-      const subpageUrls = normalizedUrls
+    const subpageUrls =
+      normalizedUrls
+
         .filter((subUrl) => {
           return (
-            subUrl.startsWith(baseUrl.origin) &&
-            !visited.has(subUrl) &&
-            isValidSubpage(subUrl)
+            subUrl.startsWith(
+              baseUrl.origin
+            ) &&
+            !visited.has(
+              subUrl
+            ) &&
+            isValidSubpage(
+              subUrl
+            )
           );
         })
 
         .sort(
-          (a, b) => scoreUrl(b) - scoreUrl(a)
+          (a, b) =>
+            scoreUrl(b) -
+            scoreUrl(a)
         )
 
-        .slice(0, MAX_SUBPAGES);
+        .slice(
+          0,
+          MAX_SUBPAGES
+        );
 
-      console.log(
-        `Found ${subpageUrls.length} candidate subpages`
-      );
+    console.log(
+      `Found ${subpageUrls.length} candidate subpages`
+    );
 
-      for (const subUrl of subpageUrls) {
-        visited.add(subUrl);
+    // ======================================
+    // SCRAPE SUBPAGES
+    // ======================================
 
-        const item = await scrapeSinglePage(
+    for (const subUrl of subpageUrls) {
+      visited.add(subUrl);
+
+      const item =
+        await scrapeSinglePage(
           subUrl
         );
 
-        if (item) {
-          items.push(item);
-        }
+      if (item) {
+        items.push(item);
       }
-    } catch (crawlError) {
-      console.warn(
-        'Subpage crawling failed',
-        crawlError
-      );
     }
+  } catch (crawlError) {
+    console.warn(
+      'Subpage crawling failed',
+      crawlError
+    );
   }
 
+  // ======================================
+  // COMPLETE
+  // ======================================
+
   console.log('\n====================================');
-  console.log('SCRAPING COMPLETE');
-  console.log('====================================');
+
+  console.log(
+    'SCRAPING COMPLETE'
+  );
+
+  console.log(
+    '===================================='
+  );
 
   console.log(
     `Successfully scraped ${items.length} high-quality pages`

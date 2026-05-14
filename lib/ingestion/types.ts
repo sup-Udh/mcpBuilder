@@ -8,4 +8,5 @@ export interface IngestedItem {
   date?: string;
   metadata?: Record<string, any>;
   sourceType?: 'rss' | 'webpage' | 'docs' | 'pdf';
+  crawlsubpages?: boolean;
 }
