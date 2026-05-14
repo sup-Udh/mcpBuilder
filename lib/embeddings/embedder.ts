@@ -2,7 +2,7 @@ import { Chunk } from "../processing/types";
 
 import { EmbeddingChunk } from "./types";
 
-import { embedText } from "./proivders/bge";
+import { embedText } from "./proivders/openai";
 // ==========================================
 // EMBED SINGLE CHUNK
 // ==========================================
