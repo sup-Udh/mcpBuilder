@@ -7,12 +7,13 @@ import { Chunk } from './types';
 // CONFIG
 // ==========================================
 
-const TARGET_WORDS = 220;
+// smaller chunks = better retrieval precision
+const TARGET_WORDS = 120;
 
-const MIN_WORDS = 80;
+const MIN_WORDS = 40;
 
 // fallback split threshold
-const MAX_BLOCK_WORDS = 400;
+const MAX_BLOCK_WORDS = 300;
 
 // ==========================================
 // WORD COUNT
@@ -101,7 +102,7 @@ function splitIntoBlocks(
     // remove tiny garbage blocks
     .filter(
       (block) =>
-        countWords(block) >= 5
+        countWords(block) >= 3
     );
 
   const finalBlocks: string[] =
@@ -181,10 +182,10 @@ function isHeading(
     // markdown headings
     trimmed.startsWith('#') ||
 
-    // wiki/docs headings
+    // docs/wiki headings
     (
       trimmed.length < 120 &&
-      /^[A-Z0-9][A-Za-z0-9\s\-\:\(\)]+$/.test(
+      /^[A-Z0-9][A-Za-z0-9\s\-\:\(\)\.]+$/.test(
         trimmed
       ) &&
       countWords(trimmed) <= 12
@@ -307,137 +308,22 @@ export function chunkDocument(
 
   let currentWordCount = 0;
 
-  // default heading fallback
   let currentHeading =
     document.title;
 
   let chunkIndex = 0;
 
-  for (
-    let i = 0;
-    i < blocks.length;
-    i++
-  ) {
-    const block = blocks[i];
+  // ======================================
+  // FLUSH CHUNK
+  // ======================================
 
-    const blockWordCount =
-      countWords(block);
-
-    // ======================================
-    // DETECT HEADING
-    // ======================================
-
-    if (isHeading(block)) {
-      currentHeading =
-        cleanHeading(block);
-
-      console.log(
-        `Detected heading: ${currentHeading}`
-      );
-
-      continue;
-    }
-
-    // ======================================
-    // CREATE CHUNK
-    // ======================================
-
+  function flushChunk() {
     if (
-      currentWordCount +
-        blockWordCount >
-        TARGET_WORDS &&
-      currentChunk.length > 0
+      currentChunk.length === 0
     ) {
-      const chunkText =
-        buildChunkText(
-          document,
-          currentHeading,
-          currentChunk
-        );
-
-      const finalWordCount =
-        countWords(chunkText);
-
-      if (
-        finalWordCount >=
-        MIN_WORDS
-      ) {
-        chunks.push({
-          id: `${document.url}::chunk-${chunkIndex}`,
-
-          text: chunkText,
-
-          chunkIndex,
-
-          wordCount:
-            finalWordCount,
-
-          sourceTitle:
-            document.title,
-
-          sourceUrl:
-            document.url,
-
-          sourceType:
-            document.sourceType ||
-            'webpage',
-
-          heading:
-            currentHeading ||
-            document.title,
-
-          metadata:
-            document.metadata ||
-            {},
-        });
-
-        console.log(
-          `Created chunk ${chunkIndex} (${finalWordCount} words)`
-        );
-
-        chunkIndex++;
-      }
-
-      // ======================================
-      // OVERLAP STRATEGY
-      // ======================================
-
-      const overlapBlock =
-        currentChunk[
-          currentChunk.length -
-            1
-        ];
-
-      currentChunk =
-        overlapBlock
-          ? [overlapBlock]
-          : [];
-
-      currentWordCount =
-        overlapBlock
-          ? countWords(
-              overlapBlock
-            )
-          : 0;
+      return;
     }
 
-    // ======================================
-    // ADD BLOCK
-    // ======================================
-
-    currentChunk.push(block);
-
-    currentWordCount +=
-      blockWordCount;
-  }
-
-  // ==========================================
-  // FINAL CHUNK
-  // ==========================================
-
-  if (
-    currentChunk.length > 0
-  ) {
     const chunkText =
       buildChunkText(
         document,
@@ -482,10 +368,80 @@ export function chunkDocument(
       });
 
       console.log(
-        `Created final chunk ${chunkIndex} (${finalWordCount} words)`
+        `Created chunk ${chunkIndex} (${finalWordCount} words)`
       );
+
+      chunkIndex++;
     }
+
+    currentChunk = [];
+
+    currentWordCount = 0;
   }
+
+  // ======================================
+  // MAIN LOOP
+  // ======================================
+
+  for (
+    let i = 0;
+    i < blocks.length;
+    i++
+  ) {
+    const block = blocks[i];
+
+    const blockWordCount =
+      countWords(block);
+
+    // ======================================
+    // HEADING DETECTION
+    // ======================================
+
+    if (isHeading(block)) {
+      const newHeading =
+        cleanHeading(block);
+
+      console.log(
+        `Detected heading: ${newHeading}`
+      );
+
+      // flush previous section
+      flushChunk();
+
+      currentHeading =
+        newHeading;
+
+      continue;
+    }
+
+    // ======================================
+    // SIZE LIMIT SPLIT
+    // ======================================
+
+    if (
+      currentWordCount +
+        blockWordCount >
+        TARGET_WORDS &&
+      currentChunk.length > 0
+    ) {
+      flushChunk();
+    }
+
+    // ======================================
+    // ADD BLOCK
+    // ======================================
+
+    currentChunk.push(block);
+
+    currentWordCount +=
+      blockWordCount;
+  }
+
+  // ======================================
+  // FINAL FLUSH
+  // ======================================
+
+  flushChunk();
 
   console.log(
     `Finished chunking ${document.title}`
