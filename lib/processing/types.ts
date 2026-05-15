@@ -1,15 +1,41 @@
 export interface Chunk {
-    id:string;
-    text: string;
-    chunkIndex: number;
-    wordCount: number;
+  id: string;
 
-    sourceTitle: string;
-    sourceUrl: string;
+  // ==========================================
+  // MULTI TENANT
+  // ==========================================
 
-    sourceType: 'rss' | 'webpage' | 'docs' | 'pdf';
+  serverId: string;
 
-    heading?:string;
-    metadata?: Record<string, any>;
+  // ==========================================
+  // CHUNK DATA
+  // ==========================================
 
+  text: string;
+
+  chunkIndex: number;
+
+  wordCount: number;
+
+  // ==========================================
+  // SOURCE INFO
+  // ==========================================
+
+  sourceTitle: string;
+
+  sourceUrl: string;
+
+  sourceType:
+    | 'rss'
+    | 'webpage'
+    | 'docs'
+    | 'pdf';
+
+  // ==========================================
+  // OPTIONAL
+  // ==========================================
+
+  heading?: string;
+
+  metadata?: Record<string, any>;
 }

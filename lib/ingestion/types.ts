@@ -1,12 +1,33 @@
-// main datamodel for all the ingestion models(text based)
+// main datamodel for all ingestion models
 
 export interface IngestedItem {
   id?: string;
+
+  // ==========================================
+  // MULTI TENANT
+  // ==========================================
+
+  serverId: string;
+
+  // ==========================================
+  // CONTENT
+  // ==========================================
+
   title: string;
+
   url: string;
-  content: string; // The full text content
+
+  content: string;
+
   date?: string;
+
+  // ==========================================
+  // METADATA
+  // ==========================================
+
   metadata?: Record<string, any>;
+
   sourceType?: 'rss' | 'webpage' | 'docs' | 'pdf';
+
   crawlsubpages?: boolean;
 }
