@@ -28,27 +28,6 @@ export default function Home() {
   ] = useState(false);
 
   // ==========================================
-  // CHAT STATE
-  // ==========================================
-
-  const [question, setQuestion] =
-    useState('');
-
-  const [chatLoading, setChatLoading] =
-    useState(false);
-
-  const [answer, setAnswer] =
-    useState('');
-
-  const [
-    retrievedChunks,
-    setRetrievedChunks,
-  ] = useState<any[]>([]);
-
-  const [llmChunks, setLlmChunks] =
-    useState<any[]>([]);
-
-  // ==========================================
   // INGEST SUBMIT
   // ==========================================
 
@@ -98,7 +77,7 @@ export default function Home() {
       }
 
       setStatus(
-        `Success! Processed ${data.documents.length} documents into ${data.chunks.length} chunks.`
+        `Successfully processed ${data.documents.length} documents into ${data.chunks.length} semantic chunks.`
       );
 
       setResults(data.documents);
@@ -111,81 +90,6 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // ==========================================
-  // ASK QUESTION
-  // ==========================================
-
-  const handleAskQuestion =
-    async () => {
-      if (!question) return;
-
-      setChatLoading(true);
-
-      setAnswer('');
-
-      setRetrievedChunks([]);
-
-      setLlmChunks([]);
-
-      try {
-        const response = await fetch(
-          '/api/chat',
-          {
-            method: 'POST',
-
-            headers: {
-              'Content-Type':
-                'application/json',
-            },
-
-            body: JSON.stringify({
-              question,
-            }),
-          }
-        );
-
-        const data =
-          await response.json();
-
-        if (!response.ok) {
-          throw new Error(
-            data.error ||
-              'Chat failed'
-          );
-        }
-
-        setAnswer(data.answer);
-
-        setRetrievedChunks(
-          data.retrievedChunks || []
-        );
-
-        setLlmChunks(
-          data.llmChunks || []
-        );
-      } catch (error: any) {
-        setAnswer(
-          `Error: ${error.message}`
-        );
-      } finally {
-        setChatLoading(false);
-      }
-    };
-
-  // ==========================================
-  // HELPERS
-  // ==========================================
-
-  const isChunkUsedByLLM = (
-    chunk: any
-  ) => {
-    return llmChunks.some(
-      (llmChunk) =>
-        llmChunk.chunk_id ===
-        chunk.chunk_id
-    );
   };
 
   // ==========================================
@@ -204,15 +108,16 @@ export default function Home() {
             MCP Builder
           </h1>
 
-          <p className="text-gray-400 mt-2">
-            Semantic ingestion +
-            vector retrieval +
-            RAG testing playground
+          <p className="text-gray-400 mt-2 max-w-3xl leading-relaxed">
+            Turn websites, documentation,
+            RSS feeds, and PDFs into
+            semantic knowledge bases for
+            AI agents and MCP servers.
           </p>
         </div>
 
         {/* ====================================== */}
-        {/* INGESTION */}
+        {/* INGESTION PANEL */}
         {/* ====================================== */}
 
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
@@ -224,6 +129,8 @@ export default function Home() {
             onSubmit={handleSubmit}
             className="space-y-5"
           >
+            {/* URL INPUT */}
+
             <div className="flex gap-4">
               <input
                 type="url"
@@ -234,13 +141,14 @@ export default function Home() {
                   )
                 }
                 placeholder="https://example.com/article"
-                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
               />
 
               <button
                 type="submit"
                 disabled={loading}
-                className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-semibold"
+                className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed px-6 py-3 rounded-lg font-semibold transition-all"
               >
                 {loading
                   ? 'Processing...'
@@ -248,10 +156,10 @@ export default function Home() {
               </button>
             </div>
 
-            {/* crawl toggle */}
+            {/* CRAWL TOGGLE */}
 
             <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4">
-              <label className="flex gap-4 items-start">
+              <label className="flex gap-4 items-start cursor-pointer">
                 <input
                   type="checkbox"
                   checked={
@@ -262,170 +170,163 @@ export default function Home() {
                       e.target.checked
                     )
                   }
+                  className="mt-1"
                 />
 
                 <div>
-                  <div className="font-medium">
+                  <div className="font-medium text-gray-200">
                     Crawl linked pages
                   </div>
 
-                  <div className="text-sm text-gray-400 mt-1">
-                    Recommended for
-                    docs sites and
-                    tutorials.
+                  <div className="text-sm text-gray-400 mt-1 leading-relaxed">
+                    Disabled by default
+                    for precise semantic
+                    retrieval. Enable this
+                    for documentation
+                    websites, tutorials,
+                    and multi-page
+                    knowledge bases.
                   </div>
                 </div>
               </label>
             </div>
           </form>
 
-          {/* status */}
+          {/* STATUS */}
 
           {status && (
-            <div className="mt-6 p-4 rounded-lg border bg-gray-800 border-gray-700">
+            <div className="mt-6 p-4 rounded-lg border bg-gray-800 border-gray-700 text-gray-300">
               {status}
             </div>
           )}
         </div>
 
         {/* ====================================== */}
-        {/* ASK QUESTIONS */}
+        {/* INGESTED DOCUMENTS */}
         {/* ====================================== */}
 
-        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-          <h2 className="text-2xl font-semibold mb-6">
-            Ask Questions
-          </h2>
+        {results &&
+          results.length > 0 && (
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+              <h2 className="text-2xl font-semibold mb-6">
+                Ingested Documents (
+                {results.length})
+              </h2>
 
-          <div className="flex gap-4">
-            <input
-              value={question}
-              onChange={(e) =>
-                setQuestion(
-                  e.target.value
-                )
-              }
-              placeholder="Ask a question about the ingested content..."
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
-            />
-
-            <button
-              onClick={
-                handleAskQuestion
-              }
-              disabled={chatLoading}
-              className="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold"
-            >
-              {chatLoading
-                ? 'Thinking...'
-                : 'Ask'}
-            </button>
-          </div>
-
-          {/* answer */}
-
-          {answer && (
-            <div className="mt-6 bg-gray-800 border border-gray-700 rounded-xl p-5">
-              <h3 className="font-semibold text-lg mb-3 text-blue-300">
-                Answer
-              </h3>
-
-              <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
-                {answer}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* ====================================== */}
-        {/* RETRIEVED CHUNKS */}
-        {/* ====================================== */}
-
-        {retrievedChunks.length >
-          0 && (
-          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
-            <h2 className="text-2xl font-semibold mb-6">
-              Retrieved Chunks (
-              {
-                retrievedChunks.length
-              }
-              )
-            </h2>
-
-            <div className="space-y-5">
-              {retrievedChunks.map(
-                (
-                  chunk,
-                  index
-                ) => {
-                  const usedByLLM =
-                    isChunkUsedByLLM(
-                      chunk
-                    );
-
-                  return (
+              <div className="space-y-5 max-h-[700px] overflow-y-auto pr-2">
+                {results.map(
+                  (item, index) => (
                     <div
                       key={index}
-                      className={`border rounded-xl p-5 ${
-                        usedByLLM
-                          ? 'border-emerald-500 bg-emerald-950/10'
-                          : 'border-gray-700 bg-gray-800'
-                      }`}
+                      className="bg-gray-800 border border-gray-700 rounded-xl p-5"
                     >
-                      {/* top row */}
+                      <h3 className="text-lg font-semibold text-blue-300">
+                        {item.title}
+                      </h3>
+
+                      <a
+                        href={item.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-gray-500 hover:text-gray-300 transition-colors break-all"
+                      >
+                        {item.url}
+                      </a>
+
+                      <div className="mt-4 bg-gray-900 border border-gray-700 rounded-lg p-4">
+                        <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+                          {item.content.slice(
+                            0,
+                            1000
+                          )}
+                          ...
+                        </p>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            </div>
+          )}
+
+        {/* ====================================== */}
+        {/* GENERATED CHUNKS */}
+        {/* ====================================== */}
+
+        {chunks &&
+          chunks.length > 0 && (
+            <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+              <h2 className="text-2xl font-semibold mb-6">
+                Semantic Chunks (
+                {chunks.length})
+              </h2>
+
+              <div className="space-y-5 max-h-[900px] overflow-y-auto pr-2">
+                {chunks.map(
+                  (chunk, index) => (
+                    <div
+                      key={index}
+                      className="bg-gray-800 border border-gray-700 rounded-xl p-5"
+                    >
+                      {/* HEADER */}
 
                       <div className="flex flex-wrap items-center gap-3 mb-4">
                         <span className="bg-blue-500/20 text-blue-300 text-xs px-3 py-1 rounded-full">
-                          Similarity{' '}
-                          {chunk.similarity?.toFixed(
-                            4
-                          )}
-                        </span>
-
-                        {usedByLLM && (
-                          <span className="bg-emerald-500/20 text-emerald-300 text-xs px-3 py-1 rounded-full">
-                            Used by GPT
-                          </span>
-                        )}
-
-                        <span className="bg-indigo-500/20 text-indigo-300 text-xs px-3 py-1 rounded-full">
                           Chunk #
                           {
-                            chunk.chunk_index
+                            chunk.chunkIndex
+                          }
+                        </span>
+
+                        <span className="bg-emerald-500/20 text-emerald-300 text-xs px-3 py-1 rounded-full">
+                          {
+                            chunk.wordCount
+                          }{' '}
+                          words
+                        </span>
+
+                        <span className="bg-indigo-500/20 text-indigo-300 text-xs px-3 py-1 rounded-full">
+                          {
+                            chunk.sourceType
                           }
                         </span>
                       </div>
 
-                      {/* title */}
+                      {/* TITLE */}
 
                       <h3 className="text-lg font-semibold text-blue-300">
                         {
-                          chunk.source_title
+                          chunk.sourceTitle
                         }
                       </h3>
 
-                      {/* heading */}
+                      {/* HEADING */}
 
                       <div className="text-sm text-indigo-300 mt-1 mb-4">
-                        {
-                          chunk.heading
-                        }
+                        {chunk.heading}
                       </div>
 
-                      {/* content */}
+                      {/* CONTENT */}
 
                       <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
                         <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                          {chunk.content}
+                          {chunk.text}
                         </p>
                       </div>
+
+                      {/* FOOTER */}
+
+                      <div className="mt-4 text-xs text-gray-500 break-all">
+                        {
+                          chunk.sourceUrl
+                        }
+                      </div>
                     </div>
-                  );
-                }
-              )}
+                  )
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </main>
   );
