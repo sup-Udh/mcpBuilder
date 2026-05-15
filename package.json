@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@anush008/tokenizers-win32-x64-msvc": "^0.6.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@mozilla/readability": "^0.6.0",
     "@supabase/supabase-js": "^2.105.4",
     "cheerio": "^1.2.0",
+    "dotenv": "^17.4.2",
     "fastembed": "^2.1.0",
     "jsdom": "^29.1.1",
     "next": "16.2.6",
@@ -20,8 +22,10 @@
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "rss-parser": "^3.13.0",
+    "ts-node": "^10.9.2",
     "turndown": "^7.2.4",
-    "uuid": "^14.0.0"
+    "uuid": "^14.0.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# ignore the nodemudles in base-server in the template folder
+/template/base-server/node_modules

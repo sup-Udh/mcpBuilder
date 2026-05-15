@@ -1,13 +1,22 @@
 {
-  "name": "templates",
+  "name": "mcp-builder-server",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Generated MCP server from MCP Builder",
+  "type": "module",
+  "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "tsx index.ts",
+    "start": "node --loader ts-node/esm index.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs"
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "dotenv": "^16.5.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.21",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  }
 }
