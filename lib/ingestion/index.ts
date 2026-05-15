@@ -36,7 +36,6 @@ import { storeEmbeddedChunks } from '../vector/supabase';
 // VECTOR SEARCH TESTING
 // ==========================================
 
-import { semanticSearch } from '../vector/search';
 
 // ==========================================
 // TYPES
@@ -344,9 +343,6 @@ export async function processUrl(
     '===================================='
   );
 
-  await semanticSearch(
-    'how do machines imitate human thinking'
-  );
 
   // ==========================================
   // PIPELINE COMPLETE
