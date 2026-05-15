@@ -20,10 +20,12 @@
 
     "types": ["node"],
 
-    "outDir": "dist" // 
+    "rootDir": "./src",
+
+    "outDir": "./dist"
   },
 
-  "include": ["./**/*.ts"],
+  "include": ["src/**/*.ts"],
 
   "exclude": ["node_modules"]
 }
