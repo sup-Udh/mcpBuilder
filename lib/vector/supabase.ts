@@ -159,7 +159,7 @@ export async function storeEmbeddedChunks(
 
 export async function searchSimilarChunks(
   queryEmbedding: number[],
-  topK = 10
+  topK = 20
 ) {
   console.log(
     '\n===================================='
@@ -174,7 +174,20 @@ export async function searchSimilarChunks(
   );
 
   console.log(
-    `Top K: ${topK}`
+    `Requested retrieval count: ${topK}`
+  );
+
+  // ======================================
+  // FETCH LARGE CANDIDATE POOL
+  // ======================================
+
+  // fetch more than needed
+  // dedupe may remove many
+  const fetchCount =
+    Math.max(topK * 3, 30);
+
+  console.log(
+    `Fetching ${fetchCount} raw matches from database`
   );
 
   const { data, error } =
@@ -184,7 +197,8 @@ export async function searchSimilarChunks(
         query_embedding:
           queryEmbedding,
 
-        match_count: topK,
+        match_count:
+          fetchCount,
       }
     );
 
@@ -199,6 +213,12 @@ export async function searchSimilarChunks(
     );
   }
 
+  console.log(
+    `Raw matches returned: ${
+      data?.length || 0
+    }`
+  );
+
   // ======================================
   // DEDUPE RESULTS
   // ======================================
@@ -208,12 +228,16 @@ export async function searchSimilarChunks(
   const seenChunkIds =
     new Set<string>();
 
-  const seenContents =
+  const seenContentFingerprints =
     new Set<string>();
 
   for (const item of data || []) {
-    // dedupe chunk id
+    // ====================================
+    // CHUNK ID DEDUPE
+    // ====================================
+
     if (
+      item.chunk_id &&
       seenChunkIds.has(
         item.chunk_id
       )
@@ -221,31 +245,44 @@ export async function searchSimilarChunks(
       continue;
     }
 
-    // dedupe similar content
-    const normalizedContent =
+    // ====================================
+    // CONTENT FINGERPRINT DEDUPE
+    // ====================================
+
+    const fingerprint =
       item.content
-        .slice(0, 300)
-        .trim();
+        .replace(/\s+/g, ' ')
+        .trim()
+        .slice(0, 500);
 
     if (
-      seenContents.has(
-        normalizedContent
+      seenContentFingerprints.has(
+        fingerprint
       )
     ) {
       continue;
     }
 
-    seenChunkIds.add(
-      item.chunk_id
-    );
+    // ====================================
+    // STORE
+    // ====================================
 
-    seenContents.add(
-      normalizedContent
+    if (item.chunk_id) {
+      seenChunkIds.add(
+        item.chunk_id
+      );
+    }
+
+    seenContentFingerprints.add(
+      fingerprint
     );
 
     deduped.push(item);
 
-    // stop once enough
+    // ====================================
+    // STOP AT TARGET
+    // ====================================
+
     if (
       deduped.length >= topK
     ) {
@@ -254,7 +291,7 @@ export async function searchSimilarChunks(
   }
 
   console.log(
-    `Retrieved ${deduped.length} unique matches`
+    `Unique chunks after dedupe: ${deduped.length}`
   );
 
   // ======================================
@@ -263,7 +300,15 @@ export async function searchSimilarChunks(
 
   if (deduped.length) {
     console.log(
-      '\nTOP MATCHES:\n'
+      '\n===================================='
+    );
+
+    console.log(
+      'FINAL RETRIEVED CHUNKS'
+    );
+
+    console.log(
+      '===================================='
     );
 
     deduped.forEach(
@@ -272,7 +317,7 @@ export async function searchSimilarChunks(
         index: number
       ) => {
         console.log(
-          `#${index + 1}`
+          `\n#${index + 1}`
         );
 
         console.log(
@@ -294,14 +339,34 @@ export async function searchSimilarChunks(
         );
 
         console.log(
+          `Chunk Index: ${item.chunk_index}`
+        );
+
+        console.log(
+          `Word Count: ${item.word_count}`
+        );
+
+        console.log(
           `Preview:\n${item.content.slice(
             0,
-            250
+            300
           )}...\n`
         );
       }
     );
   }
+
+  console.log(
+    '\n===================================='
+  );
+
+  console.log(
+    'VECTOR SEARCH COMPLETE'
+  );
+
+  console.log(
+    '===================================='
+  );
 
   return deduped;
 }

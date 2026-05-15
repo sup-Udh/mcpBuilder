@@ -3,33 +3,53 @@
 import { useState } from 'react';
 
 export default function Home() {
-  const [url, setUrl] = useState('');
-
-  const [status, setStatus] = useState('');
-
-  const [loading, setLoading] = useState(false);
-
-  const [results, setResults] = useState<any[] | null>(
-    null
-  );
-
   // ==========================================
-  // CHUNKS
+  // INGESTION STATE
   // ==========================================
 
-  const [chunks, setChunks] = useState<any[] | null>(
-    null
-  );
+  const [url, setUrl] =
+    useState('');
 
-  // ==========================================
-  // CRAWL TOGGLE
-  // ==========================================
+  const [status, setStatus] =
+    useState('');
 
-  const [crawlSubpages, setCrawlSubpages] =
+  const [loading, setLoading] =
     useState(false);
 
+  const [results, setResults] =
+    useState<any[] | null>(null);
+
+  const [chunks, setChunks] =
+    useState<any[] | null>(null);
+
+  const [
+    crawlSubpages,
+    setCrawlSubpages,
+  ] = useState(false);
+
   // ==========================================
-  // SUBMIT
+  // CHAT STATE
+  // ==========================================
+
+  const [question, setQuestion] =
+    useState('');
+
+  const [chatLoading, setChatLoading] =
+    useState(false);
+
+  const [answer, setAnswer] =
+    useState('');
+
+  const [
+    retrievedChunks,
+    setRetrievedChunks,
+  ] = useState<any[]>([]);
+
+  const [llmChunks, setLlmChunks] =
+    useState<any[]>([]);
+
+  // ==========================================
+  // INGEST SUBMIT
   // ==========================================
 
   const handleSubmit = async (
@@ -41,31 +61,39 @@ export default function Home() {
 
     setLoading(true);
 
-    setStatus('Fetching and processing...');
+    setStatus(
+      'Fetching and processing...'
+    );
 
     setResults(null);
 
     setChunks(null);
 
     try {
-      const response = await fetch('/api/ingest', {
-        method: 'POST',
+      const response = await fetch(
+        '/api/ingest',
+        {
+          method: 'POST',
 
-        headers: {
-          'Content-Type': 'application/json',
-        },
+          headers: {
+            'Content-Type':
+              'application/json',
+          },
 
-        body: JSON.stringify({
-          url,
-          crawlSubpages,
-        }),
-      });
+          body: JSON.stringify({
+            url,
+            crawlSubpages,
+          }),
+        }
+      );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
-          data.error || 'Ingestion failed'
+          data.error ||
+            'Ingestion failed'
         );
       }
 
@@ -77,236 +105,324 @@ export default function Home() {
 
       setChunks(data.chunks);
     } catch (error: any) {
-      setStatus(`Error: ${error.message}`);
+      setStatus(
+        `Error: ${error.message}`
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // ==========================================
+  // ASK QUESTION
+  // ==========================================
+
+  const handleAskQuestion =
+    async () => {
+      if (!question) return;
+
+      setChatLoading(true);
+
+      setAnswer('');
+
+      setRetrievedChunks([]);
+
+      setLlmChunks([]);
+
+      try {
+        const response = await fetch(
+          '/api/chat',
+          {
+            method: 'POST',
+
+            headers: {
+              'Content-Type':
+                'application/json',
+            },
+
+            body: JSON.stringify({
+              question,
+            }),
+          }
+        );
+
+        const data =
+          await response.json();
+
+        if (!response.ok) {
+          throw new Error(
+            data.error ||
+              'Chat failed'
+          );
+        }
+
+        setAnswer(data.answer);
+
+        setRetrievedChunks(
+          data.retrievedChunks || []
+        );
+
+        setLlmChunks(
+          data.llmChunks || []
+        );
+      } catch (error: any) {
+        setAnswer(
+          `Error: ${error.message}`
+        );
+      } finally {
+        setChatLoading(false);
+      }
+    };
+
+  // ==========================================
+  // HELPERS
+  // ==========================================
+
+  const isChunkUsedByLLM = (
+    chunk: any
+  ) => {
+    return llmChunks.some(
+      (llmChunk) =>
+        llmChunk.chunk_id ===
+        chunk.chunk_id
+    );
+  };
+
+  // ==========================================
+  // UI
+  // ==========================================
+
   return (
-    <main className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-6">
-      <div className="max-w-5xl w-full bg-gray-900 border border-gray-800 rounded-xl p-8 shadow-2xl">
-        {/* ========================================= */}
+    <main className="min-h-screen bg-gray-950 text-white p-6">
+      <div className="max-w-6xl mx-auto space-y-10">
+        {/* ====================================== */}
         {/* HEADER */}
-        {/* ========================================= */}
+        {/* ====================================== */}
 
-        <h1 className="text-3xl font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
-          MCP Builder
-        </h1>
+        <div>
+          <h1 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-500">
+            MCP Builder
+          </h1>
 
-        <p className="text-gray-400 mb-8">
-          Enter an RSS feed or Website URL to
-          ingest its content.
-        </p>
+          <p className="text-gray-400 mt-2">
+            Semantic ingestion +
+            vector retrieval +
+            RAG testing playground
+          </p>
+        </div>
 
-        {/* ========================================= */}
-        {/* FORM */}
-        {/* ========================================= */}
+        {/* ====================================== */}
+        {/* INGESTION */}
+        {/* ====================================== */}
 
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-5 mb-6"
-        >
-          {/* URL INPUT */}
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h2 className="text-2xl font-semibold mb-6">
+            Ingest Content
+          </h2>
+
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-5"
+          >
+            <div className="flex gap-4">
+              <input
+                type="url"
+                value={url}
+                onChange={(e) =>
+                  setUrl(
+                    e.target.value
+                  )
+                }
+                placeholder="https://example.com/article"
+                className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
+              />
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="bg-blue-600 hover:bg-blue-500 px-6 py-3 rounded-lg font-semibold"
+              >
+                {loading
+                  ? 'Processing...'
+                  : 'Ingest'}
+              </button>
+            </div>
+
+            {/* crawl toggle */}
+
+            <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4">
+              <label className="flex gap-4 items-start">
+                <input
+                  type="checkbox"
+                  checked={
+                    crawlSubpages
+                  }
+                  onChange={(e) =>
+                    setCrawlSubpages(
+                      e.target.checked
+                    )
+                  }
+                />
+
+                <div>
+                  <div className="font-medium">
+                    Crawl linked pages
+                  </div>
+
+                  <div className="text-sm text-gray-400 mt-1">
+                    Recommended for
+                    docs sites and
+                    tutorials.
+                  </div>
+                </div>
+              </label>
+            </div>
+          </form>
+
+          {/* status */}
+
+          {status && (
+            <div className="mt-6 p-4 rounded-lg border bg-gray-800 border-gray-700">
+              {status}
+            </div>
+          )}
+        </div>
+
+        {/* ====================================== */}
+        {/* ASK QUESTIONS */}
+        {/* ====================================== */}
+
+        <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+          <h2 className="text-2xl font-semibold mb-6">
+            Ask Questions
+          </h2>
 
           <div className="flex gap-4">
             <input
-              type="url"
-              value={url}
+              value={question}
               onChange={(e) =>
-                setUrl(e.target.value)
+                setQuestion(
+                  e.target.value
+                )
               }
-              placeholder="https://example.com/article"
-              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all text-gray-100"
-              required
+              placeholder="Ask a question about the ingested content..."
+              className="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-4 py-3"
             />
 
             <button
-              type="submit"
-              disabled={loading}
-              className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-[0_0_15px_rgba(37,99,235,0.4)]"
+              onClick={
+                handleAskQuestion
+              }
+              disabled={chatLoading}
+              className="bg-indigo-600 hover:bg-indigo-500 px-6 py-3 rounded-lg font-semibold"
             >
-              {loading
-                ? 'Processing...'
-                : 'Ingest Data'}
+              {chatLoading
+                ? 'Thinking...'
+                : 'Ask'}
             </button>
           </div>
 
-          {/* ===================================== */}
-          {/* CRAWL TOGGLE */}
-          {/* ===================================== */}
+          {/* answer */}
 
-          <div className="bg-gray-800/60 border border-gray-700 rounded-xl p-4">
-            <label className="flex items-start gap-4 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={crawlSubpages}
-                onChange={(e) =>
-                  setCrawlSubpages(
-                    e.target.checked
-                  )
-                }
-                className="mt-1 h-4 w-4 rounded border-gray-600 bg-gray-900 text-blue-500 focus:ring-blue-500"
-              />
+          {answer && (
+            <div className="mt-6 bg-gray-800 border border-gray-700 rounded-xl p-5">
+              <h3 className="font-semibold text-lg mb-3 text-blue-300">
+                Answer
+              </h3>
 
-              <div>
-                <div className="text-sm font-medium text-gray-200">
-                  Crawl linked pages
-                </div>
-
-                <p className="text-xs text-gray-400 mt-1 leading-relaxed">
-                  Disabled by default for
-                  cleaner semantic retrieval.
-                  Enable this for
-                  documentation websites,
-                  multi-page tutorials, or
-                  knowledge bases.
-                </p>
-              </div>
-            </label>
-          </div>
-        </form>
-
-        {/* ========================================= */}
-        {/* STATUS */}
-        {/* ========================================= */}
-
-        {status && (
-          <div
-            className={`p-4 rounded-lg mb-6 border ${
-              status.startsWith('Error')
-                ? 'bg-red-950/30 border-red-900/50 text-red-300'
-                : 'bg-emerald-950/30 border-emerald-900/50 text-emerald-300'
-            }`}
-          >
-            {status}
-          </div>
-        )}
-
-        {/* ========================================= */}
-        {/* DOCUMENTS */}
-        {/* ========================================= */}
-
-        {results && results.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-200">
-              Ingested Documents (
-              {results.length})
-            </h2>
-
-            <div className="space-y-4 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
-              {results.map((item, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-800/50 border border-gray-700/50 rounded-lg p-5 hover:bg-gray-800 transition-colors"
-                >
-                  <h3 className="font-medium text-blue-400 mb-1">
-                    {item.title}
-                  </h3>
-
-                  <a
-                    href={item.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-xs text-gray-500 hover:text-gray-300 transition-colors mb-3 block truncate"
-                  >
-                    {item.url}
-                  </a>
-
-                  <p className="text-sm text-gray-300 line-clamp-4 leading-relaxed whitespace-pre-wrap">
-                    {item.content.slice(
-                      0,
-                      500
-                    )}
-                    ...
-                  </p>
-
-                  {item.date && (
-                    <div className="mt-3 text-xs text-gray-500">
-                      Published:{' '}
-                      {new Date(
-                        item.date
-                      ).toLocaleDateString()}
-                    </div>
-                  )}
-                </div>
-              ))}
+              <p className="text-gray-300 whitespace-pre-wrap leading-relaxed">
+                {answer}
+              </p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* ========================================= */}
-        {/* CHUNKS */}
-        {/* ========================================= */}
+        {/* ====================================== */}
+        {/* RETRIEVED CHUNKS */}
+        {/* ====================================== */}
 
-        {chunks && chunks.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-2xl font-semibold mb-4 text-gray-200">
-              Generated Semantic Chunks (
-              {chunks.length})
+        {retrievedChunks.length >
+          0 && (
+          <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6">
+            <h2 className="text-2xl font-semibold mb-6">
+              Retrieved Chunks (
+              {
+                retrievedChunks.length
+              }
+              )
             </h2>
 
-            <div className="space-y-4 max-h-[700px] overflow-y-auto pr-2 custom-scrollbar">
-              {chunks.map((chunk, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-800 border border-gray-700 rounded-xl p-5"
-                >
-                  {/* HEADER */}
+            <div className="space-y-5">
+              {retrievedChunks.map(
+                (
+                  chunk,
+                  index
+                ) => {
+                  const usedByLLM =
+                    isChunkUsedByLLM(
+                      chunk
+                    );
 
-                  <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3">
-                      <span className="bg-blue-500/20 text-blue-300 text-xs px-3 py-1 rounded-full border border-blue-500/30">
-                        Chunk #
-                        {chunk.chunkIndex}
-                      </span>
+                  return (
+                    <div
+                      key={index}
+                      className={`border rounded-xl p-5 ${
+                        usedByLLM
+                          ? 'border-emerald-500 bg-emerald-950/10'
+                          : 'border-gray-700 bg-gray-800'
+                      }`}
+                    >
+                      {/* top row */}
 
-                      <span className="bg-emerald-500/20 text-emerald-300 text-xs px-3 py-1 rounded-full border border-emerald-500/30">
-                        {chunk.wordCount}{' '}
-                        words
-                      </span>
+                      <div className="flex flex-wrap items-center gap-3 mb-4">
+                        <span className="bg-blue-500/20 text-blue-300 text-xs px-3 py-1 rounded-full">
+                          Similarity{' '}
+                          {chunk.similarity?.toFixed(
+                            4
+                          )}
+                        </span>
+
+                        {usedByLLM && (
+                          <span className="bg-emerald-500/20 text-emerald-300 text-xs px-3 py-1 rounded-full">
+                            Used by GPT
+                          </span>
+                        )}
+
+                        <span className="bg-indigo-500/20 text-indigo-300 text-xs px-3 py-1 rounded-full">
+                          Chunk #
+                          {
+                            chunk.chunk_index
+                          }
+                        </span>
+                      </div>
+
+                      {/* title */}
+
+                      <h3 className="text-lg font-semibold text-blue-300">
+                        {
+                          chunk.source_title
+                        }
+                      </h3>
+
+                      {/* heading */}
+
+                      <div className="text-sm text-indigo-300 mt-1 mb-4">
+                        {
+                          chunk.heading
+                        }
+                      </div>
+
+                      {/* content */}
+
+                      <div className="bg-gray-900 border border-gray-700 rounded-lg p-4">
+                        <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
+                          {chunk.content}
+                        </p>
+                      </div>
                     </div>
-
-                    <span className="text-xs text-gray-500 truncate">
-                      {chunk.sourceTitle}
-                    </span>
-                  </div>
-
-                  {/* HEADING */}
-
-                  {chunk.heading && (
-                    <div className="mb-3">
-                      <span className="text-sm font-medium text-indigo-300">
-                        {chunk.heading}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* CHUNK TEXT */}
-
-                  <div className="bg-gray-900/60 border border-gray-700 rounded-lg p-4">
-                    <p className="text-sm text-gray-300 whitespace-pre-wrap leading-relaxed">
-                      {chunk.text.slice(
-                        0,
-                        1000
-                      )}
-                      ...
-                    </p>
-                  </div>
-
-                  {/* FOOTER */}
-
-                  <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
-                    <span>
-                      {chunk.sourceType}
-                    </span>
-
-                    <span className="truncate max-w-[300px]">
-                      {chunk.sourceUrl}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  );
+                }
+              )}
             </div>
           </div>
         )}

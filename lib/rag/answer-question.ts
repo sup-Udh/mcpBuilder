@@ -13,6 +13,16 @@ const client = new OpenAI({
 });
 
 // ==========================================
+// CONFIG
+// ==========================================
+
+// retrieve many chunks
+const RETRIEVAL_COUNT = 20;
+
+// only best chunks go to LLM
+const LLM_CONTEXT_COUNT = 5;
+
+// ==========================================
 // ANSWER QUESTION
 // ==========================================
 
@@ -36,38 +46,82 @@ export async function answerQuestion(
   );
 
   // ======================================
-  // RETRIEVE CONTEXT
+  // RETRIEVE MANY CHUNKS
   // ======================================
 
-  const results =
+  const retrievedChunks =
     await semanticSearch(
       question,
-      5
+      RETRIEVAL_COUNT
     );
+
+  console.log(
+    `Retrieved ${retrievedChunks.length} chunks`
+  );
+
+  // ======================================
+  // SELECT BEST CHUNKS FOR LLM
+  // ======================================
+
+  const llmChunks =
+    retrievedChunks.slice(
+      0,
+      LLM_CONTEXT_COUNT
+    );
+
+  console.log(
+    `Selected ${llmChunks.length} chunks for LLM context`
+  );
 
   // ======================================
   // BUILD CONTEXT
   // ======================================
 
-  const context = results
-    .map(
-      (
-        item: any,
-        index: number
-      ) => {
-        return `
+  const context =
+    llmChunks
+      .map(
+        (
+          item: any,
+          index: number
+        ) => {
+          return `
 [DOCUMENT ${index + 1}]
 
-Title: ${item.source_title}
+Title:
+${item.source_title}
 
-Heading: ${item.heading}
+Heading:
+${item.heading}
+
+Similarity:
+${item.similarity}
 
 Content:
 ${item.content}
 `;
-      }
-    )
-    .join('\n\n');
+        }
+      )
+      .join('\n\n');
+
+  console.log(
+    '\n===================================='
+  );
+
+  console.log(
+    'LLM CONTEXT'
+  );
+
+  console.log(
+    '===================================='
+  );
+
+  console.log(
+    `Context length: ${context.length} chars`
+  );
+
+  // ======================================
+  // GENERATE ANSWER
+  // ======================================
 
   console.log(
     '\n===================================='
@@ -80,10 +134,6 @@ ${item.content}
   console.log(
     '===================================='
   );
-
-  // ======================================
-  // GENERATE ANSWER
-  // ======================================
 
   const response =
     await client.chat.completions.create({
@@ -98,15 +148,17 @@ ${item.content}
           role: 'system',
 
           content: `
-You are a retrieval-augmented assistant..
+You are a retrieval-augmented assistant.
 
 Answer the user's question ONLY using the provided context.
 
 Rules:
 - Do NOT use outside knowledge.
-- If the answer is not in the context, say:
-  "I could not find the answer in the provided documents."
-- Be concise but accurate.
+- Use the retrieved documents only.
+- If the answer is unclear from the documents, say so.
+- Prefer precise technical explanations.
+- Synthesize across multiple documents if needed.
+- Keep answers concise but informative.
 `,
         },
 
@@ -128,7 +180,8 @@ ${question}
 
   const answer =
     response.choices[0]
-      ?.message?.content;
+      ?.message?.content ||
+    'No answer generated.';
 
   console.log(
     '\n===================================='
@@ -142,9 +195,17 @@ ${question}
     '===================================='
   );
 
+  // ======================================
+  // RETURN EVERYTHING
+  // ======================================
+
   return {
     answer,
 
-    retrievedChunks: results,
+    // ALL retrieved chunks
+    retrievedChunks,
+
+    // ONLY chunks sent to GPT
+    llmChunks,
   };
 }

@@ -28,6 +28,10 @@ export async function POST(
     const { question } =
       await req.json();
 
+    // ======================================
+    // VALIDATION
+    // ======================================
+
     if (!question) {
       return NextResponse.json(
         {
@@ -41,10 +45,42 @@ export async function POST(
       );
     }
 
+    console.log(
+      `Incoming question: ${question}`
+    );
+
+    // ======================================
+    // RUN RAG PIPELINE
+    // ======================================
+
     const result =
       await answerQuestion(
         question
       );
+
+    console.log(
+      '\n===================================='
+    );
+
+    console.log(
+      'CHAT RESPONSE READY'
+    );
+
+    console.log(
+      '===================================='
+    );
+
+    console.log(
+      `Retrieved chunks: ${result.retrievedChunks.length}`
+    );
+
+    console.log(
+      `LLM chunks: ${result.llmChunks.length}`
+    );
+
+    // ======================================
+    // RETURN RESPONSE
+    // ======================================
 
     return NextResponse.json({
       success: true,
@@ -52,10 +88,37 @@ export async function POST(
       answer:
         result.answer,
 
+      // ALL retrieved chunks
       retrievedChunks:
         result.retrievedChunks,
+
+      // ONLY chunks sent to GPT
+      llmChunks:
+        result.llmChunks,
+
+      retrievalMetadata: {
+        totalRetrieved:
+          result.retrievedChunks
+            .length,
+
+        llmContextChunks:
+          result.llmChunks
+            .length,
+      },
     });
   } catch (error: any) {
+    console.error(
+      '\n===================================='
+    );
+
+    console.error(
+      'CHAT PIPELINE FAILED'
+    );
+
+    console.error(
+      '===================================='
+    );
+
     console.error(error);
 
     return NextResponse.json(
