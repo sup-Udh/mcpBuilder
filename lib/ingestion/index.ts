@@ -33,15 +33,12 @@ import { EmbeddingChunk } from '../embeddings/types';
 import { storeEmbeddedChunks } from '../vector/supabase';
 
 // ==========================================
-// VECTOR SEARCH TESTING
-// ==========================================
-
-
-// ==========================================
 // TYPES
 // ==========================================
 
 export interface ProcessedResult {
+  serverId: string;
+
   documents: IngestedItem[];
 
   chunks: Chunk[];
@@ -54,7 +51,10 @@ export interface ProcessedResult {
 // ==========================================
 
 export async function processUrl(
+  serverId: string,
+
   url: string,
+
   crawlSubpages = false
 ): Promise<ProcessedResult> {
   console.log('\n====================================');
@@ -66,6 +66,8 @@ export async function processUrl(
   console.log(
     '===================================='
   );
+
+  console.log(`Server ID: ${serverId}`);
 
   console.log(`Target URL: ${url}`);
 
@@ -111,10 +113,11 @@ export async function processUrl(
         e
       );
 
-      documents = await scrapeWebpage(
-        url,
-        crawlSubpages
-      );
+      documents =
+        await scrapeWebpage(
+          url,
+          crawlSubpages
+        );
 
       console.log(
         `Web scraping successful (${documents.length} documents)`
@@ -168,7 +171,8 @@ export async function processUrl(
           'Detected RSS content-type'
         );
 
-        documents = await ingestRss(url);
+        documents =
+          await ingestRss(url);
 
         console.log(
           `RSS ingestion successful (${documents.length} documents)`
@@ -189,16 +193,29 @@ export async function processUrl(
         'Starting webpage scraping...'
       );
 
-      documents = await scrapeWebpage(
-        url,
-        crawlSubpages
-      );
+      documents =
+        await scrapeWebpage(
+          url,
+          crawlSubpages
+        );
 
       console.log(
         `Web scraping successful (${documents.length} documents)`
       );
     }
   }
+
+  // ==========================================
+  // ATTACH SERVER IDS
+  // ==========================================
+
+  documents = documents.map(
+    (doc) => ({
+      ...doc,
+
+      serverId,
+    })
+  );
 
   // ==========================================
   // DOCUMENT ANALYSIS
@@ -220,14 +237,11 @@ export async function processUrl(
     console.log(`URL: ${doc.url}`);
 
     console.log(
-      `Content Length: ${doc.content.length} chars`
+      `Server ID: ${doc.serverId}`
     );
 
     console.log(
-      `Preview:\n${doc.content.slice(
-        0,
-        250
-      )}...`
+      `Content Length: ${doc.content.length} chars`
     );
   });
 
@@ -243,48 +257,8 @@ export async function processUrl(
     '===================================='
   );
 
-  const chunks = chunkDocuments(
-    documents
-  );
-
-  // ==========================================
-  // CHUNK ANALYSIS
-  // ==========================================
-
-  console.log('\n====================================');
-
-  console.log('CHUNK ANALYSIS');
-
-  console.log(
-    '===================================='
-  );
-
-  console.log(
-    `Total chunks created: ${chunks.length}`
-  );
-
-  chunks.forEach((chunk, index) => {
-    console.log(`\nChunk ${index + 1}`);
-
-    console.log(
-      `Chunk ID: ${chunk.id}`
-    );
-
-    console.log(
-      `Heading: ${chunk.heading}`
-    );
-
-    console.log(
-      `Word Count: ${chunk.wordCount}`
-    );
-
-    console.log(
-      `Preview:\n${chunk.text.slice(
-        0,
-        250
-      )}...`
-    );
-  });
+  const chunks =
+    chunkDocuments(documents);
 
   // ==========================================
   // EMBEDDINGS
@@ -330,21 +304,6 @@ export async function processUrl(
   );
 
   // ==========================================
-  // TEST SEARCH
-  // ==========================================
-
-  console.log('\n====================================');
-
-  console.log(
-    'RUNNING TEST SEMANTIC SEARCH'
-  );
-
-  console.log(
-    '===================================='
-  );
-
-
-  // ==========================================
   // PIPELINE COMPLETE
   // ==========================================
 
@@ -359,6 +318,8 @@ export async function processUrl(
   );
 
   return {
+    serverId,
+
     documents,
 
     chunks,

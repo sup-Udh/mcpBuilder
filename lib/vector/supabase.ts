@@ -76,6 +76,9 @@ export async function storeEmbeddedChunks(
     (chunk) => ({
       chunk_id: chunk.id,
 
+      server_id:
+        chunk.serverId,
+
       source_url:
         chunk.sourceUrl,
 
@@ -159,6 +162,9 @@ export async function storeEmbeddedChunks(
 
 export async function searchSimilarChunks(
   queryEmbedding: number[],
+
+  serverId: string,
+
   topK = 20
 ) {
   console.log(
@@ -174,6 +180,10 @@ export async function searchSimilarChunks(
   );
 
   console.log(
+    `Server ID: ${serverId}`
+  );
+
+  console.log(
     `Requested retrieval count: ${topK}`
   );
 
@@ -181,14 +191,8 @@ export async function searchSimilarChunks(
   // FETCH LARGE CANDIDATE POOL
   // ======================================
 
-  // fetch more than needed
-  // dedupe may remove many
   const fetchCount =
     Math.max(topK * 3, 30);
-
-  console.log(
-    `Fetching ${fetchCount} raw matches from database`
-  );
 
   const { data, error } =
     await supabase.rpc(
@@ -196,6 +200,9 @@ export async function searchSimilarChunks(
       {
         query_embedding:
           queryEmbedding,
+
+        target_server_id:
+          serverId,
 
         match_count:
           fetchCount,
@@ -213,14 +220,8 @@ export async function searchSimilarChunks(
     );
   }
 
-  console.log(
-    `Raw matches returned: ${
-      data?.length || 0
-    }`
-  );
-
   // ======================================
-  // DEDUPE RESULTS
+  // DEDUPE
   // ======================================
 
   const deduped: any[] = [];
@@ -232,10 +233,6 @@ export async function searchSimilarChunks(
     new Set<string>();
 
   for (const item of data || []) {
-    // ====================================
-    // CHUNK ID DEDUPE
-    // ====================================
-
     if (
       item.chunk_id &&
       seenChunkIds.has(
@@ -244,10 +241,6 @@ export async function searchSimilarChunks(
     ) {
       continue;
     }
-
-    // ====================================
-    // CONTENT FINGERPRINT DEDUPE
-    // ====================================
 
     const fingerprint =
       item.content
@@ -263,10 +256,6 @@ export async function searchSimilarChunks(
       continue;
     }
 
-    // ====================================
-    // STORE
-    // ====================================
-
     if (item.chunk_id) {
       seenChunkIds.add(
         item.chunk_id
@@ -279,10 +268,6 @@ export async function searchSimilarChunks(
 
     deduped.push(item);
 
-    // ====================================
-    // STOP AT TARGET
-    // ====================================
-
     if (
       deduped.length >= topK
     ) {
@@ -291,81 +276,7 @@ export async function searchSimilarChunks(
   }
 
   console.log(
-    `Unique chunks after dedupe: ${deduped.length}`
-  );
-
-  // ======================================
-  // DEBUG OUTPUT
-  // ======================================
-
-  if (deduped.length) {
-    console.log(
-      '\n===================================='
-    );
-
-    console.log(
-      'FINAL RETRIEVED CHUNKS'
-    );
-
-    console.log(
-      '===================================='
-    );
-
-    deduped.forEach(
-      (
-        item: any,
-        index: number
-      ) => {
-        console.log(
-          `\n#${index + 1}`
-        );
-
-        console.log(
-          `Similarity: ${item.similarity.toFixed(
-            4
-          )}`
-        );
-
-        console.log(
-          `Title: ${item.source_title}`
-        );
-
-        console.log(
-          `Heading: ${item.heading}`
-        );
-
-        console.log(
-          `Chunk ID: ${item.chunk_id}`
-        );
-
-        console.log(
-          `Chunk Index: ${item.chunk_index}`
-        );
-
-        console.log(
-          `Word Count: ${item.word_count}`
-        );
-
-        console.log(
-          `Preview:\n${item.content.slice(
-            0,
-            300
-          )}...\n`
-        );
-      }
-    );
-  }
-
-  console.log(
-    '\n===================================='
-  );
-
-  console.log(
-    'VECTOR SEARCH COMPLETE'
-  );
-
-  console.log(
-    '===================================='
+    `Retrieved ${deduped.length} chunks`
   );
 
   return deduped;

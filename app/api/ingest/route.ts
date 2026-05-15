@@ -1,14 +1,29 @@
 // app/api/ingest/route.ts
 
-import { NextRequest, NextResponse } from 'next/server';
+import {
+  NextRequest,
+  NextResponse,
+} from 'next/server';
+
+import { v4 as uuidv4 } from 'uuid';
 
 import { processUrl } from '@/lib/ingestion';
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest
+) {
   try {
-    console.log('\n====================================');
-    console.log('API INGEST REQUEST RECEIVED');
-    console.log('====================================');
+    console.log(
+      '\n===================================='
+    );
+
+    console.log(
+      'API INGEST REQUEST RECEIVED'
+    );
+
+    console.log(
+      '===================================='
+    );
 
     // ======================================
     // PARSE BODY
@@ -19,11 +34,15 @@ export async function POST(req: NextRequest) {
       crawlSubpages,
     } = await req.json();
 
-    console.log(`Incoming URL: ${url}`);
+    console.log(
+      `Incoming URL: ${url}`
+    );
 
     console.log(
       `Crawl Subpages: ${
-        crawlSubpages ? 'YES' : 'NO'
+        crawlSubpages
+          ? 'YES'
+          : 'NO'
       }`
     );
 
@@ -32,11 +51,10 @@ export async function POST(req: NextRequest) {
     // ======================================
 
     if (!url) {
-      console.log('No URL provided');
-
       return NextResponse.json(
         {
-          error: 'URL is required',
+          error:
+            'URL is required',
         },
         {
           status: 400,
@@ -45,17 +63,42 @@ export async function POST(req: NextRequest) {
     }
 
     // ======================================
+    // GENERATE SERVER ID
+    // ======================================
+
+    const serverId =
+      uuidv4();
+
+    console.log(
+      `Generated Server ID: ${serverId}`
+    );
+
+    // ======================================
     // RUN INGESTION PIPELINE
     // ======================================
 
-    const result = await processUrl(
-      url,
-      crawlSubpages
+    const result =
+      await processUrl(
+        serverId,
+        url,
+        crawlSubpages
+      );
+
+    console.log(
+      '\n===================================='
     );
 
-    console.log('\n====================================');
-    console.log('INGESTION FINISHED');
-    console.log('====================================');
+    console.log(
+      'INGESTION FINISHED'
+    );
+
+    console.log(
+      '===================================='
+    );
+
+    console.log(
+      `Server ID: ${serverId}`
+    );
 
     console.log(
       `Documents processed: ${result.documents.length}`
@@ -76,18 +119,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
 
+      serverId,
+
       message: `Successfully processed ${result.documents.length} documents into ${result.chunks.length} chunks`,
 
       crawlSubpages,
 
-      documents: result.documents,
+      documents:
+        result.documents,
 
       chunks: result.chunks,
-
-      embeddedChunks: result.embeddedChunks,
     });
   } catch (error: any) {
-    console.error('\n====================================');
+    console.error(
+      '\n===================================='
+    );
 
     console.error(
       'INGESTION PIPELINE FAILED'
