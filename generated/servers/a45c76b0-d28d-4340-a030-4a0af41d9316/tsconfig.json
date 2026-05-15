@@ -20,7 +20,7 @@
 
     "types": ["node"],
 
-    "outDir": "dist"
+    "outDir": "dist" // 
   },
 
   "include": ["./**/*.ts"],
