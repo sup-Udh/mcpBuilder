@@ -76,7 +76,7 @@ server.tool(
       // ======================================
 
       const response = await fetch(
-        `${RAG_API_URL}/api/rag/search`,
+        `${RAG_API_URL}/api/retrieve`,
         {
           method: 'POST',
 
