@@ -9,6 +9,8 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { processUrl } from '@/lib/ingestion';
 
+import { generateServer } from '@/lib/mcp/generate-server';
+
 export async function POST(
   req: NextRequest
 ) {
@@ -84,6 +86,54 @@ export async function POST(
         crawlSubpages
       );
 
+    // ======================================
+    // MCP SERVER NAME
+    // ======================================
+
+    const serverName =
+      result.documents?.[0]
+        ?.title ||
+      'Knowledge Server';
+
+    // ======================================
+    // TOOL DESCRIPTION
+    // ======================================
+
+    const toolDescription = `Search knowledge from ${serverName}`;
+
+    // ======================================
+    // GENERATE MCP SERVER
+    // ======================================
+
+    console.log(
+      '\n===================================='
+    );
+
+    console.log(
+      'GENERATING MCP SERVER'
+    );
+
+    console.log(
+      '===================================='
+    );
+
+    const generatedServer =
+      await generateServer({
+        serverId,
+
+        serverName,
+
+        toolDescription,
+      });
+
+    console.log(
+      `Generated MCP Server at: ${generatedServer.serverPath}`
+    );
+
+    // ======================================
+    // COMPLETE
+    // ======================================
+
     console.log(
       '\n===================================='
     );
@@ -113,7 +163,7 @@ export async function POST(
     );
 
     // ======================================
-    // RETURN RESPONSE
+    // RESPONSE
     // ======================================
 
     return NextResponse.json({
@@ -121,7 +171,10 @@ export async function POST(
 
       serverId,
 
-      message: `Successfully processed ${result.documents.length} documents into ${result.chunks.length} chunks`,
+      serverPath:
+        generatedServer.serverPath,
+
+      message: `Successfully processed ${result.documents.length} documents into ${result.chunks.length} chunks and generated MCP server.`,
 
       crawlSubpages,
 
