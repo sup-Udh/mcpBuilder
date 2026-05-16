@@ -23,18 +23,11 @@ export default function Navbar() {
               Docs
             </a>
 
-            <a className="text-white/60 hover:text-white transition-colors" href="#">
-              Pricing
-            </a>
-
-            <a className="text-white/60 hover:text-white transition-colors" href="#">
-              GitHub
-            </a>
           </div>
         </div>
 
         {/* RIGHT */}
-        <button className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-black transition hover:scale-105">
+        <button className="rounded-lg bg-blue-500 px-5 py-2 font-semibold text-black transition hover:scale-105 text-white/95">
           Get Started
         </button>
       </div>

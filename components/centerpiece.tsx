@@ -1,9 +1,11 @@
 "use client"
 
 import { motion } from "framer-motion"
+import GlassCard from "./ui/glass-card"
 
 export default function Centerpiece() {
   return (
+    <GlassCard>
     <section className="mx-auto mb-40 max-w-7xl px-6">
 
       <div className="relative flex h-[650px] items-center justify-center overflow-hidden rounded-[32px] border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent">
@@ -94,5 +96,6 @@ export default function Centerpiece() {
         </motion.div>
       </div>
     </section>
+    </GlassCard>
   )
 }

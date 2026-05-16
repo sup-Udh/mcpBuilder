@@ -1,3 +1,5 @@
+import GlowButton from "./ui/glow-button"
+
 export default function Hero() {
   return (
     <section className="relative mx-auto max-w-7xl px-6 py-32 text-center">
@@ -24,12 +26,15 @@ export default function Hero() {
         servers for Claude and Cursor in minutes.
       </p>
 
+
       {/* Buttons */}
       <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
+      <GlowButton>
 
         <button className="rounded-lg bg-blue-500 px-8 py-4 font-semibold text-black transition hover:scale-105">
           Generate MCP Server
         </button>
+            </GlowButton>
 
         <button className="rounded-lg border border-white/10 px-8 py-4 text-white transition hover:bg-white/5">
           View Demo
