@@ -1,6 +1,7 @@
 import GlowButton from "./ui/glow-button"
-
+import GlassCard from "./ui/glass-card"
 export default function Hero() {
+
   return (
     <section className="relative mx-auto max-w-7xl px-6 py-32 text-center">
 
