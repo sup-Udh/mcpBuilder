@@ -1,6 +1,7 @@
 // lib/processing/chunker.ts
 
 import { IngestedItem } from '../ingestion/types';
+
 import { Chunk } from './types';
 
 // ==========================================
@@ -19,7 +20,9 @@ const MAX_BLOCK_WORDS = 300;
 // WORD COUNT
 // ==========================================
 
-function countWords(text: string): number {
+function countWords(
+  text: string
+): number {
   return text
     .trim()
     .split(/\s+/)
@@ -96,7 +99,8 @@ function splitIntoBlocks(
     )
 
     .filter(
-      (block) => block.length > 0
+      (block) =>
+        block.length > 0
     )
 
     // remove tiny garbage blocks
@@ -292,6 +296,16 @@ export function chunkDocument(
     `\nChunking document: ${document.title}`
   );
 
+  // ======================================
+  // VALIDATE SERVER ID
+  // ======================================
+
+  if (!document.serverId) {
+    throw new Error(
+      `Missing serverId on document: ${document.title}`
+    );
+  }
+
   const blocks =
     splitIntoBlocks(
       document.content
@@ -338,8 +352,11 @@ export function chunkDocument(
       finalWordCount >=
       MIN_WORDS
     ) {
-      chunks.push({
-        id: `${document.url}::chunk-${chunkIndex}`,
+      const chunk: Chunk = {
+        id: `${document.serverId}::${document.url}::chunk-${chunkIndex}`,
+
+        serverId:
+          document.serverId,
 
         text: chunkText,
 
@@ -365,10 +382,16 @@ export function chunkDocument(
         metadata:
           document.metadata ||
           {},
-      });
+      };
+
+      chunks.push(chunk);
 
       console.log(
         `Created chunk ${chunkIndex} (${finalWordCount} words)`
+      );
+
+      console.log(
+        `Chunk Server ID: ${chunk.serverId}`
       );
 
       chunkIndex++;

@@ -1,4 +1,4 @@
-// templates/base-server/src/index.ts
+// templates/base-server/index.ts
 
 import 'dotenv/config';
 
@@ -66,9 +66,13 @@ server.tool(
   },
 
   async ({ query }) => {
+    console.log(
+      `\n[MCP] Incoming query: ${query}`
+    );
+
     try {
       // ======================================
-      // CALL RETRIEVAL API
+      // CALL RAG API
       // ======================================
 
       const response = await fetch(
@@ -90,17 +94,9 @@ server.tool(
       );
 
       if (!response.ok) {
-        return {
-          content: [
-            {
-              type: 'text',
-
-              text: `Retrieval API failed with status ${response.status}`,
-            },
-          ],
-
-          isError: true,
-        };
+        throw new Error(
+          `RAG API returned ${response.status}`
+        );
       }
 
       const data =
@@ -109,24 +105,12 @@ server.tool(
       const chunks =
         data.chunks || [];
 
-      // ======================================
-      // NO RESULTS
-      // ======================================
-
-      if (chunks.length === 0) {
-        return {
-          content: [
-            {
-              type: 'text',
-
-              text: 'No relevant information found.',
-            },
-          ],
-        };
-      }
+      console.log(
+        `[MCP] Retrieved ${chunks.length} chunks`
+      );
 
       // ======================================
-      // FORMAT CHUNKS
+      // FORMAT CONTEXT
       // ======================================
 
       const formatted =
@@ -153,7 +137,7 @@ ${chunk.content}
           .join('\n\n');
 
       // ======================================
-      // RETURN TO CLIENT
+      // RETURN TO CLAUDE
       // ======================================
 
       return {
@@ -161,11 +145,18 @@ ${chunk.content}
           {
             type: 'text',
 
-            text: formatted,
+            text:
+              formatted ||
+              'No relevant information found.',
           },
         ],
       };
     } catch (error: any) {
+      console.error(
+        '[MCP] Search failed',
+        error
+      );
+
       return {
         content: [
           {
@@ -186,14 +177,36 @@ ${chunk.content}
 // ==========================================
 
 async function main() {
+  console.log(
+    '\n===================================='
+  );
+
+  console.log(
+    'STARTING MCP SERVER'
+  );
+
+  console.log(
+    '===================================='
+  );
+
+  console.log(
+    `Server Name: ${SERVER_NAME}`
+  );
+
+  console.log(
+    `Server ID: ${SERVER_ID}`
+  );
+
   const transport =
     new StdioServerTransport();
 
   await server.connect(
     transport
   );
+
+  console.log(
+    'MCP server connected'
+  );
 }
 
-main().catch(() => {
-  process.exit(1);
-});
+main().catch(console.error);
