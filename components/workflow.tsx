@@ -17,17 +17,11 @@ const steps = [
       "AI creates the necessary MCP tool handlers for you.",
     icon: "⚙️",
   },
-  {
-    title: "Connect Claude",
-    description:
-      "Instantly use your new knowledge tools in Claude or Cursor.",
-    icon: "🤖",
-  },
 ]
 
 export default function Workflow() {
   return (
-    <section className="mx-auto mb-40 max-w-7xl px-6 pt-6">
+    <section className="mx-auto mb-40 max-w-7xl px-6 pt-6 ">
 
       {/* HEADING */}
       <div className="mb-20 text-center">
@@ -39,7 +33,7 @@ export default function Workflow() {
       </div>
 
       {/* STEPS */}
-      <div className="grid gap-12 md:grid-cols-4">
+      <div className="grid gap-12 md:grid-cols-3">
 
         {steps.map((step, index) => (
           <div
