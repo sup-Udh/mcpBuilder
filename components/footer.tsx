@@ -15,20 +15,7 @@ export default function Footer() {
         </div>
 
         {/* CENTER */}
-        <div className="flex gap-8 text-white/60">
-          <a href="#" className="hover:text-white">
-            Docs
-          </a>
-
-          <a href="#" className="hover:text-white">
-            GitHub
-          </a>
-
-          <a href="#" className="hover:text-white">
-            Pricing
-          </a>
-        </div>
-
+       
         {/* RIGHT */}
         <p className="text-sm text-white/40">
           © 2026 MCP Builder. Infrastructure for the AI generation.
