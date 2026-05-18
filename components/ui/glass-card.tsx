@@ -12,7 +12,7 @@ export default function GlassCard({
   return (
     <div
       className={cn(
-        "rounded-3xl border border-white/10",
+        "rounded-3xl h-full w-full pt-8 pb-8",
         "bg-white/[0.03]",
         "backdrop-blur-xl",
         "shadow-[0_8px_40px_rgba(0,0,0,0.25)]",

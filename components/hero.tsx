@@ -3,6 +3,7 @@ import GlassCard from "./ui/glass-card"
 export default function Hero() {
 
   return (
+    <>
     <section className="relative mx-auto max-w-7xl px-6 py-32 text-center">
 
       {/* Badge */}
@@ -10,7 +11,7 @@ export default function Hero() {
         <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
 
         <span className="text-sm uppercase tracking-wide text-white/70">
-          Claude Desktop Support
+          New: MCP Builder is live! Create your own MCP servers in minutes.
         </span>
       </div>
 
@@ -42,5 +43,6 @@ export default function Hero() {
         </button>
       </div>
     </section>
+    </>
   )
 }
