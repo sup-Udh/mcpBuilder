@@ -1,14 +1,12 @@
 import GlowButton from "./ui/glow-button"
-import GlassCard from "./ui/glass-card"
-export default function Hero() {
 
+export default function Hero() {
   return (
-    <>
     <section className="relative mx-auto max-w-7xl px-6 py-32 text-center">
 
       {/* Badge */}
       <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2">
-        <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
+        <div className="h-2 w-2 animate-pulse rounded-full bg-blue-400" />
 
         <span className="text-sm uppercase tracking-wide text-white/70">
           New: MCP Builder is live! Create your own MCP servers in minutes.
@@ -28,21 +26,18 @@ export default function Hero() {
         servers for Claude and Cursor in minutes.
       </p>
 
-
       {/* Buttons */}
       <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
-      <GlowButton>
 
-        <button className="rounded-lg bg-blue-500 px-8 py-4 font-semibold text-black transition hover:scale-105">
+        <GlowButton>
           Generate MCP Server
-        </button>
-            </GlowButton>
+        </GlowButton>
 
         <button className="rounded-lg border border-white/10 px-8 py-4 text-white transition hover:bg-white/5">
           View Demo
         </button>
+
       </div>
     </section>
-    </>
   )
 }

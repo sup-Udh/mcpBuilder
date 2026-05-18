@@ -27,7 +27,7 @@ const steps = [
 
 export default function Workflow() {
   return (
-    <section className="mx-auto mb-40 max-w-7xl px-6">
+    <section className="mx-auto mb-40 max-w-7xl px-6 pt-6">
 
       {/* HEADING */}
       <div className="mb-20 text-center">
