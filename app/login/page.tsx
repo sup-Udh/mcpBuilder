@@ -4,48 +4,50 @@ import Link from "next/link"
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#020617] text-white md:flex">
+    <main className="min-h-screen overflow-hidden bg-[#131314] text-[#E5E2E3] md:flex">
 
       {/* LEFT SIDE */}
-      <section className="relative hidden w-1/2 overflow-hidden border-r border-white/5 bg-[#020617] p-8 md:flex md:flex-col">
+      <section className="relative hidden w-[42%] overflow-hidden border-r border-white/[0.06] bg-[#131314] p-8 lg:flex lg:flex-col">
 
         {/* GRID */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px] animate-grid opacity-40" />
 
-        {/* GLOWS */}
-        <div className="absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-blue-600/10 blur-[120px]" />
+        {/* GLOW BACKGROUNDS */}
+        <div className="animate-pulse-soft absolute left-[-15%] top-[-10%] h-[450px] w-[450px] rounded-full bg-blue-500/10 blur-[120px]" />
 
-        <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-violet-600/10 blur-[120px]" />
+        <div className="animate-pulse-soft absolute bottom-[-15%] right-[-15%] h-[450px] w-[450px] rounded-full bg-violet-500/10 blur-[120px]" />
 
-        {/* TOP */}
-        <div className="relative z-20 mb-12 flex items-center justify-between">
+        {/* HEADER */}
+        <div className="relative z-20 mb-10 flex items-center justify-between">
 
           <div className="flex items-center gap-3">
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600 shadow-[0_0_40px_rgba(59,130,246,0.4)]">
-              <span className="text-xl font-bold">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#3B82F6] shadow-[0_0_30px_rgba(59,130,246,0.35)]">
+              <span className="text-lg font-bold text-white">
                 M
               </span>
             </div>
 
             <div>
-              <h3 className="text-xl font-semibold">
-                MCP Builder
+
+              <h3 className="text-[20px] font-semibold tracking-tight">
+                Control Plane
               </h3>
 
-              <p className="font-mono text-[10px] uppercase tracking-widest text-blue-400">
-                SYSTEM OPERATIONAL
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ADC6FF]">
+                SYSTEM OPERATIONAL V2.4.0
               </p>
+
             </div>
 
           </div>
 
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1">
 
-            <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
+            <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-green-500" />
 
-            <span className="font-mono text-[10px] uppercase text-white/60">
-              ONLINE
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#C2C6D6]">
+              NODE_01 ONLINE
             </span>
 
           </div>
@@ -56,47 +58,68 @@ export default function LoginPage() {
         <div className="relative z-10 grid flex-1 grid-cols-12 grid-rows-12 gap-4">
 
           {/* TERMINAL */}
-          <div className="col-span-8 row-span-5 overflow-hidden rounded-2xl border border-white/10 bg-black/40 backdrop-blur-xl">
+          <div className="col-span-8 row-span-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-2xl backdrop-blur-xl">
 
-            <div className="flex items-center justify-between border-b border-white/5 bg-black/30 px-4 py-2">
+            {/* TOP BAR */}
+            <div className="flex items-center justify-between border-b border-white/[0.04] bg-black/20 px-4 py-2">
 
-              <div className="flex gap-2">
-                <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                <div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
-                <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
+              <div className="flex gap-1.5">
+
+                <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
+
+                <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
+
+                <div className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
+
               </div>
 
-              <span className="font-mono text-xs text-white/40">
-                deployment.log
+              <span className="font-mono text-[11px] text-[#8C909F]">
+                bash — mcp-init.sh
               </span>
 
             </div>
 
-            <div className="space-y-2 p-4 font-mono text-sm">
+            {/* TERMINAL BODY */}
+            <div className="h-full overflow-hidden p-4 font-mono text-[13px]">
 
-              <p className="text-blue-400">
-                $ npm install @mcp/sdk
-              </p>
+              <div className="space-y-1">
 
-              <p className="text-white/40">
-                installing dependencies...
-              </p>
+                <p className="text-[#60A5FA]">
+                  $ npm install @model-context-protocol/sdk
+                </p>
 
-              <p className="text-blue-400">
-                $ mcp deploy production
-              </p>
+                <p className="opacity-60">
+                  added 42 packages and audited 43 packages in 2s
+                </p>
 
-              <p className="animate-pulse text-green-400">
-                Connecting to Claude Desktop...
-              </p>
+                <p className="mt-3 text-[#60A5FA]">
+                  $ mcp-cli provision --provider claude-3-5
+                </p>
 
-              <div className="mt-4 space-y-1 text-white/30">
+                <div className="mt-1 flex items-center gap-1 text-white">
 
-                <p>&gt; Provisioning vector database...</p>
-                <p>&gt; Indexing semantic nodes...</p>
-                <p>&gt; Building infrastructure...</p>
-                <p>&gt; Creating deployment endpoint...</p>
-                <p>&gt; Deploying globally...</p>
+                  <span>
+                    Provisioning cloud infrastructure...
+                  </span>
+
+                  <span className="animate-blink">
+                    |
+                  </span>
+
+                </div>
+
+                <div className="animate-terminal-scroll mt-5 space-y-1 opacity-40">
+
+                  <p>&gt; Fetching configuration from remote...</p>
+                  <p>&gt; Establishing encrypted tunnel...</p>
+                  <p>&gt; Allocating vector shards...</p>
+                  <p>&gt; Hot reloading AI environment...</p>
+                  <p>&gt; Connecting to Claude Sonnet...</p>
+                  <p>&gt; Initializing semantic index...</p>
+                  <p>&gt; Indexing data sources...</p>
+                  <p>&gt; Setting up WebSocket listeners...</p>
+
+                </div>
 
               </div>
 
@@ -105,56 +128,98 @@ export default function LoginPage() {
           </div>
 
           {/* PIPELINE */}
-          <div className="col-span-4 row-span-7 rounded-2xl border border-white/10 bg-black/40 p-4 backdrop-blur-xl">
+          <div className="relative col-span-4 row-span-7 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-2xl backdrop-blur-xl">
 
-            <div className="mb-6 font-mono text-[10px] uppercase tracking-widest text-white/50">
+            <div className="absolute left-4 top-4 font-mono text-[10px] uppercase tracking-widest text-[#C2C6D6]">
               Pipeline Flow
             </div>
 
             <div className="flex h-full flex-col items-center justify-center gap-8">
 
-              {/* NODE */}
-              <div className="w-full rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              {/* SOURCE */}
+              <div className="relative z-10 flex h-14 w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3">
 
-                <p className="mb-1 font-mono text-[10px] uppercase text-white/40">
-                  SOURCE
-                </p>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04]">
 
-                <h3 className="font-semibold">
-                  Vector Database
-                </h3>
+                  <div className="h-3 w-3 rounded-full bg-[#60A5FA]" />
 
-              </div>
+                </div>
 
-              {/* LINE */}
-              <div className="h-16 w-[2px] bg-gradient-to-b from-blue-500 to-violet-500" />
+                <div>
 
-              {/* NODE */}
-              <div className="w-full rounded-xl border border-blue-500/30 bg-blue-500/10 p-4 shadow-[0_0_40px_rgba(59,130,246,0.2)]">
+                  <p className="font-mono text-[10px] uppercase text-[#C2C6D6]">
+                    Source
+                  </p>
 
-                <p className="mb-1 font-mono text-[10px] uppercase text-blue-300">
-                  PROCESSOR
-                </p>
+                  <p className="text-xs font-bold">
+                    Vector DB
+                  </p>
 
-                <h3 className="font-semibold">
-                  Claude Sonnet
-                </h3>
+                </div>
 
               </div>
 
-              {/* LINE */}
-              <div className="h-16 w-[2px] bg-gradient-to-b from-violet-500 to-white/10" />
+              {/* CONNECTION */}
+              <div className="relative flex h-20 items-center justify-center">
 
-              {/* NODE */}
-              <div className="w-full rounded-xl border border-white/10 bg-white/[0.03] p-4">
+                <div className="absolute h-full w-[2px] bg-white/10" />
 
-                <p className="mb-1 font-mono text-[10px] uppercase text-white/40">
-                  OUTPUT
-                </p>
+                <div className="animate-pulse absolute h-10 w-[2px] bg-gradient-to-b from-[#3B82F6] to-violet-400" />
 
-                <h3 className="font-semibold">
-                  localhost:8080
-                </h3>
+              </div>
+
+              {/* PROCESSOR */}
+              <div className="animate-node-pulse relative z-10 flex h-16 w-full items-center gap-3 rounded-xl border border-[#3B82F6]/30 bg-[#3B82F6]/10 px-3 shadow-[0_0_30px_rgba(59,130,246,0.2)]">
+
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#3B82F6] shadow-[0_0_20px_rgba(59,130,246,0.35)]">
+
+                  <div className="h-4 w-4 rounded-full bg-white" />
+
+                </div>
+
+                <div>
+
+                  <p className="font-mono text-[10px] uppercase text-[#ADC6FF]">
+                    Processor
+                  </p>
+
+                  <p className="text-xs font-bold">
+                    Claude 3.5 Sonnet
+                  </p>
+
+                </div>
+
+              </div>
+
+              {/* CONNECTION */}
+              <div className="relative flex h-20 items-center justify-center">
+
+                <div className="absolute h-full w-[2px] bg-white/10" />
+
+                <div className="animate-pulse absolute h-10 w-[2px] bg-gradient-to-b from-violet-400 to-transparent" />
+
+              </div>
+
+              {/* OUTPUT */}
+              <div className="relative z-10 flex h-14 w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3">
+
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04]">
+
+                  <div className="h-3 w-3 rounded-full bg-violet-400" />
+
+                </div>
+
+                <div>
+
+                  <p className="font-mono text-[10px] uppercase text-[#C2C6D6]">
+                    Output
+                  </p>
+
+                  <p className="text-xs font-bold">
+                    localhost:8080
+                  </p>
+
+                </div>
 
               </div>
 
@@ -163,70 +228,133 @@ export default function LoginPage() {
           </div>
 
           {/* METRICS */}
-          <div className="col-span-5 row-span-4 rounded-2xl border border-white/10 bg-black/40 p-4 backdrop-blur-xl">
+          <div className="animate-float col-span-5 row-span-4 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-2xl backdrop-blur-xl">
 
-            <div className="mb-6 flex items-center justify-between">
+            <div className="flex items-start justify-between">
 
-              <span className="font-mono text-[10px] uppercase tracking-widest text-white/50">
-                Infrastructure
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#C2C6D6]">
+                Latency / Throughput
               </span>
 
-              <span className="text-sm font-bold text-blue-400">
+              <span className="text-xs font-bold text-[#60A5FA]">
                 14ms
               </span>
 
             </div>
 
-            <div className="h-24 w-full rounded-xl bg-gradient-to-r from-blue-500/20 to-violet-500/20" />
+            {/* SVG GRAPH */}
+            <div className="mt-4 h-16 w-full">
+
+              <svg
+                viewBox="0 0 200 60"
+                className="h-full w-full"
+              >
+
+                <path
+                  d="M0 45 Q 20 40, 40 50 T 80 30 T 120 45 T 160 20 L 200 35"
+                  fill="none"
+                  stroke="#3B82F6"
+                  strokeWidth="2"
+                  opacity="0.9"
+                >
+
+                  <animate
+                    attributeName="d"
+                    dur="3s"
+                    repeatCount="indefinite"
+                    values="
+                    M0 45 Q 20 40, 40 50 T 80 30 T 120 45 T 160 20 L 200 35;
+                    M0 35 Q 20 50, 40 30 T 80 45 T 120 20 T 160 40 L 200 45;
+                    M0 45 Q 20 40, 40 50 T 80 30 T 120 45 T 160 20 L 200 35
+                  "
+                  />
+
+                </path>
+
+              </svg>
+
+            </div>
+
+            <div className="mt-4 flex gap-5">
+
+              <div>
+
+                <p className="font-mono text-[9px] uppercase text-[#C2C6D6]">
+                  CPU
+                </p>
+
+                <p className="text-xs font-bold">
+                  12%
+                </p>
+
+              </div>
+
+              <div>
+
+                <p className="font-mono text-[9px] uppercase text-[#C2C6D6]">
+                  RAM
+                </p>
+
+                <p className="text-xs font-bold">
+                  4.2GB
+                </p>
+
+              </div>
+
+            </div>
 
           </div>
 
-          {/* DEPLOY */}
-          <div className="col-span-3 row-span-3 rounded-2xl border border-white/10 bg-black/40 p-4 backdrop-blur-xl">
+          {/* DEPLOYMENT */}
+          <div className="animate-float col-span-3 row-span-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-2xl backdrop-blur-xl">
 
-            <div className="mb-4 font-mono text-[10px] uppercase tracking-widest text-white/50">
-              Deployment
-            </div>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#C2C6D6]">
+              Deployments
+            </span>
 
-            <div className="mb-3 flex items-center justify-between text-sm">
+            <div className="mt-5 space-y-3">
 
-              <span className="text-white/60">
-                main-branch
-              </span>
+              <div className="flex items-center justify-between text-xs">
 
-              <span className="animate-pulse text-blue-400">
-                Deploying
-              </span>
+                <span className="text-white/60">
+                  main-branch
+                </span>
 
-            </div>
+                <span className="animate-pulse font-bold text-[#60A5FA]">
+                  Provisioning
+                </span>
 
-            <div className="h-2 overflow-hidden rounded-full bg-white/10">
+              </div>
 
-              <div className="h-full w-[70%] animate-pulse rounded-full bg-blue-500" />
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+
+                <div className="animate-loading-bar h-full rounded-full bg-[#3B82F6] shadow-[0_0_10px_#3B82F6]" />
+
+              </div>
 
             </div>
 
           </div>
 
           {/* EXECUTION */}
-          <div className="col-span-7 row-span-3 flex items-center justify-between rounded-2xl border border-white/10 bg-black/40 p-4 backdrop-blur-xl">
+          <div className="col-span-7 row-span-3 flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-2xl backdrop-blur-xl">
 
             <div className="flex items-center gap-4">
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-blue-500/20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-[#3B82F6]/30">
 
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#3B82F6] border-t-transparent" />
 
               </div>
 
               <div>
 
-                <p className="text-sm font-semibold">
+                <p className="text-xs font-bold">
                   Processing AI Tool Execution
                 </p>
 
-                <p className="font-mono text-xs text-white/40">
-                  semantic_search("mcp_docs")
+                <p className="font-mono text-[10px] text-[#C2C6D6]">
+                  Executing: semantic_search('mcp_specs')
                 </p>
 
               </div>
@@ -237,15 +365,15 @@ export default function LoginPage() {
 
         </div>
 
-        {/* FOOTER TEXT */}
+        {/* FOOTER */}
         <div className="relative z-20 mt-12">
 
-          <h2 className="max-w-md text-4xl font-bold leading-tight">
+          <h2 className="max-w-sm text-[32px] font-semibold leading-[1.2] tracking-[-0.02em]">
             Build AI-ready MCP servers in minutes.
           </h2>
 
-          <p className="mt-4 max-w-lg text-white/50">
-            Enterprise-grade infrastructure for the Model Context Protocol.
+          <p className="mt-3 max-w-md text-[14px] leading-relaxed text-[#C2C6D6]">
+            Enterprise-grade infrastructure for the Model Context Protocol. Deploy production-ready connectors to Claude in seconds.
           </p>
 
         </div>
@@ -253,23 +381,25 @@ export default function LoginPage() {
       </section>
 
       {/* RIGHT SIDE */}
-      <section className="relative flex min-h-screen flex-1 items-center justify-center p-6 md:p-10">
+      <section className="relative flex flex-1 items-center justify-center bg-[#131314] px-6 py-12 lg:px-16">
 
-        {/* GLOW */}
-        <div className="absolute left-1/2 top-1/2 h-[600px] w-[500px] -translate-x-1/2 -translate-y-1/2 bg-blue-500/5 blur-[120px]" />
+        {/* FORM GLOW */}
+        <div className="absolute left-1/2 top-1/2 h-[650px] w-[650px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#3B82F6]/5 blur-[120px]" />
 
-        <div className="relative z-10 w-full max-w-[420px]">
+        <div className="relative z-10 w-full max-w-[430px]">
 
           {/* MOBILE LOGO */}
-          <div className="mb-12 flex items-center gap-3 md:hidden">
+          <div className="mb-12 flex items-center gap-3 lg:hidden">
 
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-600">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#3B82F6]">
+
               <span className="font-bold text-white">
                 M
               </span>
+
             </div>
 
-            <span className="text-2xl font-bold">
+            <span className="text-xl font-bold tracking-tight">
               MCP Builder
             </span>
 
@@ -278,38 +408,42 @@ export default function LoginPage() {
           {/* HEADER */}
           <div className="mb-10">
 
-            <h1 className="mb-3 text-5xl font-bold tracking-tight">
-              Welcome Back
+            <h1 className="mb-2 text-[34px] font-semibold tracking-[-0.03em]">
+              Welcome to MCP Builder
             </h1>
 
-            <p className="text-white/50">
+            <p className="text-[16px] text-[#C2C6D6]">
               Create AI-native infrastructure tools instantly.
             </p>
 
           </div>
 
-          {/* SOCIAL */}
+          {/* SOCIALS */}
           <div className="mb-8 space-y-3">
 
-            <button className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] transition hover:bg-white/[0.05]">
+            <button className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
 
               <img
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY4WNBcTJm8taXcmMjLDoAN6mNV2vo6VyCbV6UZ47Risab1W6mjgUU-gM5T8AKScjpkJAzzWCaW5m6HvRcTshV5XZEBs1JDXJMFvLUx4mckkYJKlRpesPkGnljDAiKaxRnmLb9ZURAb_FPHUY9-PPCGHfwmRrE63gF2-Rv3wEreeAaS_XYoTWmuH6Uu3F-D_H2KOb1OlEHiIGpXigtzr-jAD8AmY_j1xeV0ZlWK8wCwPzDiwurVgWGvlphz0laTU_PIIOSpTG-dDNb"
                 alt="Google"
-                className="h-5 w-5"
+                className="h-5 w-5 transition-transform group-hover:scale-110"
               />
 
-              Continue with Google
+              <span className="font-medium">
+                Continue with Google
+              </span>
 
             </button>
 
-            <button className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/10 bg-white/[0.03] transition hover:bg-white/[0.05]">
+            <button className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
 
-              <span className="text-xl">
+              <span className="text-lg transition-transform group-hover:scale-110">
                 ⌘
               </span>
 
-              Continue with GitHub
+              <span className="font-medium">
+                Continue with GitHub
+              </span>
 
             </button>
 
@@ -320,7 +454,7 @@ export default function LoginPage() {
 
             <div className="h-px flex-1 bg-white/10" />
 
-            <span className="font-mono text-[10px] uppercase tracking-widest text-white/40">
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#C2C6D6]">
               OR EMAIL
             </span>
 
@@ -335,29 +469,29 @@ export default function LoginPage() {
 
               <div>
 
-                <label className="mb-2 block font-mono text-[11px] uppercase tracking-widest text-white/50">
-                  Email
+                <label className="mb-1 block font-mono text-[11px] uppercase text-[#C2C6D6]">
+                  Email Address
                 </label>
 
                 <input
                   type="email"
                   placeholder="name@company.com"
-                  className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white outline-none transition focus:border-blue-500"
+                  className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-[#ADC6FF]"
                 />
 
               </div>
 
               <div>
 
-                <div className="mb-2 flex items-center justify-between">
+                <div className="mb-1 flex items-center justify-between">
 
-                  <label className="font-mono text-[11px] uppercase tracking-widest text-white/50">
+                  <label className="font-mono text-[11px] uppercase text-[#C2C6D6]">
                     Password
                   </label>
 
                   <button
                     type="button"
-                    className="font-mono text-[11px] uppercase tracking-widest text-blue-400"
+                    className="font-mono text-[11px] uppercase text-[#ADC6FF] hover:underline"
                   >
                     Forgot?
                   </button>
@@ -367,17 +501,19 @@ export default function LoginPage() {
                 <input
                   type="password"
                   placeholder="••••••••"
-                  className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white outline-none transition focus:border-blue-500"
+                  className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-[#ADC6FF]"
                 />
 
               </div>
 
             </div>
 
-            {/* BUTTON */}
-            <button className="flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl bg-[#3B82F6] font-semibold text-white transition hover:brightness-110 active:scale-[0.98]">
+            {/* SUBMIT */}
+            <button className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#ADC6FF] font-bold text-[#002E6A] transition-all hover:brightness-110 active:scale-[0.98] shadow-[0_0_30px_rgba(59,130,246,0.35)]">
 
-              Continue with Email
+              <span>
+                Continue with Email
+              </span>
 
               <span>
                 →
@@ -386,14 +522,14 @@ export default function LoginPage() {
             </button>
 
             {/* TERMS */}
-            <div className="flex items-start gap-3">
+            <div className="mt-8 flex items-start gap-3">
 
               <input
                 type="checkbox"
-                className="mt-1 h-4 w-4 cursor-pointer rounded border-white/20 bg-transparent"
+                className="mt-1 h-4 w-4 cursor-pointer rounded-sm border-white/20 bg-transparent"
               />
 
-              <p className="text-sm leading-relaxed text-white/50">
+              <p className="text-[14px] leading-relaxed text-[#C2C6D6]">
 
                 I agree to the{" "}
 
@@ -401,7 +537,7 @@ export default function LoginPage() {
                   href="#"
                   className="text-white underline"
                 >
-                  Terms
+                  Terms of Service
                 </Link>
 
                 {" "}and{" "}
@@ -422,13 +558,13 @@ export default function LoginPage() {
           {/* LOGIN */}
           <div className="mt-12 text-center">
 
-            <p className="text-white/50">
+            <p className="text-[14px] text-[#C2C6D6]">
 
               Already have an account?{" "}
 
               <Link
                 href="#"
-                className="font-semibold text-blue-400 hover:underline"
+                className="font-bold text-[#ADC6FF] hover:underline"
               >
                 Log in
               </Link>
@@ -440,8 +576,8 @@ export default function LoginPage() {
           {/* FOOTER */}
           <div className="mt-16">
 
-            <p className="font-mono text-[10px] uppercase tracking-[0.3em] text-white/30">
-              © 2026 MCP BUILDER
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8C909F]/60">
+              © 2026 MCP BUILDER. GLOBAL AI INFRASTRUCTURE.
             </p>
 
           </div>
