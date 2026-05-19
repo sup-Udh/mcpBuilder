@@ -44,24 +44,28 @@ const sources = [
 export default function CreatePage() {
 
   /*
-    -----------------------------------
+    =========================================
     STATES
-    -----------------------------------
+    =========================================
   */
 
-  // current carousel step
+  // carousel step
   const [step, setStep] = useState(1)
 
-  // selected MCP source
-  const [selectedSource, setSelectedSource] = useState<string | null>(null)
+  // selected source
+  const [selectedSource, setSelectedSource] =
+    useState<string | null>(null)
 
-  // URL input for ingestion
+  // url input
   const [sourceUrl, setSourceUrl] = useState("")
 
+  // deployment loading
+  const [deploying, setDeploying] = useState(false)
+
   /*
-    -----------------------------------
-    NEXT STEP HANDLER
-    -----------------------------------
+    =========================================
+    NEXT BUTTON
+    =========================================
   */
 
   const handleNext = () => {
@@ -69,7 +73,6 @@ export default function CreatePage() {
     // STEP 1 -> STEP 2
     if (step === 1) {
 
-      // prevent moving without source selection
       if (!selectedSource) return
 
       setStep(2)
@@ -79,7 +82,6 @@ export default function CreatePage() {
     // STEP 2 -> STEP 3
     if (step === 2) {
 
-      // prevent empty url
       if (!sourceUrl.trim()) return
 
       setStep(3)
@@ -88,9 +90,9 @@ export default function CreatePage() {
   }
 
   /*
-    -----------------------------------
-    BACK STEP HANDLER
-    -----------------------------------
+    =========================================
+    BACK BUTTON
+    =========================================
   */
 
   const handleBack = () => {
@@ -100,10 +102,26 @@ export default function CreatePage() {
     }
   }
 
+  /*
+    =========================================
+    DEPLOY HANDLER
+    =========================================
+  */
+
+  const handleDeploy = async () => {
+
+    setDeploying(true)
+
+    // fake delay for UI
+    setTimeout(() => {
+      setDeploying(false)
+    }, 3000)
+  }
+
   return (
     <main className="relative min-h-screen overflow-hidden bg-[#020617] text-[#e5e2e3]">
 
-      {/* GOOGLE MATERIAL ICONS */}
+      {/* MATERIAL ICONS */}
       <link
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
@@ -130,20 +148,15 @@ export default function CreatePage() {
       <div className="pointer-events-none fixed bottom-[-10%] right-[-10%] z-0 h-[400px] w-[400px] rounded-full bg-violet-500/10 blur-[120px]" />
 
       {/* ========================================= */}
-      {/* MAIN SECTION */}
+      {/* MAIN */}
       {/* ========================================= */}
 
       <section className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
 
-        {/* MAIN CARD */}
-        <div
-          className="relative w-full max-w-[760px] overflow-hidden rounded-[2rem] border border-white/10 bg-[rgba(10,10,11,0.6)] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl md:p-12"
-        >
+        {/* CARD */}
+        <div className="relative w-full max-w-[760px] overflow-hidden rounded-[2rem] border border-white/10 bg-[rgba(10,10,11,0.6)] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl md:p-12">
 
-          {/* ========================================= */}
           {/* TOP DOTS */}
-          {/* ========================================= */}
-
           <div className="absolute right-6 top-6 opacity-20">
 
             <div className="grid grid-cols-4 gap-2">
@@ -187,8 +200,7 @@ export default function CreatePage() {
               }`}
             />
 
-            <div className="h-1 w-12 rounded-full bg-white/10" />
-            <div className="h-1 w-12 rounded-full bg-white/10" />
+           
 
           </div>
 
@@ -224,7 +236,7 @@ export default function CreatePage() {
 
               </div>
 
-              {/* SOURCE GRID */}
+              {/* GRID */}
               <div className="mb-12 grid grid-cols-2 gap-4 md:grid-cols-3">
 
                 {sources.map((source) => (
@@ -233,10 +245,7 @@ export default function CreatePage() {
                     className="group relative"
                   >
 
-                    {/* ========================================= */}
-                    {/* TOOLTIP FOR DISABLED SOURCES */}
-                    {/* ========================================= */}
-
+                    {/* TOOLTIP */}
                     {!source.enabled && (
                       <div className="pointer-events-none absolute -top-16 left-1/2 z-30 w-[220px] -translate-x-1/2 rounded-2xl border border-blue-300/10 bg-[#0B1120]/95 p-4 opacity-0 shadow-[0_0_30px_rgba(59,130,246,0.15)] backdrop-blur-xl transition-all duration-300 group-hover:-top-20 group-hover:opacity-100">
 
@@ -251,14 +260,13 @@ export default function CreatePage() {
                         </div>
 
                         <p className="text-sm leading-relaxed text-white/60">
-                          We’re still implementing this MCP source. Support
-                          will arrive in a future update.
+                          We’re still implementing this MCP source.
                         </p>
 
                       </div>
                     )}
 
-                    {/* SOURCE CARD */}
+                    {/* CARD */}
                     <button
                       disabled={!source.enabled}
                       onClick={() =>
@@ -323,7 +331,6 @@ export default function CreatePage() {
           {step === 2 && (
             <div className="animate-in fade-in slide-in-from-right-5 duration-500">
 
-              {/* HEADER */}
               <div className="mb-12 text-center">
 
                 <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-blue-300/10 bg-blue-300/5">
@@ -339,12 +346,12 @@ export default function CreatePage() {
                 </h2>
 
                 <p className="mx-auto max-w-xl text-white/50">
-                  Paste the URL you want MCP Builder to ingest and process.
+                  Paste the URL you want MCP Builder to ingest.
                 </p>
 
               </div>
 
-              {/* URL INPUT BOX */}
+              {/* INPUT */}
               <div className="mb-12">
 
                 <label className="mb-3 block font-mono text-xs uppercase tracking-[0.2em] text-blue-200/70">
@@ -365,7 +372,6 @@ export default function CreatePage() {
 
                 </div>
 
-                {/* HELPER TEXT */}
                 <div className="mt-4 flex items-center gap-2 text-sm text-white/40">
 
                   <span className="material-symbols-outlined text-base">
@@ -385,71 +391,126 @@ export default function CreatePage() {
 
           {/* ========================================= */}
           {/* STEP 3 */}
-          {/* CONFIRM */}
+          {/* FINAL CHECK */}
           {/* ========================================= */}
 
           {step === 3 && (
             <div className="animate-in fade-in slide-in-from-right-5 duration-500">
 
-              <div className="py-10 text-center">
+              {/* HEADER */}
+              <div className="mb-12 text-center">
 
-                <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center rounded-full border border-green-400/20 bg-green-400/10">
+                <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-green-400/20 bg-green-400/10">
 
                   <span className="material-symbols-outlined text-6xl text-green-300">
-                    check
+                    verified
                   </span>
 
                 </div>
 
-                <h2 className="mb-4 text-4xl font-bold">
-                  Ready to Deploy
+                <h2 className="mb-3 text-4xl font-bold tracking-tight">
+                  Final Deployment Check
                 </h2>
 
-                <p className="mx-auto mb-10 max-w-xl text-white/50">
-                  Your MCP server configuration is ready. Continue to start
-                  ingestion and deployment.
+                <p className="mx-auto max-w-xl text-white/50">
+                  Review your MCP configuration before deployment.
                 </p>
 
-                {/* SUMMARY CARD */}
-                <div className="mx-auto max-w-[500px] rounded-3xl border border-white/10 bg-[#111214] p-6 text-left">
+              </div>
 
-                  <div className="mb-6 flex items-center justify-between">
+              {/* FINAL SUMMARY CARD */}
+              <div className="mb-12 rounded-3xl border border-white/10 bg-[#111214] p-8">
 
-                    <span className="font-mono text-xs uppercase tracking-[0.2em] text-blue-200/60">
-                      Configuration
-                    </span>
+                {/* STATUS */}
+                <div className="mb-8 flex items-center justify-between">
 
-                    <div className="rounded-full bg-green-400/10 px-3 py-1 text-xs text-green-300">
-                      Ready
-                    </div>
+                  <div>
+
+                    <p className="mb-1 font-mono text-[10px] uppercase tracking-[0.2em] text-blue-200/60">
+                      Deployment Status
+                    </p>
+
+                    <h3 className="text-2xl font-semibold">
+                      Ready to Deploy
+                    </h3>
 
                   </div>
 
-                  <div className="space-y-5">
+                  <div className="flex items-center gap-2 rounded-full border border-green-400/20 bg-green-400/10 px-4 py-2">
 
-                    <div>
+                    <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
 
-                      <p className="mb-1 text-xs uppercase tracking-[0.2em] text-white/40">
-                        Source Type
-                      </p>
+                    <span className="font-mono text-xs uppercase tracking-wider text-green-300">
+                      VALID
+                    </span>
 
-                      <p className="text-lg text-white">
-                        {selectedSource}
+                  </div>
+
+                </div>
+
+                {/* CONFIG ITEMS */}
+                <div className="space-y-6">
+
+                  {/* SOURCE */}
+                  <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+
+                    <div className="mb-2 flex items-center gap-2">
+
+                      <span className="material-symbols-outlined text-blue-200">
+                        dns
+                      </span>
+
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+                        MCP Source
                       </p>
 
                     </div>
 
-                    <div>
+                    <p className="text-lg font-medium text-white">
+                      {selectedSource}
+                    </p>
 
-                      <p className="mb-1 text-xs uppercase tracking-[0.2em] text-white/40">
-                        URL
-                      </p>
+                  </div>
 
-                      <p className="break-all text-white/70">
-                        {sourceUrl}
+                  {/* URL */}
+                  <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+
+                    <div className="mb-2 flex items-center gap-2">
+
+                      <span className="material-symbols-outlined text-blue-200">
+                        link
+                      </span>
+
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+                        Source URL
                       </p>
 
                     </div>
+
+                    <p className="break-all text-white/70">
+                      {sourceUrl}
+                    </p>
+
+                  </div>
+
+                  {/* DEPLOYMENT */}
+                  <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-5">
+
+                    <div className="mb-2 flex items-center gap-2">
+
+                      <span className="material-symbols-outlined text-blue-200">
+                        cloud_upload
+                      </span>
+
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-white/40">
+                        Deployment Target
+                      </p>
+
+                    </div>
+
+                    <p className="text-white/70">
+                      Cloudflare Workers Infrastructure
+                    </p>
 
                   </div>
 
@@ -461,15 +522,15 @@ export default function CreatePage() {
           )}
 
           {/* ========================================= */}
-          {/* FOOTER ACTIONS */}
+          {/* FOOTER */}
           {/* ========================================= */}
 
           <div className="flex items-center justify-between border-t border-white/5 pt-8">
 
-            {/* BACK BUTTON */}
+            {/* BACK */}
             <button
               onClick={handleBack}
-              disabled={step === 1}
+              disabled={step === 1 || deploying}
               className={`flex items-center gap-2 rounded-xl border px-6 py-3 transition active:scale-[0.98] ${
                 step === 1
                   ? "cursor-not-allowed border-white/5 text-white/20"
@@ -485,30 +546,64 @@ export default function CreatePage() {
 
             </button>
 
-            {/* NEXT BUTTON */}
+            {/* RIGHT BUTTON */}
             <div className="flex items-center gap-4">
 
-              <button
-                onClick={handleNext}
-                disabled={
-                  (step === 1 && !selectedSource) ||
-                  (step === 2 && !sourceUrl.trim())
-                }
-                className={`flex items-center gap-2 rounded-xl px-8 py-3 font-semibold transition active:scale-[0.98] ${
-                  (step === 1 && !selectedSource) ||
-                  (step === 2 && !sourceUrl.trim())
-                    ? "cursor-not-allowed bg-white/10 text-white/30"
-                    : "bg-blue-200 text-black shadow-[0_0_25px_rgba(173,198,255,0.25)] hover:brightness-110"
-                }`}
-              >
+              {/* NORMAL NEXT BUTTON */}
+              {step !== 3 && (
+                <button
+                  onClick={handleNext}
+                  disabled={
+                    (step === 1 && !selectedSource) ||
+                    (step === 2 && !sourceUrl.trim())
+                  }
+                  className={`flex items-center gap-2 rounded-xl px-8 py-3 font-semibold transition active:scale-[0.98] ${
+                    (step === 1 && !selectedSource) ||
+                    (step === 2 && !sourceUrl.trim())
+                      ? "cursor-not-allowed bg-white/10 text-white/30"
+                      : "bg-blue-200 text-black shadow-[0_0_25px_rgba(173,198,255,0.25)] hover:brightness-110"
+                  }`}
+                >
 
-                {step === 3 ? "Deploy MCP" : "Next"}
+                  Next
 
-                <span className="material-symbols-outlined text-sm">
-                  arrow_forward
-                </span>
+                  <span className="material-symbols-outlined text-sm">
+                    arrow_forward
+                  </span>
 
-              </button>
+                </button>
+              )}
+
+              {/* DEPLOY BUTTON */}
+              {step === 3 && (
+                <button
+                  onClick={handleDeploy}
+                  disabled={deploying}
+                  className={`flex items-center gap-3 rounded-xl px-8 py-3 font-semibold transition active:scale-[0.98] ${
+                    deploying
+                      ? "bg-blue-200/70 text-black"
+                      : "bg-blue-200 text-black shadow-[0_0_25px_rgba(173,198,255,0.25)] hover:brightness-110"
+                  }`}
+                >
+
+                  {deploying ? (
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-black border-t-transparent" />
+
+                      Deploying...
+                    </>
+                  ) : (
+                    <>
+                      Deploy MCP
+
+                      <span className="material-symbols-outlined text-sm">
+                        rocket_launch
+                      </span>
+                    </>
+                  )}
+
+                </button>
+              )}
 
             </div>
 
@@ -518,10 +613,7 @@ export default function CreatePage() {
 
       </section>
 
-      {/* ========================================= */}
       {/* LEFT DECOR */}
-      {/* ========================================= */}
-
       <div className="pointer-events-none fixed left-10 top-1/2 hidden -translate-y-1/2 xl:block">
 
         <div className="flex flex-col gap-3">
