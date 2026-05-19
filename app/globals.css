@@ -189,3 +189,11 @@ pre,
 .animate-loading-bar {
   animation: loadingBar 4s ease-in-out infinite;
 }
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #020617;
+}
