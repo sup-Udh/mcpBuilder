@@ -54,13 +54,7 @@ export default function DashboardPage() {
               </p>
             </div>
 
-            <div className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2">
-              <div className="h-2 w-2 animate-pulse rounded-full bg-green-500" />
-
-              <span className="text-sm text-white/70">
-                Systems Operational
-              </span>
-            </div>
+            
           </div>
 
           {/* SERVER GRID */}

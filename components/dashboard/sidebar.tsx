@@ -60,24 +60,6 @@ export default function Sidebar() {
 
       </nav>
 
-      {/* FOOTER */}
-      <div className="mt-auto rounded-2xl border border-white/10 bg-white/[0.02] p-4">
-
-        <div className="mb-2 flex items-center justify-between">
-          <span className="text-[10px] uppercase tracking-widest text-white/40">
-            Resource Usage
-          </span>
-
-          <span className="text-[10px] text-blue-400">
-            82%
-          </span>
-        </div>
-
-        <div className="h-2 overflow-hidden rounded-full bg-white/10">
-          <div className="h-full w-[82%] bg-[#3B82F6]" />
-        </div>
-
-      </div>
 
     </aside>
   )
