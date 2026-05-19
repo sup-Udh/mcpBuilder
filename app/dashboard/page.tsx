@@ -1,9 +1,9 @@
-import Sidebar from "@/components/dashboard/sidebar"
-import TopNavbar from "@/components/dashboard/top-navbar"
-import ServerCard from "@/components/dashboard/server-card"
-import ActivityFeed from "@/components/dashboard/activity-feed"
-import TerminalPanel from "@/components/dashboard/terminal-panel"
-import FloatingButton from "@/components/dashboard/floating-button"
+import Sidebar from "../../components/dashboard/sidebar"
+import TopNavbar from "../../components/dashboard/top-navbar"
+import ServerCard from "../../components/dashboard/server-card"
+import ActivityFeed from "../../components/dashboard/activity-feed"
+import TerminalPanel from "../../components/dashboard/terminal-panel"
+import FloatingButton from "../../components/dashboard/floating-button"
 
 const servers = [
   {
