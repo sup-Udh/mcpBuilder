@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import TransitionLoader from "./TransitionLoader"
+import PageLoader from "./PageLoader"
 
 export default function Navbar() {
   const router = useRouter()
@@ -14,20 +14,20 @@ export default function Navbar() {
 
     setLoading(true)
 
-    // lock scrolling
     document.body.style.overflow = "hidden"
 
     setTimeout(() => {
       router.push("/login")
-    }, 1800)
+    }, 1200)
   }
 
   return (
     <>
-      {/* FULL SCREEN TRANSITION */}
-      {loading && <TransitionLoader />}
+      {/* SIMPLE PAGE LOADER */}
+      {loading && <PageLoader />}
 
       <nav className="fixed top-0 z-50 w-full border-b border-white/10 bg-black/40 backdrop-blur-xl">
+
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
 
           {/* LEFT */}
@@ -67,12 +67,13 @@ export default function Navbar() {
           <button
             onClick={handleNavigate}
             disabled={loading}
-            className="cursor-pointer rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white transition hover:scale-105 hover:bg-blue-400 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
+            className="cursor-pointer rounded-lg bg-blue-500 px-5 py-2 font-semibold text-white transition hover:scale-105 hover:bg-blue-400 active:scale-[0.98] disabled:opacity-50"
           >
-            {loading ? "Initializing..." : "Get Started"}
+            {loading ? "Loading..." : "Get Started"}
           </button>
 
         </div>
+
       </nav>
     </>
   )
