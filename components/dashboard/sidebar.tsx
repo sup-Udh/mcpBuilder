@@ -7,14 +7,13 @@ import { useState } from "react"
 export default function Sidebar() {
 
   const router = useRouter()
-
   const pathname = usePathname()
 
   const [loading, setLoading] = useState(false)
 
   const handleNavigate = (path: string) => {
 
-    if (loading) return
+    if (loading || pathname === path) return
 
     setLoading(true)
 
@@ -25,7 +24,10 @@ export default function Sidebar() {
     }, 650)
   }
 
-  /* ACTIVE LINK STYLE */
+  const isActive = (path: string) => {
+    return pathname.startsWith(path)
+  }
+
   const activeClass =
     "border border-blue-500/20 bg-blue-500/10 text-blue-400 shadow-[0_0_25px_rgba(59,130,246,0.08)]"
 
@@ -34,7 +36,7 @@ export default function Sidebar() {
 
   return (
     <>
-    
+
       {loading && <PageLoader />}
 
       <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-white/10 bg-[#0A0A0B] px-4 py-6">
@@ -52,11 +54,11 @@ export default function Sidebar() {
 
           <div>
 
-            <h1 className="text-xl font-bold">
+            <h1 className="text-xl font-bold text-white">
               MCP Builder
             </h1>
 
-            <p className="font-mono text-[10px] uppercase tracking-widest text-white/40">
+            <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/40">
               Infrastructure Engine
             </p>
 
@@ -67,81 +69,86 @@ export default function Sidebar() {
         {/* NAVIGATION */}
         <nav className="space-y-2">
 
-          {/* DASHBOARD */}
           <button
             onClick={() => handleNavigate("/dashboard")}
-            className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
-              pathname === "/dashboard"
+            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
+              isActive("/dashboard") &&
+              !isActive("/dashboard/mcp-servers")
                 ? activeClass
                 : inactiveClass
             }`}
           >
 
-            <span className="material-symbols-outlined">
+            <span className="material-symbols-outlined shrink-0">
               dashboard
             </span>
 
-            Dashboard
+            <span className="truncate">
+              Dashboard
+            </span>
 
           </button>
 
-          {/* MCP SERVERS */}
           <button
             onClick={() => handleNavigate("/dashboard/mcp-servers")}
-            className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
-              pathname === "/dashboard/mcp-servers"
+            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
+              isActive("/dashboard/mcp-servers")
                 ? activeClass
                 : inactiveClass
             }`}
           >
 
-            <span className="material-symbols-outlined">
+            <span className="material-symbols-outlined shrink-0">
               dns
             </span>
 
-            MCP Servers
+            <span className="truncate">
+              MCP Servers
+            </span>
 
           </button>
 
-          {/* STATUS */}
           <button
             onClick={() => handleNavigate("/dashboard/status")}
-            className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
-              pathname === "/dashboard/status"
+            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
+              isActive("/dashboard/status")
                 ? activeClass
                 : inactiveClass
             }`}
           >
 
-            <span className="material-symbols-outlined">
+            <span className="material-symbols-outlined shrink-0">
               analytics
             </span>
 
-            Status
+            <span className="truncate">
+              Status
+            </span>
 
           </button>
 
-          {/* SETTINGS */}
           <button
             onClick={() => handleNavigate("/dashboard/settings")}
-            className={`flex w-full cursor-pointer items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
-              pathname === "/dashboard/settings"
+            className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200 ${
+              isActive("/dashboard/settings")
                 ? activeClass
                 : inactiveClass
             }`}
           >
 
-            <span className="material-symbols-outlined">
+            <span className="material-symbols-outlined shrink-0">
               settings
             </span>
 
-            Settings
+            <span className="truncate">
+              Settings
+            </span>
 
           </button>
 
         </nav>
 
-        {/* BOTTOM STATUS */}
+        {/* FOOTER */}
         <div className="mt-auto rounded-2xl border border-white/10 bg-white/[0.03] p-4 backdrop-blur-xl">
 
           <div className="mb-3 flex items-center justify-between">
@@ -169,7 +176,7 @@ export default function Sidebar() {
         </div>
 
       </aside>
-    
+
     </>
   )
 }

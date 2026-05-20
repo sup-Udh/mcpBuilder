@@ -8,21 +8,17 @@ const servers = [
     id: "docs-context-engine",
     name: "Docs Context Engine",
     type: "DOCUMENTATION",
-    status: "Running",
     endpoint: "mcp://docs-engine.local",
     requests: "12.4k",
     latency: "142ms",
-    icon: "description",
   },
   {
     id: "website-knowledge-base",
     name: "Website Knowledge Base",
     type: "WEBSITE",
-    status: "Indexing",
     endpoint: "mcp://website-runtime.local",
     requests: "8.1k",
     latency: "89ms",
-    icon: "language",
   },
 ]
 
@@ -50,9 +46,9 @@ export default function MCPServerDetails() {
     
       <Sidebar />
 
-      <main className="min-h-screen bg-[#020617] pl-64 text-white">
+      <main className="min-h-screen bg-[#020617] text-white">
 
-        {/* BACKGROUND */}
+        {/* BACKGROUND GRID */}
         <div
           className="pointer-events-none fixed inset-0 opacity-40"
           style={{
@@ -70,14 +66,14 @@ export default function MCPServerDetails() {
         <div className="pointer-events-none fixed bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-violet-500/10 blur-[140px]" />
 
         {/* CONTENT */}
-        <section className="relative z-10 px-8 py-10">
-
+<section className="relative z-10 ml-64 px-8 py-10">
           {/* TOP BAR */}
           <div className="mb-8 flex items-center justify-between">
 
+            {/* BACK */}
             <button
               onClick={() => router.back()}
-              className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-5 py-3 text-white/70 transition hover:bg-white/[0.05] hover:text-white"
+              className="flex cursor-pointer items-center gap-2 rounded-xl border border-white/10 bg-white/[0.03] px-5 py-3 text-white/70 backdrop-blur-xl transition hover:bg-white/[0.05] hover:text-white active:scale-[0.98]"
             >
 
               <span className="material-symbols-outlined text-sm">
@@ -88,40 +84,35 @@ export default function MCPServerDetails() {
 
             </button>
 
-            <div className="flex items-center gap-3 rounded-full border border-green-400/20 bg-green-400/10 px-4 py-2">
+            {/* STATUS */}
 
-              <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
 
-              <span className="font-mono text-xs uppercase tracking-widest text-green-300">
-                {server.status}
-              </span>
 
             </div>
 
-          </div>
 
-          {/* SERVER HEADER */}
-          <div className="mb-10 rounded-[2rem] border border-white/10 bg-white/[0.03] p-8 backdrop-blur-xl">
+          {/* SERVER HERO */}
+          <div className="max-w-6xl rounded-[2rem] border border-white/10 bg-[#0B1120]/70 p-8 backdrop-blur-xl">
 
-            <div className="flex items-start gap-6">
+            <div className="flex items-center gap-6">
 
               {/* ICON */}
-              <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-white/10 bg-blue-400/10">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl border border-white/10 bg-blue-400/10">
 
-                <span className="material-symbols-outlined text-5xl text-blue-200">
+                {/* <span className="material-symbols-outlined text-4xl text-blue-200">
                   {server.icon}
-                </span>
+                </span> */}
 
               </div>
 
               {/* INFO */}
-              <div className="flex-1">
+              <div>
 
                 <p className="mb-3 font-mono text-xs uppercase tracking-[0.3em] text-blue-200/50">
                   MCP SERVER
                 </p>
 
-                <h1 className="text-5xl font-bold tracking-tight">
+                <h1 className="text-4xl font-bold tracking-tight">
                   {server.name}
                 </h1>
 
@@ -144,10 +135,10 @@ export default function MCPServerDetails() {
           </div>
 
           {/* STATS */}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="mt-8 grid max-w-6xl grid-cols-1 gap-5 lg:grid-cols-3">
 
             {/* REQUESTS */}
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
+            <div className="rounded-3xl border border-white/10 bg-[#0B1120]/70 p-6 backdrop-blur-xl">
 
               <p className="mb-3 font-mono text-xs uppercase tracking-widest text-white/40">
                 Requests
@@ -160,7 +151,7 @@ export default function MCPServerDetails() {
             </div>
 
             {/* LATENCY */}
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
+            <div className="rounded-3xl border border-white/10 bg-[#0B1120]/70 p-6 backdrop-blur-xl">
 
               <p className="mb-3 font-mono text-xs uppercase tracking-widest text-white/40">
                 Latency
@@ -172,8 +163,8 @@ export default function MCPServerDetails() {
 
             </div>
 
-            {/* STATUS */}
-            <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
+            {/* HEALTH */}
+            <div className="rounded-3xl border border-white/10 bg-[#0B1120]/70 p-6 backdrop-blur-xl">
 
               <p className="mb-3 font-mono text-xs uppercase tracking-widest text-white/40">
                 Runtime
@@ -188,7 +179,7 @@ export default function MCPServerDetails() {
           </div>
 
           {/* ENDPOINT */}
-          <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
+          <div className="mt-8 max-w-6xl rounded-3xl border border-white/10 bg-[#0B1120]/70 p-6 backdrop-blur-xl">
 
             <p className="mb-4 font-mono text-xs uppercase tracking-widest text-white/40">
               MCP Endpoint
@@ -213,9 +204,9 @@ export default function MCPServerDetails() {
           </div>
 
           {/* TERMINAL */}
-          <div className="mt-8 overflow-hidden rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl">
+          <div className="mt-8 max-w-6xl overflow-hidden rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl">
 
-            {/* TERMINAL TOP */}
+            {/* TOP */}
             <div className="flex items-center gap-2 border-b border-white/10 px-6 py-4">
 
               <div className="h-3 w-3 rounded-full bg-red-400/70" />
@@ -228,7 +219,7 @@ export default function MCPServerDetails() {
 
             </div>
 
-            {/* TERMINAL CONTENT */}
+            {/* TERMINAL BODY */}
             <div className="space-y-3 p-6 font-mono text-sm">
 
               <p className="text-blue-300">
