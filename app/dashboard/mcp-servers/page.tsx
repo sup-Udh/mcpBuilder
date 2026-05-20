@@ -1,5 +1,7 @@
 "use client"
 import Sidebar from "@/components/dashboard/sidebar"
+
+// main toggler
 const hasServers = false
 
 const servers = [
@@ -144,69 +146,12 @@ export default function McpServers() {
 
             {/* INFO CARDS */}
 <div className="mt-12 grid w-full grid-cols-1 gap-4 md:grid-cols-3">
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
 
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-400/10">
-
-                  <span className="material-symbols-outlined text-3xl text-blue-200">
-                    language
-                  </span>
-
-                </div>
-
-                <h3 className="mb-2 text-xl font-semibold">
-                  Website Ingestion
-                </h3>
-
-                <p className="leading-relaxed text-white/50">
-                  Crawl websites and transform them into AI-searchable context.
-                </p>
-
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
-
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-violet-400/10">
-
-                  <span className="material-symbols-outlined text-3xl text-violet-200">
-                    picture_as_pdf
-                  </span>
-
-                </div>
-
-                <h3 className="mb-2 text-xl font-semibold">
-                  Document Parsing
-                </h3>
-
-                <p className="leading-relaxed text-white/50">
-                  Ingest PDFs and markdown with automatic chunking.
-                </p>
-
-              </div>
-
-              <div className="rounded-3xl border border-white/10 bg-white/[0.03] p-6 backdrop-blur-xl">
-
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-cyan-400/10">
-
-                  <span className="material-symbols-outlined text-3xl text-cyan-200">
-                    hub
-                  </span>
-
-                </div>
-
-                <h3 className="mb-2 text-xl font-semibold">
-                  MCP Runtime
-                </h3>
-
-                <p className="leading-relaxed text-white/50">
-                  Deploy scalable AI infrastructure with vector orchestration.
-                </p>
-
-              </div>
-
-            </div>
+             
 
           </div>
+          </div>
+
 
         ) : (
 
