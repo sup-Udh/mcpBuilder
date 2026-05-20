@@ -13,7 +13,7 @@ export default function GlowButton({
   return (
     <button
       className={cn(
-        "relative overflow-hidden rounded-xl",
+        "relative rounded-xl",
         "bg-[#3B82F6] text-white",
         "px-8 py-4 font-semibold",
         "transition-all duration-300",

@@ -4,10 +4,10 @@ import Link from "next/link"
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen overflow-hidden bg-[#131314] text-[#E5E2E3] md:flex">
+    <main className="min-h-screen bg-[#131314] text-[#E5E2E3] md:flex">
 
       {/* LEFT SIDE */}
-      <section className="relative hidden w-[42%] overflow-hidden border-r border-white/[0.06] bg-[#131314] p-8 lg:flex lg:flex-col">
+      <section className="relative hidden w-[42%] border-r border-white/[0.06] bg-[#131314] p-8 lg:flex lg:flex-col">
 
         {/* GRID */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:50px_50px] animate-grid opacity-40" />
@@ -58,7 +58,7 @@ export default function LoginPage() {
         <div className="relative z-10 grid flex-1 grid-cols-12 grid-rows-12 gap-4">
 
           {/* TERMINAL */}
-          <div className="col-span-8 row-span-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-2xl backdrop-blur-xl">
+          <div className="col-span-8 row-span-5 rounded-2xl border border-white/[0.08] bg-white/[0.03] shadow-2xl backdrop-blur-xl">
 
             {/* TOP BAR */}
             <div className="flex items-center justify-between border-b border-white/[0.04] bg-black/20 px-4 py-2">
@@ -80,7 +80,7 @@ export default function LoginPage() {
             </div>
 
             {/* TERMINAL BODY */}
-            <div className="h-full overflow-hidden p-4 font-mono text-[13px]">
+            <div className="h-full p-4 font-mono text-[13px]">
 
               <div className="space-y-1">
 
@@ -326,7 +326,7 @@ export default function LoginPage() {
 
               </div>
 
-              <div className="h-1.5 overflow-hidden rounded-full bg-white/5">
+              <div className="h-1.5 rounded-full bg-white/5">
 
                 <div className="animate-loading-bar h-full rounded-full bg-[#3B82F6] shadow-[0_0_10px_#3B82F6]" />
 

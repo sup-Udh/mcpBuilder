@@ -3,7 +3,7 @@
 export default function PageLoader() {
   return (
     <>
-      <div className="page-loader fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#020617]">
+      <div className="page-loader fixed inset-0 z-[9999] flex items-center justify-center bg-[#020617]">
 
         {/* GRID */}
         <div className="absolute inset-0 opacity-40 grid-bg" />
@@ -34,7 +34,7 @@ export default function PageLoader() {
           </p>
 
           {/* LOADING BAR */}
-          <div className="mt-8 h-[3px] w-[220px] overflow-hidden rounded-full bg-white/10">
+          <div className="mt-8 h-[3px] w-[220px] rounded-full bg-white/10">
 
             <div className="loading-bar h-full w-full" />
 

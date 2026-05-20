@@ -7,7 +7,7 @@ export default function Centerpiece() {
   return (
     <section className="mx-auto mb-40 max-w-7xl px-6">
 
-      <GlassCard className="relative overflow-hidden border border-white/10 bg-[#050816]/80">
+      <GlassCard className="relative border border-white/10 bg-[#050816]/80">
 
         {/* GRID */}
         <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.03)_1px,transparent_1px)] bg-[size:40px_40px]" />

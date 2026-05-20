@@ -1,6 +1,6 @@
 export default function AnimatedGrid() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="pointer-events-none absolute inset-0">
 
       {/* GRID */}
       <div

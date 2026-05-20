@@ -1,10 +1,29 @@
+"use client"
+
 import Sidebar from "../../components/dashboard/sidebar"
 import TopNavbar from "../../components/dashboard/top-navbar"
 import FloatingButton from "../../components/dashboard/floating-button"
+import PageLoader from "@/components/PageLoader"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 export default function DashboardPage() {
+  const router = useRouter();
+
+  const [loading, setLoading] = useState(false);
+
+  const handleNavigate = () => {
+    if (loading) return 
+    setLoading(true)
+
+    document.body.style.overflow = "hidden"
+
+    setTimeout(() => {
+      router.push("/create")
+    }, 1200)
+  }
   return (
-    <main className="min-h-screen overflow-hidden bg-[#020617] text-white">
+    <main className="min-h-screen bg-[#020617] text-white">
 
       <Sidebar />
 
@@ -13,7 +32,7 @@ export default function DashboardPage() {
       {/* MAIN CONTENT */}
       <div className="ml-64 mt-16 h-[calc(100vh-64px)] overflow-y-auto">
 
-        <div className="relative flex min-h-full flex-col overflow-hidden">
+        <div className="relative flex min-h-full flex-col">
 
           {/* GRID BACKGROUND */}
           <div
@@ -64,13 +83,10 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-center gap-4">
 
               {/* PRIMARY */}
-              <button className="flex items-center gap-3 rounded-2xl bg-blue-200 px-8 py-4 font-semibold text-[#020617] shadow-[0_0_35px_rgba(173,198,255,0.25)] transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]">
+              <button onClick={handleNavigate} disabled={loading}  className="flex items-center gap-3 rounded-2xl bg-blue-200 px-8 py-4 font-semibold text-[#020617] shadow-[0_0_35px_rgba(173,198,255,0.25)] transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]">
+            {loading ? "Loading..." : "Create MCP Server"}
 
-                <span className="material-symbols-outlined">
-                  add
-                </span>
-
-                Create MCP Server
+           
 
               </button>
 

@@ -119,7 +119,7 @@ export default function CreatePage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#020617] text-[#e5e2e3]">
+    <main className="relative min-h-screen bg-[#020617] text-[#e5e2e3]">
 
       {/* MATERIAL ICONS */}
       <link
@@ -154,7 +154,7 @@ export default function CreatePage() {
       <section className="relative z-10 flex min-h-screen items-center justify-center px-6 py-10">
 
         {/* CARD */}
-        <div className="relative w-full max-w-[760px] overflow-hidden rounded-[2rem] border border-white/10 bg-[rgba(10,10,11,0.6)] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl md:p-12">
+        <div className="relative w-full max-w-[760px] rounded-[2rem] border border-white/10 bg-[rgba(10,10,11,0.6)] p-8 shadow-[0_8px_40px_rgba(0,0,0,0.8)] backdrop-blur-xl md:p-12">
 
           {/* TOP DOTS */}
           <div className="absolute right-6 top-6 opacity-20">

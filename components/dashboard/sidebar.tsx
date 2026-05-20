@@ -1,4 +1,28 @@
+"use client"
+
+import PageLoader from "../PageLoader"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
 export default function Sidebar() {
+
+   const router = useRouter()
+
+  const [loading, setLoading] = useState(false)
+
+  const handleNavigate = () => {
+    if (loading) return
+
+    setLoading(true)
+
+    document.body.style.overflow = "hidden"
+
+    setTimeout(() => {
+      router.push("/dashboard/mcp-servers")
+    }, 650)
+  }
+
+
+
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-white/10 bg-[#0A0A0B] px-4 py-6">
 
@@ -33,8 +57,9 @@ export default function Sidebar() {
 
           Dashboard
         </a>
+        
 
-        <a className="flex items-center gap-3 rounded-xl px-4 py-3 text-white/60 transition hover:bg-white/[0.03] hover:text-white">
+        <a onClick={handleNavigate} className="  cursor-pointer flex items-center gap-3 rounded-xl px-4 py-3 text-white/60 transition hover:bg-white/[0.03] hover:text-white">
           <span className="material-symbols-outlined">
             dns
           </span>

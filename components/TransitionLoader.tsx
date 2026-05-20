@@ -3,7 +3,7 @@
 export default function TransitionLoader() {
   return (
     <>
-      <div className="animate-fade fixed inset-0 z-[9999] flex items-center justify-center overflow-hidden bg-[#020617]">
+      <div className="animate-fade fixed inset-0 z-[9999] flex items-center justify-center bg-[#020617]">
 
         {/* GRID */}
         <div className="grid-bg absolute inset-0 opacity-40" />
@@ -14,7 +14,7 @@ export default function TransitionLoader() {
         <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-violet-500/10 blur-[140px]" />
 
         {/* SCANNER */}
-        <div className="absolute inset-0 overflow-hidden">
+        <div className="absolute inset-0">
 
           <div className="scanner-line absolute top-0 h-[2px] w-full bg-gradient-to-r from-transparent via-blue-400/70 to-transparent" />
 
@@ -48,7 +48,7 @@ export default function TransitionLoader() {
               Runtime
             </div>
 
-            <div className="h-[2px] w-14 overflow-hidden rounded-full bg-white/10">
+            <div className="h-[2px] w-14 rounded-full bg-white/10">
 
               <div className="pipeline-flow h-full w-full" />
 
@@ -58,7 +58,7 @@ export default function TransitionLoader() {
               Vector DB
             </div>
 
-            <div className="h-[2px] w-14 overflow-hidden rounded-full bg-white/10">
+            <div className="h-[2px] w-14 rounded-full bg-white/10">
 
               <div className="pipeline-flow-violet h-full w-full" />
 
@@ -71,7 +71,7 @@ export default function TransitionLoader() {
           </div>
 
           {/* TERMINAL */}
-          <div className="terminal-window w-[440px] overflow-hidden rounded-3xl border border-white/10 bg-black/30 p-5 font-mono text-sm text-white/70 backdrop-blur-xl">
+          <div className="terminal-window w-[440px] rounded-3xl border border-white/10 bg-black/30 p-5 font-mono text-sm text-white/70 backdrop-blur-xl">
 
             {/* TOP BAR */}
             <div className="mb-5 flex items-center gap-2">

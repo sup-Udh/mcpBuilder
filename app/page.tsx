@@ -8,7 +8,7 @@ import Footer from "../components/footer"
 
 export default function HomePage() {
   return (
-    <main className="bg-[#020617] text-white overflow-hidden">
+    <main className="bg-[#020617] text-white">
       <Navbar />
 
       <div className="pt-24">

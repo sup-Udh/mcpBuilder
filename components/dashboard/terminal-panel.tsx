@@ -1,6 +1,6 @@
 export default function TerminalPanel() {
   return (
-    <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#050506]">
+    <div className="rounded-2xl border border-white/10 bg-[#050506]">
 
       <div className="flex items-center justify-between border-b border-white/10 bg-[#0A0A0B] px-4 py-3">
 

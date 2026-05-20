@@ -34,6 +34,7 @@ export default function RootLayout({
         ${geistMono.variable}
         antialiased
       `}
+      data-scroll-behavior="smooth"
     >
       <body className="min-h-screen bg-[#020617] text-white">
         {children}
