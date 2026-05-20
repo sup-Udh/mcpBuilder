@@ -2,7 +2,7 @@
 import Sidebar from "@/components/dashboard/sidebar"
 
 // main toggler
-const hasServers = false
+const hasServers = true
 
 const servers = [
   {
