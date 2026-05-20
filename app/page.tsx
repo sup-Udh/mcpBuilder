@@ -13,9 +13,7 @@ export default function HomePage() {
 
       <div className="pt-24">
         <Hero />
-        <Centerpiece />
-        <Workflow />
-        <Features />
+     
       </div>
 
       <Footer />

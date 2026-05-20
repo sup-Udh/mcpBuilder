@@ -1,5 +1,5 @@
 import GlowButton from "./ui/glow-button"
-
+import Link from "next/link"
 export default function Hero() {
   return (
     <section className="relative mx-auto max-w-7xl px-6 py-32 text-center">
@@ -29,13 +29,17 @@ export default function Hero() {
       {/* Buttons */}
       <div className="mt-10 flex flex-col justify-center gap-4 sm:flex-row">
 
-        <GlowButton>
+        <GlowButton >
           Generate MCP Server
         </GlowButton>
 
-        <button className="rounded-lg border border-white/10 px-8 py-4 text-white transition hover:bg-white/5">
+        <Link 
+        href="/demo"
+        >
+        <button className="cursor-pointer rounded-lg border border-white/10 px-8 py-4 text-white transition hover:bg-white/5">
           View Demo
         </button>
+        </Link>
 
       </div>
     </section>
