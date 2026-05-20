@@ -1,11 +1,14 @@
 "use client"
 import Sidebar from "@/components/dashboard/sidebar"
-
+import { useRouter } from "next/navigation"
 // main toggler
 const hasServers = true
 
+
+// dummy servers
 const servers = [
   {
+    id: "docs-context-engine",
     name: "Docs Context Engine",
     type: "DOCUMENTATION",
     status: "Running",
@@ -16,6 +19,7 @@ const servers = [
     glow: "from-blue-500/20 to-cyan-500/10",
   },
   {
+    id: "website-knowledge-base",
     name: "Website Knowledge Base",
     type: "WEBSITE",
     status: "Indexing",
@@ -28,6 +32,7 @@ const servers = [
 ]
 
 export default function McpServers() {
+    const router = useRouter();
   return (
     <>
     <Sidebar />
@@ -161,7 +166,10 @@ export default function McpServers() {
             {servers.map((server) => (
               <div
                 key={server.name}
-                className="group relative rounded-3xl border border-white/10 bg-[#0B1120]/70 p-6 backdrop-blur-xl transition hover:-translate-y-1 hover:border-blue-300/20 hover:shadow-[0_0_40px_rgba(59,130,246,0.08)]"
+                  onClick={() =>
+                    router.push(`/dashboard/mcp-servers/${server.id}`)
+  }
+                className="group cursor-pointer relative rounded-3xl border border-white/10 bg-[#0B1120]/70 p-6 backdrop-blur-xl transition hover:-translate-y-1 hover:border-blue-300/20 hover:shadow-[0_0_40px_rgba(59,130,246,0.08)]"
               >
 
                 {/* GLOW */}
