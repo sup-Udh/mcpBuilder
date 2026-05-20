@@ -15,7 +15,7 @@ export default function LoginPage() {
         {/* GLOW BACKGROUNDS */}
         <div className="animate-pulse-soft absolute left-[-15%] top-[-10%] h-[450px] w-[450px] rounded-full bg-blue-500/10 blur-[120px]" />
 
-        <div className="animate-pulse-soft absolute bottom-[-15%] right-[-15%] h-[450px] w-[450px] rounded-full bg-violet-500/10 blur-[120px]" />
+        <div className="animate-pulse-soft absolute  right-[-15%] h-[450px] w-[450px] rounded-full bg-violet-500/10 blur-[120px]" />
 
         {/* HEADER */}
         <div className="relative z-20 mb-10 flex items-center justify-between">
@@ -534,7 +534,7 @@ export default function LoginPage() {
                 I agree to the{" "}
 
                 <Link
-                  href="#"
+                  href="/terms"
                   className="text-white underline"
                 >
                   Terms of Service
