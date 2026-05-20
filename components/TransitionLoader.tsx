@@ -1,5 +1,5 @@
 "use client"
-
+//  use this for the deply loader.
 export default function TransitionLoader() {
   return (
     <>
