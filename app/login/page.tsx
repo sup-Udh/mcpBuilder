@@ -383,7 +383,7 @@ export default function LoginPage() {
               onClick={signInWithGoogle}
               disabled={!acceptedTerms || loading}
               type="button"
-              className={`group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border transition-all duration-300 ${
+              className={`cursor-pointer group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border transition-all duration-300 ${
                 acceptedTerms
                   ? "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05]"
                   : "cursor-not-allowed border-white/[0.03] bg-white/[0.01] opacity-50"

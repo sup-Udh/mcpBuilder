@@ -1,42 +1,114 @@
-"use client"
-import Sidebar from "@/components/dashboard/sidebar"
-import { useRouter } from "next/navigation"
-// main toggler
-const hasServers = true
+"use client";
 
+import {
+  useEffect,
+  useState,
+} from "react";
 
-// dummy servers
-const servers = [
-  {
-    id: "docs-context-engine",
-    name: "Docs Context Engine",
-    type: "DOCUMENTATION",
-    status: "Running",
-    endpoint: "mcp://docs-engine.local",
-    requests: "12.4k",
-    latency: "142ms",
-    icon: "description",
-    glow: "from-blue-500/20 to-cyan-500/10",
-  },
-  {
-    id: "website-knowledge-base",
-    name: "Website Knowledge Base",
-    type: "WEBSITE",
-    status: "Indexing",
-    endpoint: "mcp://website-runtime.local",
-    requests: "8.1k",
-    latency: "89ms",
-    icon: "language",
-    glow: "from-violet-500/20 to-fuchsia-500/10",
-  },
-]
+import { useRouter }
+from "next/navigation";
 
-export default function McpServers() {
-    const router = useRouter();
+import Sidebar
+from "@/components/dashboard/sidebar";
+
+import TopNavbar
+from "@/components/dashboard/top-navbar";
+
+import {
+  createClient,
+} from "@/lib/vector/client";
+
+export default function MCPServersPage() {
+
+  const supabase =
+    createClient();
+
+  const router =
+    useRouter();
+
+  // ==========================================
+  // STATE
+  // ==========================================
+
+  const [user, setUser] =
+    useState<any>(null);
+
+  const [mcps, setMcps] =
+    useState<any[]>([]);
+
+  const [loading, setLoading] =
+    useState(true);
+
+  // ==========================================
+  // AUTH + FETCH
+  // ==========================================
+
+  useEffect(() => {
+
+    async function loadData() {
+
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+
+      if (authError || !user) {
+
+        router.push("/login");
+
+        return;
+      }
+
+      setUser(user);
+
+      const {
+        data,
+        error,
+      } = await supabase
+        .from("mcp_servers")
+        .select("*")
+        .eq("user_id", user.id)
+        .order("created_at", {
+          ascending: false,
+        });
+
+      if (!error && data) {
+
+        setMcps(data);
+      }
+
+      setLoading(false);
+    }
+
+    loadData();
+
+  }, []);
+
+  // ==========================================
+  // LOADING
+  // ==========================================
+
+  if (loading) {
+
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-[#020617] text-white">
+
+        <div className="flex items-center gap-4">
+
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-300 border-t-transparent" />
+
+          <span className="text-white/60">
+            Loading MCP Servers...
+          </span>
+
+        </div>
+
+      </div>
+    );
+  }
+
   return (
-    <>
-    <Sidebar />
-    <main className="relative min-h-screen bg-[#020617] text-white">
+    <main className="min-h-screen bg-[#020617] text-white">
 
       {/* MATERIAL ICONS */}
       <link
@@ -44,174 +116,204 @@ export default function McpServers() {
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
       />
 
-      {/* GRID BACKGROUND */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-40"
-        style={{
-          backgroundSize: "40px 40px",
-          backgroundImage:
-            "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
-          maskImage:
-            "radial-gradient(circle at center, black, transparent 80%)",
-        }}
-      />
+      <Sidebar />
 
-      {/* GLOW EFFECTS */}
-      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[140px]" />
+      <TopNavbar user={user} />
 
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-violet-500/10 blur-[140px]" />
+      {/* MAIN */}
+      <div className="ml-64 mt-16 min-h-[calc(100vh-64px)] overflow-y-auto">
 
-      {/* CONTENT */}
-      <section className="relative z-10 px-6 py-16">
+        <div className="relative min-h-full overflow-hidden px-10 py-10">
 
-        {/* HEADER */}
-        <div className="mx-auto mb-12 flex max-w-7xl items-end justify-between">
+          {/* GRID */}
+          <div
+            className="pointer-events-none absolute inset-0 opacity-40"
+            style={{
+              backgroundSize:
+                "40px 40px",
 
-          <div>
+              backgroundImage:
+                "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
 
-            <p className="mb-3 font-mono text-xs uppercase tracking-[0.3em] text-blue-200/50">
-              MCP INFRASTRUCTURE
-            </p>
+              maskImage:
+                "radial-gradient(circle at center, black, transparent 80%)",
+            }}
+          />
 
-            <h1 className="text-5xl font-bold tracking-tight">
-              MCP Servers
-            </h1>
+          {/* GLOWS */}
+          <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[140px]" />
 
-            <p className="mt-4 max-w-2xl text-lg text-white/50">
-              Manage deployed runtimes, ingestion sources, embeddings,
-              vector indexing, and live MCP infrastructure.
-            </p>
+          <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-violet-500/10 blur-[140px]" />
 
-          </div>
+          {/* CONTENT */}
+          <div className="relative z-10">
 
-          {/* CREATE BUTTON */}
-          <button className="flex cursor-pointer items-center gap-3 rounded-2xl bg-blue-200 px-6 py-4 font-semibold text-[#020617] shadow-[0_0_30px_rgba(173,198,255,0.25)] transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]">
+            {/* HEADER */}
+            <div className="mb-14 flex items-center justify-between">
 
-            <span className="material-symbols-outlined">
-              add
-            </span>
+              <div>
 
-            Create MCP Server
+                <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.3em] text-blue-200/50">
+                  MCP INFRASTRUCTURE
+                </p>
 
-          </button>
+                <h1 className="text-6xl font-bold tracking-tight">
+                  MCP Servers
+                </h1>
 
-        </div>
+                <p className="mt-4 max-w-3xl text-xl leading-relaxed text-white/50">
+                  Manage deployed runtimes, ingestion sources,
+                  embeddings, vector indexing, and live MCP infrastructure.
+                </p>
 
-        {/* CONDITIONAL */}
-        {!hasServers ? (
+              </div>
 
-          /* EMPTY STATE */
-<div className="mx-auto flex min-h-[42vh] max-w-4xl flex-col items-center justify-center rounded-[2rem] border border-white/10 bg-white/[0.03] px-8 py-14 backdrop-blur-xl">
-            {/* ICON */}
-            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-[2rem] border border-white/10 bg-blue-400/10 shadow-[0_0_50px_rgba(59,130,246,0.15)]">
-
-              <span className="material-symbols-outlined text-5xl text-blue-200">
-                dns
-              </span>
-
-            </div>
-
-            {/* TEXT */}
-                <h2 className="mb-3 text-center text-3xl font-bold tracking-tight">
-              No MCP Servers Yet
-
-            </h2>
-
-<p className="mb-8 max-w-xl text-center text-base leading-relaxed text-white/50">
-              You haven’t provisioned any MCP servers yet. Start by creating
-              your first runtime to ingest websites, documentation, PDFs,
-              and AI-ready knowledge sources.
-
-            </p>
-
-            {/* ACTIONS */}
-            <div className="flex flex-wrap items-center justify-center gap-4">
-
-              <button className="flex cursor-pointer items-center gap-3 rounded-2xl bg-blue-200 px-8 py-4 font-semibold text-[#020617] shadow-[0_0_35px_rgba(173,198,255,0.25)] transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]">
-
-                <span className="material-symbols-outlined">
-                  rocket_launch
-                </span>
-
-                Create First MCP
-
-              </button>
-
-              <button className="flex cursor-pointer items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.03] px-8 py-4 text-white/70 backdrop-blur-xl transition hover:border-blue-300/20 hover:bg-white/[0.05] hover:text-white active:scale-[0.98]">
-
-                <span className="material-symbols-outlined">
-                  auto_awesome
-                </span>
-
-                View Documentation
-
-              </button>
-
-            </div>
-
-            {/* INFO CARDS */}
-<div className="mt-12 grid w-full grid-cols-1 gap-4 md:grid-cols-3">
-
-             
-
-          </div>
-          </div>
-
-
-        ) : (
-
-          /* SERVERS GRID */
-          <div className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-
-            {servers.map((server) => (
-              <div
-                key={server.name}
-                  onClick={() =>
-                    router.push(`/dashboard/mcp-servers/${server.id}`)
-  }
-                className="group cursor-pointer relative rounded-3xl border border-white/10 bg-[#0B1120]/70 p-6 backdrop-blur-xl transition hover:-translate-y-1 hover:border-blue-300/20 hover:shadow-[0_0_40px_rgba(59,130,246,0.08)]"
+              <button
+                onClick={() =>
+                  router.push("/create")
+                }
+                className="rounded-2xl bg-blue-200 px-8 py-5 font-semibold text-[#020617] shadow-[0_0_35px_rgba(173,198,255,0.25)] transition hover:scale-[1.02] hover:brightness-110"
               >
 
-                {/* GLOW */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${server.glow} opacity-0 transition duration-500 group-hover:opacity-100`}
-                />
+                + Create MCP Server
 
-                {/* CONTENT */}
-                <div className="relative z-10">
+              </button>
 
-                  {/* TOP */}
-                  <div className="mb-6 flex items-start justify-between">
+            </div>
 
-                    <div className="flex items-center gap-4">
+            {/* EMPTY */}
+            {mcps.length === 0 && (
 
-                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
+              <div className="flex min-h-[500px] flex-col items-center justify-center rounded-[2rem] border border-dashed border-white/10 bg-white/[0.02] text-center">
 
-                        <span className="material-symbols-outlined text-3xl text-blue-200">
-                          {server.icon}
+                <div className="mb-8 flex h-28 w-28 items-center justify-center rounded-[2rem] border border-white/10 bg-white/[0.03]">
+
+                  <span className="material-symbols-outlined text-6xl text-blue-200">
+                    dns
+                  </span>
+
+                </div>
+
+                <h2 className="mb-4 text-5xl font-bold">
+                  No MCP Servers Found
+                </h2>
+
+                <p className="max-w-2xl text-lg leading-relaxed text-white/50">
+
+                  You haven't deployed any MCP infrastructure yet.
+
+                </p>
+
+              </div>
+            )}
+
+            {/* MCP GRID */}
+            {mcps.length > 0 && (
+
+              <div className="grid grid-cols-1 gap-8 lg:grid-cols-2">
+
+                {mcps.map((server) => (
+
+                  <button
+                    key={server.id}
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/mcp-servers/${server.id}`
+                      )
+                    }
+                    className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0B1120]/70 p-8 text-left backdrop-blur-xl transition hover:-translate-y-1 hover:border-blue-300/20"
+                  >
+
+                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-violet-500/10 opacity-0 transition group-hover:opacity-100" />
+
+                    <div className="relative z-10">
+
+                      {/* TOP */}
+                      <div className="mb-8 flex items-start justify-between">
+
+                        <div className="flex items-center gap-5">
+
+                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-300/10 bg-blue-400/10">
+
+                            <span className="material-symbols-outlined text-3xl text-blue-200">
+
+                              {
+                                server.source_type === "Website"
+                                  ? "language"
+                                  : server.source_type === "PDF"
+                                  ? "picture_as_pdf"
+                                  : "description"
+                              }
+
+                            </span>
+
+                          </div>
+
+                          <div>
+
+                            <h2 className="text-3xl font-bold">
+                              {server.name}
+                            </h2>
+
+                            <div className="mt-3 flex items-center gap-3">
+
+                              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-white/50">
+                                {server.source_type}
+                              </span>
+
+                              <div className="flex items-center gap-2">
+
+                                <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-green-300">
+                                  Running
+                                </span>
+
+                              </div>
+
+                            </div>
+
+                          </div>
+
+                        </div>
+
+                        <span className="material-symbols-outlined text-white/30">
+                          more_vert
                         </span>
 
                       </div>
 
-                      <div>
+                      {/* URL */}
+                      <div className="mb-8 rounded-2xl border border-white/5 bg-white/[0.02] p-4">
 
-                        <h3 className="text-xl font-semibold">
-                          {server.name}
-                        </h3>
+                        <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                          Source URL
+                        </p>
 
-                        <div className="mt-2 flex items-center gap-2">
+                        <p className="line-clamp-2 text-sm text-white/70">
+                          {server.source_url}
+                        </p>
 
-                          <span className="rounded-full border border-white/10 bg-white/[0.03] px-2 py-1 font-mono text-[10px] uppercase tracking-widest text-white/60">
-                            {server.type}
-                          </span>
+                      </div>
 
-                          <span className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-green-300">
+                      {/* FOOTER */}
+                      <div className="flex items-center justify-between">
 
-                            <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+                        <div>
 
-                            {server.status}
+                          <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                            Endpoint
+                          </p>
 
-                          </span>
+                          <code className="text-sm text-blue-200">
+                            {server.endpoint}
+                          </code>
+
+                        </div>
+
+                        <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/60 transition group-hover:border-blue-300/20 group-hover:text-white">
+
+                          Open Runtime →
 
                         </div>
 
@@ -219,90 +321,18 @@ export default function McpServers() {
 
                     </div>
 
-                    <button className="cursor-pointer text-white/40 transition hover:text-white">
-
-                      <span className="material-symbols-outlined">
-                        more_vert
-                      </span>
-
-                    </button>
-
-                  </div>
-
-                  {/* STATS */}
-                  <div className="grid grid-cols-2 gap-y-5 border-y border-white/5 py-6">
-
-                    <div>
-                      <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40">
-                        Requests
-                      </p>
-
-                      <p className="font-semibold">
-                        {server.requests}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40">
-                        Latency
-                      </p>
-
-                      <p className="font-semibold">
-                        {server.latency}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40">
-                        Runtime
-                      </p>
-
-                      <p className="font-semibold">
-                        Active
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40">
-                        Status
-                      </p>
-
-                      <p className="font-semibold text-green-300">
-                        Healthy
-                      </p>
-                    </div>
-
-                  </div>
-
-                  {/* ENDPOINT */}
-                  <div className="mt-6 flex items-center justify-between">
-
-                    <code className="rounded-xl bg-blue-400/10 px-3 py-2 font-mono text-xs text-blue-200">
-                      {server.endpoint}
-                    </code>
-
-                    <button className="cursor-pointer text-white/40 transition hover:text-blue-200">
-
-                      <span className="material-symbols-outlined">
-                        content_copy
-                      </span>
-
-                    </button>
-
-                  </div>
-
-                </div>
+                  </button>
+                ))}
 
               </div>
-            ))}
+            )}
 
           </div>
 
-        )}
+        </div>
 
-      </section>
+      </div>
 
     </main>
-    </>
-  )
+  );
 }
