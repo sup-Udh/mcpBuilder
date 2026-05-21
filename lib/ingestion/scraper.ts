@@ -684,6 +684,9 @@ async function scrapeSinglePage(
 
     return {
 
+      serverId:
+        process.env.SERVER_ID || "default",
+
       title:
         extracted.title,
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/vector/client"
 
@@ -71,6 +71,35 @@ export default function CreatePage() {
   const [error, setError] =
     useState("")
 
+  const [deployStatus, setDeployStatus] =
+    useState("")
+
+  const [deployServerId, setDeployServerId] =
+    useState<string | null>(null)
+
+  const [deployStats, setDeployStats] =
+    useState<{
+      totalDocuments?: number
+      totalChunks?: number
+      totalEmbeddings?: number
+      endpoint?: string
+    }>({})
+
+  const pollRef =
+    useRef<NodeJS.Timeout | null>(null)
+
+  // =========================================
+  // CLEANUP POLLING ON UNMOUNT
+  // =========================================
+
+  useEffect(() => {
+    return () => {
+      if (pollRef.current) {
+        clearInterval(pollRef.current)
+      }
+    }
+  }, [])
+
   /*
     =========================================
     NEXT BUTTON
@@ -130,15 +159,17 @@ export default function CreatePage() {
 
       setError("")
 
+      setDeployStatus("pending")
+
       // =====================================
-      // GET AUTH USER
+      // GET AUTH SESSION TOKEN
       // =====================================
 
       const {
-        data: { user },
-      } = await supabase.auth.getUser()
+        data: { session },
+      } = await supabase.auth.getSession()
 
-      if (!user) {
+      if (!session) {
         setError(
           "You must be logged in."
         )
@@ -149,52 +180,121 @@ export default function CreatePage() {
       }
 
       // =====================================
-      // INSERT MCP SERVER
+      // CALL DEPLOY API
       // =====================================
 
-      const { error } =
-        await supabase
-          .from("mcp_servers")
-          .insert({
-            user_id: user.id,
-
+      const response = await fetch(
+        "/api/deploy",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type":
+              "application/json",
+            Authorization:
+              `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
             name: serverName,
-
-            source_type:
+            sourceUrl,
+            sourceType:
               selectedSource,
+          }),
+        }
+      )
 
-            source_url:
-              sourceUrl,
+      const data =
+        await response.json()
 
-            status: "deploying",
-
-            runtime_status:
-              "initializing",
-
-            endpoint: `mcp://${serverName
-              .toLowerCase()
-              .replace(/\s+/g, "-")}.local`,
-          })
-
-      if (error) {
-        console.error(error)
-
-        setError(error.message)
+      if (!response.ok || !data.success) {
+        setError(
+          data.error ||
+            "Deployment failed"
+        )
 
         setDeploying(false)
 
         return
       }
 
+      const serverId = data.serverId
+
+      setDeployServerId(serverId)
+
       // =====================================
-      // SUCCESS ANIMATION
+      // POLL STATUS
       // =====================================
 
-      setTimeout(() => {
-        router.push(
-          "/dashboard/mcp-servers"
-        )
-      }, 1800)
+      pollRef.current = setInterval(
+        async () => {
+          try {
+            const statusRes =
+              await fetch(
+                `/api/deploy/status?serverId=${serverId}`
+              )
+
+            const statusData =
+              await statusRes.json()
+
+            if (
+              statusData.success &&
+              statusData.server
+            ) {
+              const server =
+                statusData.server
+
+              setDeployStatus(
+                server.deploymentStatus
+              )
+
+              setDeployStats({
+                totalDocuments:
+                  server.totalDocuments,
+                totalChunks:
+                  server.totalChunks,
+                totalEmbeddings:
+                  server.totalEmbeddings,
+                endpoint:
+                  server.endpoint,
+              })
+
+              // Terminal states
+              if (
+                server.deploymentStatus ===
+                  "operational" ||
+                server.deploymentStatus ===
+                  "failed"
+              ) {
+                if (pollRef.current) {
+                  clearInterval(
+                    pollRef.current
+                  )
+                }
+
+                if (
+                  server.deploymentStatus ===
+                  "operational"
+                ) {
+                  setTimeout(() => {
+                    router.push(
+                      "/dashboard/mcp-servers"
+                    )
+                  }, 2500)
+                } else {
+                  setError(
+                    server.errorMessage ||
+                      "Deployment failed"
+                  )
+
+                  setDeploying(false)
+                }
+              }
+            }
+          } catch {
+            // Continue polling
+          }
+        },
+        2000
+      )
     } catch (err) {
       console.error(err)
 
@@ -424,13 +524,17 @@ export default function CreatePage() {
                 <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-full border border-green-400/20 bg-green-400/10">
 
                   <span className="material-symbols-outlined text-6xl text-green-300">
-                    verified
+                    {deploying ? "sync" : "verified"}
                   </span>
 
                 </div>
 
                 <h2 className="mb-3 text-4xl font-bold tracking-tight">
-                  Ready to Deploy
+                  {deploying
+                    ? deployStatus === "operational"
+                      ? "Deployment Complete!"
+                      : "Deploying MCP..."
+                    : "Ready to Deploy"}
                 </h2>
 
               </div>
@@ -472,6 +576,128 @@ export default function CreatePage() {
                   </p>
 
                 </div>
+
+                {/* DEPLOYMENT STATUS */}
+                {deploying && (
+                  <div className="mt-6 space-y-3 border-t border-white/5 pt-6">
+
+                    <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.2em] text-blue-200/70">
+                      Pipeline Status
+                    </p>
+
+                    {[
+                      { key: "pending", label: "Initializing pipeline" },
+                      { key: "scraping", label: "Scraping website content" },
+                      { key: "chunking", label: "Chunking documents" },
+                      { key: "embedding", label: "Generating embeddings" },
+                      { key: "storing", label: "Storing vectors" },
+                      { key: "deploying", label: "Deploying to Cloudflare" },
+                      { key: "operational", label: "MCP Server Live" },
+                    ].map((statusStep) => {
+                      const statusOrder = [
+                        "pending",
+                        "scraping",
+                        "chunking",
+                        "embedding",
+                        "storing",
+                        "deploying",
+                        "operational",
+                      ]
+
+                      const currentIdx =
+                        statusOrder.indexOf(
+                          deployStatus
+                        )
+
+                      const stepIdx =
+                        statusOrder.indexOf(
+                          statusStep.key
+                        )
+
+                      const isComplete =
+                        stepIdx < currentIdx
+
+                      const isCurrent =
+                        stepIdx === currentIdx
+
+                      const isPending =
+                        stepIdx > currentIdx
+
+                      return (
+                        <div
+                          key={statusStep.key}
+                          className={`flex items-center gap-3 rounded-xl px-4 py-2 transition-all duration-300 ${
+                            isCurrent
+                              ? "bg-blue-400/10 text-blue-200"
+                              : isComplete
+                              ? "text-green-300"
+                              : "text-white/20"
+                          }`}
+                        >
+
+                          {isComplete ? (
+                            <span className="material-symbols-outlined text-base text-green-400">
+                              check_circle
+                            </span>
+                          ) : isCurrent ? (
+                            <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-300 border-t-transparent" />
+                          ) : (
+                            <span className="material-symbols-outlined text-base text-white/20">
+                              radio_button_unchecked
+                            </span>
+                          )}
+
+                          <span className="text-sm">
+                            {statusStep.label}
+                          </span>
+
+                        </div>
+                      )
+                    })}
+
+                    {/* STATS */}
+                    {(deployStats.totalDocuments || deployStats.totalChunks || deployStats.totalEmbeddings) && (
+                      <div className="mt-4 flex gap-6 border-t border-white/5 pt-4">
+
+                        {deployStats.totalDocuments ? (
+                          <div>
+                            <p className="font-mono text-[10px] uppercase tracking-widest text-white/30">Docs</p>
+                            <p className="text-lg font-semibold text-white/80">{deployStats.totalDocuments}</p>
+                          </div>
+                        ) : null}
+
+                        {deployStats.totalChunks ? (
+                          <div>
+                            <p className="font-mono text-[10px] uppercase tracking-widest text-white/30">Chunks</p>
+                            <p className="text-lg font-semibold text-white/80">{deployStats.totalChunks}</p>
+                          </div>
+                        ) : null}
+
+                        {deployStats.totalEmbeddings ? (
+                          <div>
+                            <p className="font-mono text-[10px] uppercase tracking-widest text-white/30">Embeddings</p>
+                            <p className="text-lg font-semibold text-white/80">{deployStats.totalEmbeddings}</p>
+                          </div>
+                        ) : null}
+
+                      </div>
+                    )}
+
+                    {/* ENDPOINT */}
+                    {deployStats.endpoint &&
+                      deployStatus === "operational" && (
+                      <div className="mt-4 rounded-2xl border border-green-400/20 bg-green-400/5 p-4">
+                        <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-green-300/60">
+                          Endpoint
+                        </p>
+                        <p className="break-all font-mono text-sm text-green-200">
+                          {deployStats.endpoint}
+                        </p>
+                      </div>
+                    )}
+
+                  </div>
+                )}
 
               </div>
 

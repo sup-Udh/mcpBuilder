@@ -30,7 +30,11 @@ import { EmbeddingChunk } from '../embeddings/types';
 // VECTOR STORAGE
 // ==========================================
 
-import { storeEmbeddedChunks } from '../vector/supabase';
+import {
+  storeEmbeddedChunks,
+  storeDocuments,
+  updateServerStatus,
+} from '../vector/supabase';
 
 // ==========================================
 // TYPES
@@ -78,6 +82,19 @@ export async function processUrl(
   );
 
   let documents: IngestedItem[] = [];
+
+  // ==========================================
+  // UPDATE STATUS: SCRAPING
+  // ==========================================
+
+  try {
+    await updateServerStatus(serverId, {
+      deployment_status: 'scraping',
+      ingest_status: 'scraping',
+    });
+  } catch {
+    // Status update is best-effort
+  }
 
   // ==========================================
   // RSS DETECTION
@@ -246,6 +263,50 @@ export async function processUrl(
   });
 
   // ==========================================
+  // STORE DOCUMENTS IN SUPABASE
+  // ==========================================
+
+  console.log('\n====================================');
+  console.log('STORING DOCUMENTS');
+  console.log('====================================');
+
+  let documentUrlToId = new Map<string, string>();
+
+  try {
+    const storedDocs = await storeDocuments(
+      serverId,
+      documents
+    );
+
+    for (const doc of storedDocs) {
+      documentUrlToId.set(doc.url, doc.id);
+    }
+
+    console.log(
+      `Stored ${storedDocs.length} documents with IDs`
+    );
+  } catch (storeError) {
+    console.error(
+      'Failed to store documents (continuing with pipeline):',
+      storeError
+    );
+  }
+
+  // ==========================================
+  // UPDATE STATUS: CHUNKING
+  // ==========================================
+
+  try {
+    await updateServerStatus(serverId, {
+      deployment_status: 'chunking',
+      ingest_status: 'chunking',
+      total_documents: documents.length,
+    });
+  } catch {
+    // Status update is best-effort
+  }
+
+  // ==========================================
   // CHUNKING
   // ==========================================
 
@@ -259,6 +320,20 @@ export async function processUrl(
 
   const chunks =
     chunkDocuments(documents);
+
+  // ==========================================
+  // UPDATE STATUS: EMBEDDING
+  // ==========================================
+
+  try {
+    await updateServerStatus(serverId, {
+      deployment_status: 'embedding',
+      ingest_status: 'embedding',
+      total_chunks: chunks.length,
+    });
+  } catch {
+    // Status update is best-effort
+  }
 
   // ==========================================
   // EMBEDDINGS
@@ -282,6 +357,20 @@ export async function processUrl(
   );
 
   // ==========================================
+  // UPDATE STATUS: STORING
+  // ==========================================
+
+  try {
+    await updateServerStatus(serverId, {
+      deployment_status: 'storing',
+      ingest_status: 'storing',
+      total_embeddings: embeddedChunks.length,
+    });
+  } catch {
+    // Status update is best-effort
+  }
+
+  // ==========================================
   // STORE IN VECTOR DB
   // ==========================================
 
@@ -296,7 +385,8 @@ export async function processUrl(
   );
 
   await storeEmbeddedChunks(
-    embeddedChunks
+    embeddedChunks,
+    documentUrlToId
   );
 
   console.log(

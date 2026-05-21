@@ -1,20 +1,23 @@
 // lib/processing/chunker.ts
 
-import { IngestedItem } from '../ingestion/types';
+import crypto from "crypto";
 
-import { Chunk } from './types';
+import { IngestedItem } from "../ingestion/types";
+
+import { Chunk } from "./types";
 
 // ==========================================
 // CONFIG
 // ==========================================
 
-// smaller chunks = better retrieval precision
-const TARGET_WORDS = 120;
+// larger chunks = better semantic context
+const TARGET_WORDS = 220;
 
-const MIN_WORDS = 40;
+const MIN_WORDS = 50;
 
-// fallback split threshold
-const MAX_BLOCK_WORDS = 300;
+const MAX_BLOCK_WORDS = 450;
+
+const CHUNK_OVERLAP_WORDS = 35;
 
 // ==========================================
 // WORD COUNT
@@ -23,10 +26,76 @@ const MAX_BLOCK_WORDS = 300;
 function countWords(
   text: string
 ): number {
+
   return text
     .trim()
     .split(/\s+/)
     .filter(Boolean).length;
+}
+
+// ==========================================
+// TOKEN ESTIMATE
+// ==========================================
+
+function estimateTokens(
+  text: string
+): number {
+
+  return Math.ceil(
+    text.length / 4
+  );
+}
+
+// ==========================================
+// NORMALIZE TEXT
+// ==========================================
+
+function normalizeText(
+  text: string
+): string {
+
+  return text
+
+    // invisible unicode
+    .replace(
+      /[\u200B-\u200D\uFEFF]/g,
+      ""
+    )
+
+    // repeated spaces
+    .replace(
+      /[ \t]+/g,
+      " "
+    )
+
+    // huge newlines
+    .replace(
+      /\n{3,}/g,
+      "\n\n"
+    )
+
+    .trim();
+}
+
+// ==========================================
+// SENTENCE SPLITTER
+// ==========================================
+
+function splitSentences(
+  text: string
+): string[] {
+
+  return text
+
+    .split(
+      /(?<=[.!?])\s+(?=[A-Z])/g
+    )
+
+    .map((s) =>
+      s.trim()
+    )
+
+    .filter(Boolean);
 }
 
 // ==========================================
@@ -36,36 +105,43 @@ function countWords(
 function splitLargeBlock(
   block: string
 ): string[] {
-  const sentences = block.split(
-    /(?<=[.!?])\s+/
-  );
 
-  const chunks: string[] = [];
+  const sentences =
+    splitSentences(block);
 
-  let currentChunk = '';
+  const chunks: string[] =
+    [];
+
+  let currentChunk = "";
 
   let currentWords = 0;
 
   for (const sentence of sentences) {
+
     const sentenceWords =
       countWords(sentence);
 
     if (
-      currentWords + sentenceWords >
+      currentWords +
+        sentenceWords >
         MAX_BLOCK_WORDS &&
       currentChunk.length > 0
     ) {
+
       chunks.push(
         currentChunk.trim()
       );
 
-      currentChunk = sentence;
+      currentChunk =
+        sentence;
 
       currentWords =
         sentenceWords;
+
     } else {
+
       currentChunk +=
-        ' ' + sentence;
+        " " + sentence;
 
       currentWords +=
         sentenceWords;
@@ -73,9 +149,10 @@ function splitLargeBlock(
   }
 
   if (
-    currentChunk.trim().length >
-    0
+    currentChunk.trim()
+      .length > 0
   ) {
+
     chunks.push(
       currentChunk.trim()
     );
@@ -91,52 +168,58 @@ function splitLargeBlock(
 function splitIntoBlocks(
   content: string
 ): string[] {
-  const rawBlocks = content
-    .split(/\n\s*\n/g)
 
-    .map((block) =>
-      block.trim()
-    )
+  const rawBlocks =
+    content
 
-    .filter(
-      (block) =>
-        block.length > 0
-    )
+      .split(/\n\s*\n/g)
 
-    // remove tiny garbage blocks
-    .filter(
-      (block) =>
-        countWords(block) >= 3
-    );
+      .map((block) =>
+        normalizeText(block)
+      )
 
-  const finalBlocks: string[] =
-    [];
+      .filter(
+        (block) =>
+          block.length > 0
+      )
 
-  // ======================================
-  // FALLBACK SPLITTING
-  // ======================================
+      // remove tiny junk
+      .filter(
+        (block) =>
+          countWords(block) >= 3
+      );
+
+  const finalBlocks:
+    string[] = [];
 
   for (const block of rawBlocks) {
+
     const wordCount =
       countWords(block);
 
-    // oversized block
     if (
       wordCount >
       MAX_BLOCK_WORDS
     ) {
+
       console.log(
-        `Large block detected (${wordCount} words). Applying fallback split...`
+        `Large block detected (${wordCount} words). Splitting...`
       );
 
       const splitBlocks =
-        splitLargeBlock(block);
+        splitLargeBlock(
+          block
+        );
 
       finalBlocks.push(
         ...splitBlocks
       );
+
     } else {
-      finalBlocks.push(block);
+
+      finalBlocks.push(
+        block
+      );
     }
   }
 
@@ -161,38 +244,48 @@ function splitIntoBlocks(
 function cleanHeading(
   text: string
 ): string {
+
   return text
 
-    // remove markdown heading syntax
-    .replace(/^#+\s*/, '')
+    .replace(
+      /^#+\s*/,
+      ""
+    )
 
-    // collapse spaces
-    .replace(/[ \t]+/g, ' ')
+    .replace(
+      /[ \t]+/g,
+      " "
+    )
 
     .trim();
 }
 
 // ==========================================
-// DETECT HEADINGS
+// HEADING DETECTOR
 // ==========================================
 
 function isHeading(
   block: string
 ): boolean {
+
   const trimmed =
     block.trim();
 
   return (
-    // markdown headings
-    trimmed.startsWith('#') ||
 
-    // docs/wiki headings
+    // markdown headings
+    trimmed.startsWith("#") ||
+
+    // docs headings
     (
-      trimmed.length < 120 &&
+      trimmed.length <
+        120 &&
       /^[A-Z0-9][A-Za-z0-9\s\-\:\(\)\.]+$/.test(
         trimmed
       ) &&
-      countWords(trimmed) <= 12
+      countWords(
+        trimmed
+      ) <= 12
     )
   );
 }
@@ -204,62 +297,66 @@ function isHeading(
 function cleanChunkText(
   text: string
 ): string {
-  return text
 
-    // remove markdown images
-    .replace(
-      /!\[[^\]]*\]\([^)]+\)/g,
-      ''
-    )
+  return normalizeText(
 
-    // remove raw urls
-    .replace(
-      /https?:\/\/\S+/g,
-      ''
-    )
+    text
 
-    // markdown links → keep text
-    .replace(
-      /\[([^\]]+)\]\([^)]+\)/g,
-      '$1'
-    )
+      // markdown images
+      .replace(
+        /!\[[^\]]*\]\([^)]+\)/g,
+        ""
+      )
 
-    // repeated separators
-    .replace(
-      /[-=_]{4,}/g,
-      ''
-    )
+      // raw urls
+      .replace(
+        /https?:\/\/\S+/g,
+        ""
+      )
 
-    // excessive newlines
-    .replace(
-      /\n{3,}/g,
-      '\n\n'
-    )
+      // markdown links -> keep text
+      .replace(
+        /\[([^\]]+)\]\([^)]+\)/g,
+        "$1"
+      )
 
-    // collapse spaces
-    .replace(
-      /[ \t]+/g,
-      ' '
-    )
+      // separators
+      .replace(
+        /[-=_]{4,}/g,
+        ""
+      )
 
-    // remove empty markdown headings
-    .replace(
-      /^#+\s*$/gm,
-      ''
-    )
+      // empty headings
+      .replace(
+        /^#+\s*$/gm,
+        ""
+      )
+  );
+}
 
-    // trim lines
-    .split('\n')
-    .map((line) =>
-      line.trim()
-    )
+// ==========================================
+// OVERLAP BUILDER
+// ==========================================
 
-    // remove empty lines
-    .filter(Boolean)
+function getOverlapText(
+  blocks: string[]
+): string[] {
 
-    .join('\n')
+  if (
+    blocks.length === 0
+  ) {
+    return [];
+  }
 
-    .trim();
+  const combined =
+    blocks.join(" ");
+
+  const words =
+    combined.split(/\s+/);
+
+  return words.slice(
+    -CHUNK_OVERLAP_WORDS
+  );
 }
 
 // ==========================================
@@ -271,18 +368,43 @@ function buildChunkText(
   heading: string,
   chunkBlocks: string[]
 ): string {
-  return cleanChunkText(
-    [
-      `Title: ${document.title}`,
 
-      `Heading: ${
+  return cleanChunkText(
+
+    [
+      `Document Title: ${document.title}`,
+
+      `Section: ${
         heading ||
         document.title
       }`,
 
+      `Source URL: ${document.url}`,
+
+      "",
+
       ...chunkBlocks,
-    ].join('\n\n')
+    ].join("\n\n")
   );
+}
+
+// ==========================================
+// CHUNK ID
+// ==========================================
+
+function createChunkId(
+  serverId: string,
+  url: string,
+  chunkIndex: number
+): string {
+
+  const base =
+    `${serverId}-${url}-${chunkIndex}`;
+
+  return crypto
+    .createHash("md5")
+    .update(base)
+    .digest("hex");
 }
 
 // ==========================================
@@ -292,6 +414,7 @@ function buildChunkText(
 export function chunkDocument(
   document: IngestedItem
 ): Chunk[] {
+
   console.log(
     `\nChunking document: ${document.title}`
   );
@@ -300,7 +423,10 @@ export function chunkDocument(
   // VALIDATE SERVER ID
   // ======================================
 
-  if (!document.serverId) {
+  if (
+    !document.serverId
+  ) {
+
     throw new Error(
       `Missing serverId on document: ${document.title}`
     );
@@ -315,10 +441,11 @@ export function chunkDocument(
     `Found ${blocks.length} semantic blocks`
   );
 
-  const chunks: Chunk[] = [];
-
-  let currentChunk: string[] =
+  const chunks: Chunk[] =
     [];
+
+  let currentChunk:
+    string[] = [];
 
   let currentWordCount = 0;
 
@@ -332,6 +459,7 @@ export function chunkDocument(
   // ======================================
 
   function flushChunk() {
+
     if (
       currentChunk.length === 0
     ) {
@@ -346,14 +474,30 @@ export function chunkDocument(
       );
 
     const finalWordCount =
-      countWords(chunkText);
+      countWords(
+        chunkText
+      );
+
+    const estimatedTokens =
+      estimateTokens(
+        chunkText
+      );
 
     if (
       finalWordCount >=
       MIN_WORDS
     ) {
+
+      const chunkId =
+        createChunkId(
+          document.serverId!,
+          document.url,
+          chunkIndex
+        );
+
       const chunk: Chunk = {
-        id: `${document.serverId}::${document.url}::chunk-${chunkIndex}`,
+
+        id: chunkId,
 
         serverId:
           document.serverId,
@@ -373,33 +517,62 @@ export function chunkDocument(
 
         sourceType:
           document.sourceType ||
-          'webpage',
+          "webpage",
 
         heading:
           currentHeading ||
           document.title,
 
-        metadata:
-          document.metadata ||
-          {},
+        metadata: {
+
+          ...(document.metadata ||
+            {}),
+
+          estimatedTokens,
+
+          chunkStrategy:
+            "semantic",
+
+          chunkedAt:
+            new Date().toISOString(),
+        },
       };
 
-      chunks.push(chunk);
-
-      console.log(
-        `Created chunk ${chunkIndex} (${finalWordCount} words)`
+      chunks.push(
+        chunk
       );
 
       console.log(
-        `Chunk Server ID: ${chunk.serverId}`
+        `Created chunk ${chunkIndex} (${finalWordCount} words | ${estimatedTokens} est tokens)`
       );
 
       chunkIndex++;
     }
 
-    currentChunk = [];
+    // ======================================
+    // OVERLAP PRESERVATION
+    // ======================================
 
-    currentWordCount = 0;
+    const overlapWords =
+      getOverlapText(
+        currentChunk
+      );
+
+    currentChunk =
+      overlapWords.length > 0
+        ? [
+            overlapWords.join(
+              " "
+            ),
+          ]
+        : [];
+
+    currentWordCount =
+      countWords(
+        overlapWords.join(
+          " "
+        )
+      );
   }
 
   // ======================================
@@ -411,7 +584,9 @@ export function chunkDocument(
     i < blocks.length;
     i++
   ) {
-    const block = blocks[i];
+
+    const block =
+      blocks[i];
 
     const blockWordCount =
       countWords(block);
@@ -420,7 +595,10 @@ export function chunkDocument(
     // HEADING DETECTION
     // ======================================
 
-    if (isHeading(block)) {
+    if (
+      isHeading(block)
+    ) {
+
       const newHeading =
         cleanHeading(block);
 
@@ -428,7 +606,6 @@ export function chunkDocument(
         `Detected heading: ${newHeading}`
       );
 
-      // flush previous section
       flushChunk();
 
       currentHeading =
@@ -438,7 +615,7 @@ export function chunkDocument(
     }
 
     // ======================================
-    // SIZE LIMIT SPLIT
+    // TARGET SIZE REACHED
     // ======================================
 
     if (
@@ -447,6 +624,7 @@ export function chunkDocument(
         TARGET_WORDS &&
       currentChunk.length > 0
     ) {
+
       flushChunk();
     }
 
@@ -454,7 +632,9 @@ export function chunkDocument(
     // ADD BLOCK
     // ======================================
 
-    currentChunk.push(block);
+    currentChunk.push(
+      block
+    );
 
     currentWordCount +=
       blockWordCount;
@@ -478,46 +658,60 @@ export function chunkDocument(
 }
 
 // ==========================================
-// MULTI-DOCUMENT CHUNKER
+// MULTI DOC CHUNKER
 // ==========================================
 
 export function chunkDocuments(
   documents: IngestedItem[]
 ): Chunk[] {
+
   console.log(
-    '\n===================================='
+    "\n===================================="
   );
 
   console.log(
-    'STARTING CHUNKING'
+    "STARTING CHUNKING"
   );
 
   console.log(
-    '===================================='
+    "===================================="
   );
 
-  const allChunks: Chunk[] =
-    [];
+  const allChunks:
+    Chunk[] = [];
 
   for (const document of documents) {
-    const chunks =
-      chunkDocument(document);
 
-    allChunks.push(
-      ...chunks
-    );
+    try {
+
+      const chunks =
+        chunkDocument(
+          document
+        );
+
+      allChunks.push(
+        ...chunks
+      );
+
+    } catch (error) {
+
+      console.error(
+        `Chunking failed for document: ${document.title}`,
+        error
+      );
+    }
   }
 
   console.log(
-    '\n===================================='
+    "\n===================================="
   );
 
   console.log(
-    'CHUNKING COMPLETE'
+    "CHUNKING COMPLETE"
   );
 
   console.log(
-    '===================================='
+    "===================================="
   );
 
   console.log(
