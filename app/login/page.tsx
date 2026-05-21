@@ -2,104 +2,42 @@
 
 import Link from "next/link"
 import { useState } from "react"
-import { useRouter } from "next/navigation";
-
 import { createClient } from "../../lib/vector/client"
 
 export default function LoginPage() {
-  const supabase = createClient();
-
-  const router = useRouter();
-
-  const [email, setEmail] =
-    useState("");
-
-  const [password, setPassword] =
-    useState("");
+  const supabase = createClient()
 
   const [loading, setLoading] =
-    useState(false);
+    useState(false)
+
+  const [acceptedTerms, setAcceptedTerms] =
+    useState(false)
 
   const [error, setError] =
-    useState("");
+    useState("")
 
-    async function signInWithGoogle() {
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
+  async function signInWithGoogle() {
+    if (!acceptedTerms) {
+      setError(
+        "You must accept the Terms and Privacy Policy before continuing."
+      )
 
-    options: {
-      redirectTo:
-        "http://localhost:3000/auth/callback",
-    },
-  });
-}
+      return
+    }
 
+    setError("")
 
-async function signInWithGitHub() {
-  await supabase.auth.signInWithOAuth({
-    provider: "github",
+    setLoading(true)
 
-    options: {
-      redirectTo:
-        "http://localhost:3000/auth/callback",
-    },
-  });
-}
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
 
-
-async function handleEmailAuth(
-  e: React.FormEvent
-) {
-  e.preventDefault();
-
-  setLoading(true);
-
-  setError("");
-
-  // =========================
-  // TRY LOGIN FIRST
-  // =========================
-
-  const loginResult =
-    await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-  // =========================
-  // LOGIN SUCCESS
-  // =========================
-
-  if (!loginResult.error) {
-    router.push("/dashboard");
-
-    return;
+      options: {
+        redirectTo:
+          "http://localhost:3000/auth/callback",
+      },
+    })
   }
-
-  // =========================
-  // CREATE USER
-  // =========================
-
-  const signupResult =
-    await supabase.auth.signUp({
-      email,
-      password,
-    });
-
-  if (signupResult.error) {
-    setError(
-      signupResult.error.message
-    );
-
-    setLoading(false);
-
-    return;
-  }
-
-  router.push("/dashboard");
-}
-
-
 
   return (
     <main className="min-h-screen bg-[#131314] text-[#E5E2E3] md:flex">
@@ -113,7 +51,7 @@ async function handleEmailAuth(
         {/* GLOW BACKGROUNDS */}
         <div className="animate-pulse-soft absolute left-[-15%] top-[-10%] h-[450px] w-[450px] rounded-full bg-blue-500/10 blur-[120px]" />
 
-        <div className="animate-pulse-soft absolute  right-[-15%] h-[450px] w-[450px] rounded-full bg-violet-500/10 blur-[120px]" />
+        <div className="animate-pulse-soft absolute right-[-15%] h-[450px] w-[450px] rounded-full bg-violet-500/10 blur-[120px]" />
 
         {/* HEADER */}
         <div className="relative z-20 mb-10 flex items-center justify-between">
@@ -164,9 +102,7 @@ async function handleEmailAuth(
               <div className="flex gap-1.5">
 
                 <div className="h-2.5 w-2.5 rounded-full bg-[#ff5f56]" />
-
                 <div className="h-2.5 w-2.5 rounded-full bg-[#ffbd2e]" />
-
                 <div className="h-2.5 w-2.5 rounded-full bg-[#27c93f]" />
 
               </div>
@@ -238,9 +174,7 @@ async function handleEmailAuth(
               <div className="relative z-10 flex h-14 w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3">
 
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04]">
-
                   <div className="h-3 w-3 rounded-full bg-[#60A5FA]" />
-
                 </div>
 
                 <div>
@@ -302,9 +236,7 @@ async function handleEmailAuth(
               <div className="relative z-10 flex h-14 w-full items-center gap-3 rounded-xl border border-white/10 bg-white/[0.02] px-3">
 
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/[0.04]">
-
                   <div className="h-3 w-3 rounded-full bg-violet-400" />
-
                 </div>
 
                 <div>
@@ -340,7 +272,6 @@ async function handleEmailAuth(
 
             </div>
 
-            {/* SVG GRAPH */}
             <div className="mt-4 h-16 w-full">
 
               <svg
@@ -354,20 +285,7 @@ async function handleEmailAuth(
                   stroke="#3B82F6"
                   strokeWidth="2"
                   opacity="0.9"
-                >
-
-                  <animate
-                    attributeName="d"
-                    dur="3s"
-                    repeatCount="indefinite"
-                    values="
-                    M0 45 Q 20 40, 40 50 T 80 30 T 120 45 T 160 20 L 200 35;
-                    M0 35 Q 20 50, 40 30 T 80 45 T 120 20 T 160 40 L 200 45;
-                    M0 45 Q 20 40, 40 50 T 80 30 T 120 45 T 160 20 L 200 35
-                  "
-                  />
-
-                </path>
+                />
 
               </svg>
 
@@ -395,64 +313,6 @@ async function handleEmailAuth(
 
                 <p className="text-xs font-bold">
                   4.2GB
-                </p>
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* DEPLOYMENT */}
-          <div className="animate-float col-span-3 row-span-3 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-2xl backdrop-blur-xl">
-
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#C2C6D6]">
-              Deployments
-            </span>
-
-            <div className="mt-5 space-y-3">
-
-              <div className="flex items-center justify-between text-xs">
-
-                <span className="text-white/60">
-                  main-branch
-                </span>
-
-                <span className="animate-pulse font-bold text-[#60A5FA]">
-                  Provisioning
-                </span>
-
-              </div>
-
-              <div className="h-1.5 rounded-full bg-white/5">
-
-                <div className="animate-loading-bar h-full rounded-full bg-[#3B82F6] shadow-[0_0_10px_#3B82F6]" />
-
-              </div>
-
-            </div>
-
-          </div>
-
-          {/* EXECUTION */}
-          <div className="col-span-7 row-span-3 flex items-center justify-between rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 shadow-2xl backdrop-blur-xl">
-
-            <div className="flex items-center gap-4">
-
-              <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-dashed border-[#3B82F6]/30">
-
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-[#3B82F6] border-t-transparent" />
-
-              </div>
-
-              <div>
-
-                <p className="text-xs font-bold">
-                  Processing AI Tool Execution
-                </p>
-
-                <p className="font-mono text-[10px] text-[#C2C6D6]">
-                  Executing: semantic_search('mcp_specs')
                 </p>
 
               </div>
@@ -516,126 +376,52 @@ async function handleEmailAuth(
 
           </div>
 
-          {/* SOCIALS */}
-          <div className="mb-8 space-y-3">
+          {/* GOOGLE LOGIN */}
+          <div className="space-y-5">
 
-            <button onClick={signInWithGoogle} type="button" className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
+            <button
+              onClick={signInWithGoogle}
+              disabled={!acceptedTerms || loading}
+              type="button"
+              className={`group flex h-14 w-full items-center justify-center gap-3 rounded-2xl border transition-all duration-300 ${
+                acceptedTerms
+                  ? "border-white/[0.08] bg-white/[0.03] hover:bg-white/[0.05]"
+                  : "cursor-not-allowed border-white/[0.03] bg-white/[0.01] opacity-50"
+              }`}
+            >
 
               <img
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY4WNBcTJm8taXcmMjLDoAN6mNV2vo6VyCbV6UZ47Risab1W6mjgUU-gM5T8AKScjpkJAzzWCaW5m6HvRcTshV5XZEBs1JDXJMFvLUx4mckkYJKlRpesPkGnljDAiKaxRnmLb9ZURAb_FPHUY9-PPCGHfwmRrE63gF2-Rv3wEreeAaS_XYoTWmuH6Uu3F-D_H2KOb1OlEHiIGpXigtzr-jAD8AmY_j1xeV0ZlWK8wCwPzDiwurVgWGvlphz0laTU_PIIOSpTG-dDNb"
+                src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg"
                 alt="Google"
                 className="h-5 w-5 transition-transform group-hover:scale-110"
               />
 
               <span className="font-medium">
-                Continue with Google
+                {loading
+                  ? "Redirecting..."
+                  : "Continue with Google"}
               </span>
 
             </button>
 
-            <button onClick={signInWithGitHub} type="button" className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
-
-              <span className="text-lg transition-transform group-hover:scale-110">
-                ⌘
-              </span>
-
-              <span className="font-medium">
-                Continue with GitHub
-              </span>
-
-            </button>
-
-          </div>
-
-          {/* DIVIDER */}
-          <div className="mb-8 flex items-center gap-4">
-
-            <div className="h-px flex-1 bg-white/10" />
-
-            <span className="font-mono text-[10px] uppercase tracking-widest text-[#C2C6D6]">
-              OR EMAIL
-            </span>
-
-            <div className="h-px flex-1 bg-white/10" />
-
-          </div>
-
-          {/* FORM */}
-          <form onSubmit={handleEmailAuth} className="space-y-6">
-
-            <div className="space-y-5">
-
-              <div>
-
-                <label className="mb-1 block font-mono text-[11px] uppercase text-[#C2C6D6]">
-                  Email Address
-                </label>
-
-                <input
-                  type="email"
-                  placeholder="name@company.com"
-                  className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-[#ADC6FF]"
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-
+            {/* ERROR */}
+            {error && (
+              <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-300">
+                {error}
               </div>
-
-              <div>
-
-                <div className="mb-1 flex items-center justify-between">
-
-                  <label className="font-mono text-[11px] uppercase text-[#C2C6D6]">
-                    Password
-                  </label>
-
-                  <button
-                    type="button"
-                    className="font-mono text-[11px] uppercase text-[#ADC6FF] hover:underline"
-                  >
-                    Forgot?
-                  </button>
-
-                </div>
-
-                <input
-                  type="password"
-                  placeholder="••••••••"
-                  className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-[#ADC6FF]"
-                  onChange={(e) => e.target.value}
-                />
-
-              </div>
-
-            </div>
-
-            {/* SUBMIT */}
-            <button className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#ADC6FF] font-bold text-[#002E6A] transition-all hover:brightness-110 active:scale-[0.98] shadow-[0_0_30px_rgba(59,130,246,0.35)]">
-
-              <span>
-              {loading
-                ? "Authenticating..."
-                : "Continue with Email"}
-            </span>
-
-              <span>
-                →
-              </span>
-
-            </button>
-
-            {
-                error && (
-                  <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300">
-                    {error}
-                  </div>
-                )
-            }
+            )}
 
             {/* TERMS */}
-            <div className="mt-8 flex items-start gap-3">
+            <div className="mt-8 flex items-start gap-3 rounded-2xl border border-white/5 bg-white/[0.02] p-4">
 
               <input
                 type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) =>
+                  setAcceptedTerms(
+                    e.target.checked
+                  )
+                }
                 className="mt-1 h-4 w-4 cursor-pointer rounded-sm border-white/20 bg-transparent"
               />
 
@@ -662,24 +448,6 @@ async function handleEmailAuth(
               </p>
 
             </div>
-
-          </form>
-
-          {/* LOGIN */}
-          <div className="mt-12 text-center">
-
-            <p className="text-[14px] text-[#C2C6D6]">
-
-              Already have an account?{" "}
-
-              <Link
-                href="#"
-                className="font-bold text-[#ADC6FF] hover:underline"
-              >
-                Log in
-              </Link>
-
-            </p>
 
           </div>
 
