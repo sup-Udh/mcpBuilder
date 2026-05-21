@@ -1,8 +1,106 @@
 "use client"
 
 import Link from "next/link"
+import { useState } from "react"
+import { useRouter } from "next/navigation";
+
+import { createClient } from "../../lib/vector/client"
 
 export default function LoginPage() {
+  const supabase = createClient();
+
+  const router = useRouter();
+
+  const [email, setEmail] =
+    useState("");
+
+  const [password, setPassword] =
+    useState("");
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [error, setError] =
+    useState("");
+
+    async function signInWithGoogle() {
+  await supabase.auth.signInWithOAuth({
+    provider: "google",
+
+    options: {
+      redirectTo:
+        "http://localhost:3000/auth/callback",
+    },
+  });
+}
+
+
+async function signInWithGitHub() {
+  await supabase.auth.signInWithOAuth({
+    provider: "github",
+
+    options: {
+      redirectTo:
+        "http://localhost:3000/auth/callback",
+    },
+  });
+}
+
+
+async function handleEmailAuth(
+  e: React.FormEvent
+) {
+  e.preventDefault();
+
+  setLoading(true);
+
+  setError("");
+
+  // =========================
+  // TRY LOGIN FIRST
+  // =========================
+
+  const loginResult =
+    await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+  // =========================
+  // LOGIN SUCCESS
+  // =========================
+
+  if (!loginResult.error) {
+    router.push("/dashboard");
+
+    return;
+  }
+
+  // =========================
+  // CREATE USER
+  // =========================
+
+  const signupResult =
+    await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+  if (signupResult.error) {
+    setError(
+      signupResult.error.message
+    );
+
+    setLoading(false);
+
+    return;
+  }
+
+  router.push("/dashboard");
+}
+
+
+
   return (
     <main className="min-h-screen bg-[#131314] text-[#E5E2E3] md:flex">
 
@@ -421,7 +519,7 @@ export default function LoginPage() {
           {/* SOCIALS */}
           <div className="mb-8 space-y-3">
 
-            <button className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
+            <button onClick={signInWithGoogle} type="button" className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
 
               <img
                 src="https://lh3.googleusercontent.com/aida-public/AB6AXuCY4WNBcTJm8taXcmMjLDoAN6mNV2vo6VyCbV6UZ47Risab1W6mjgUU-gM5T8AKScjpkJAzzWCaW5m6HvRcTshV5XZEBs1JDXJMFvLUx4mckkYJKlRpesPkGnljDAiKaxRnmLb9ZURAb_FPHUY9-PPCGHfwmRrE63gF2-Rv3wEreeAaS_XYoTWmuH6Uu3F-D_H2KOb1OlEHiIGpXigtzr-jAD8AmY_j1xeV0ZlWK8wCwPzDiwurVgWGvlphz0laTU_PIIOSpTG-dDNb"
@@ -435,7 +533,7 @@ export default function LoginPage() {
 
             </button>
 
-            <button className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
+            <button onClick={signInWithGitHub} type="button" className="group flex h-12 w-full cursor-pointer items-center justify-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.03] transition-all duration-300 hover:bg-white/[0.05]">
 
               <span className="text-lg transition-transform group-hover:scale-110">
                 ⌘
@@ -463,7 +561,7 @@ export default function LoginPage() {
           </div>
 
           {/* FORM */}
-          <form className="space-y-6">
+          <form onSubmit={handleEmailAuth} className="space-y-6">
 
             <div className="space-y-5">
 
@@ -477,6 +575,7 @@ export default function LoginPage() {
                   type="email"
                   placeholder="name@company.com"
                   className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-[#ADC6FF]"
+                  onChange={(e) => setEmail(e.target.value)}
                 />
 
               </div>
@@ -502,6 +601,7 @@ export default function LoginPage() {
                   type="password"
                   placeholder="••••••••"
                   className="w-full border-0 border-b border-white/10 bg-transparent px-0 py-3 text-white placeholder:text-white/30 outline-none transition-colors focus:border-[#ADC6FF]"
+                  onChange={(e) => e.target.value}
                 />
 
               </div>
@@ -512,14 +612,24 @@ export default function LoginPage() {
             <button className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#ADC6FF] font-bold text-[#002E6A] transition-all hover:brightness-110 active:scale-[0.98] shadow-[0_0_30px_rgba(59,130,246,0.35)]">
 
               <span>
-                Continue with Email
-              </span>
+              {loading
+                ? "Authenticating..."
+                : "Continue with Email"}
+            </span>
 
               <span>
                 →
               </span>
 
             </button>
+
+            {
+                error && (
+                  <div className="rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-sm text-red-300">
+                    {error}
+                  </div>
+                )
+            }
 
             {/* TERMS */}
             <div className="mt-8 flex items-start gap-3">
