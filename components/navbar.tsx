@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import PageLoader from "./PageLoader"
 
 export default function Navbar() {
@@ -14,12 +14,24 @@ export default function Navbar() {
 
     setLoading(true)
 
-    document.body.style.overflow = "hidden"
-
+    // navigate after a short delay to allow loader animation
     setTimeout(() => {
       router.push("/login")
     }, 1200)
   }
+
+  // keep body overflow consistent while loader is active
+  useEffect(() => {
+    if (loading) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "auto"
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"
+    }
+  }, [loading])
 
   return (
     <>

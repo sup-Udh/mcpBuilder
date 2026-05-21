@@ -49,7 +49,7 @@ export default function MCPServerDetails() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#020617] text-white">
+    <main className="relative min-h-screen overflow-x-hidden bg-[#020617] text-white">
 
       {/* MATERIAL ICONS */}
       <link

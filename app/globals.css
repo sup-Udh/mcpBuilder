@@ -200,7 +200,7 @@ pre,
   animation: loadingBar 4s ease-in-out infinite;
 }
 
-html {
+html[data-scroll-behavior="smooth"] {
   scroll-behavior: smooth;
   color-scheme: dark;
   scrollbar-width: thin;
@@ -209,6 +209,7 @@ html {
 
 body {
   background: #020617;
+  overflow-x: hidden;
 }
 
 /* Global modern dark scrollbars for the entire application */

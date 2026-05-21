@@ -36,7 +36,7 @@ export default function RootLayout({
       `}
       data-scroll-behavior="smooth"
     >
-      <body className="min-h-screen bg-[#020617] text-white">
+      <body className="min-h-screen overflow-x-hidden bg-[#020617] text-white">
         {children}
       </body>
     </html>

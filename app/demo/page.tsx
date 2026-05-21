@@ -5,53 +5,66 @@ import {
   motion,
 } from "framer-motion"
 
-import {
-  Brain,
-  Database,
-  Globe,
-  MessageSquare,
-  Rocket,
-  Scissors,
-  Server,
-  Sparkles,
-  Zap,
-} from "lucide-react"
+import { Brain, Database, Globe, Scissors, Rocket } from "lucide-react"
 
-import { useEffect, useMemo, useState } from "react"
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react"
+
+import { useRouter } from "next/navigation"
 
 const url = "https://tailwindcss.com/docs"
 
 export default function DemoPage() {
 
-  const [stage, setStage] = useState(0)
+  const [stage, setStage] =
+    useState(0)
 
-  const [typedUrl, setTypedUrl] = useState("")
+  const [typedUrl, setTypedUrl] =
+    useState("")
 
-  const [chunkCount, setChunkCount] = useState(0)
+  const [chunkCount, setChunkCount] =
+    useState(0)
 
-  const [chatText, setChatText] = useState("")
+  /* =========================
+     STAGE LOOP
+  ========================= */
 
-  /* LOOP ENTIRE ANIMATION */
+  const router = useRouter()
+
   useEffect(() => {
 
-    const stageTimers = [
-      setTimeout(() => setStage(1), 2000),
-      setTimeout(() => setStage(2), 5000),
-      setTimeout(() => setStage(3), 7000),
-      setTimeout(() => setStage(4), 9000),
-      setTimeout(() => {
-        setStage(0)
-        setTypedUrl("")
-        setChunkCount(0)
-        setChatText("")
-      }, 12000),
-    ]
+    const timers: number[] = []
 
-    return () => {
-      stageTimers.forEach(clearTimeout)
-    }
+    // Stage progression scheduled once on mount
+    timers.push(
+      // show scraping input
+      window.setTimeout(() => setStage(1), 2500)
+    )
 
-  }, [stage])
+    timers.push(
+      // show chunking counter
+      window.setTimeout(() => setStage(2), 6500)
+    )
+
+    timers.push(
+      // show deploy slide after chunks
+      window.setTimeout(() => setStage(3), 10000)
+    )
+
+    timers.push(
+      // after deploy slide, redirect home
+      window.setTimeout(() => {
+        router.push("/")
+      }, 13500)
+    )
+
+    return () => timers.forEach(clearTimeout)
+
+    // run once
+  }, [])
 
   /* URL TYPING */
   useEffect(() => {
@@ -60,19 +73,23 @@ export default function DemoPage() {
 
     let i = 0
 
-    const interval = setInterval(() => {
+    const interval =
+      setInterval(() => {
 
-      setTypedUrl(url.slice(0, i + 1))
+        setTypedUrl(
+          url.slice(0, i + 1)
+        )
 
-      i++
+        i++
 
-      if (i >= url.length) {
-        clearInterval(interval)
-      }
+        if (i >= url.length) {
+          clearInterval(interval)
+        }
 
-    }, 55)
+      }, 55)
 
-    return () => clearInterval(interval)
+    return () =>
+      clearInterval(interval)
 
   }, [stage])
 
@@ -85,75 +102,57 @@ export default function DemoPage() {
 
     const target = 1247
 
-    const interval = setInterval(() => {
+    const interval =
+      setInterval(() => {
 
-      current += 37
+        current += 37
 
-      if (current >= target) {
-        current = target
-        clearInterval(interval)
-      }
+        if (current >= target) {
 
-      setChunkCount(current)
+          current = target
 
-    }, 40)
+          clearInterval(interval)
 
-    return () => clearInterval(interval)
+        }
 
-  }, [stage])
+        setChunkCount(current)
 
-  /* CHAT TYPING */
-  useEffect(() => {
+      }, 40)
 
-    if (stage !== 4) return
-
-    const text =
-      "flex-row sets flex-direction: row allowing items to align horizontally."
-
-    let i = 0
-
-    const interval = setInterval(() => {
-
-      setChatText(text.slice(0, i + 1))
-
-      i++
-
-      if (i >= text.length) {
-        clearInterval(interval)
-      }
-
-    }, 22)
-
-    return () => clearInterval(interval)
+    return () =>
+      clearInterval(interval)
 
   }, [stage])
+
+  /* CHAT removed: demo now redirects after chunks stored */
 
   /* PARTICLES */
   const particles = useMemo(() => {
 
-    return Array.from({ length: 28 }).map((_, i) => ({
+    return Array.from({
+      length: 28,
+    }).map((_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay: Math.random() * 0.5,
-      duration: 1 + Math.random() * 1.5,
+      delay:
+        Math.random() * 0.5,
+      duration:
+        1 +
+        Math.random() * 1.5,
     }))
 
   }, [])
 
   return (
-    <main className="relative h-screen overflow-hidden bg-[#020617] text-white">
-
-      {/* MATERIAL ICONS */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-      />
+    <main className="relative min-h-screen overflow-x-hidden bg-[#020617] text-white">
 
       {/* GRID */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.06]"
         style={{
-          backgroundSize: "40px 40px",
+          backgroundSize:
+            "40px 40px",
+
           backgroundImage:
             "linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px)",
         }}
@@ -164,7 +163,7 @@ export default function DemoPage() {
 
       <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-violet-500/10 blur-[180px]" />
 
-      {/* TOP BAR */}
+      {/* TOP */}
       <div className="absolute left-8 top-8 z-50 flex items-center gap-3">
 
         <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-violet-400" />
@@ -175,15 +174,15 @@ export default function DemoPage() {
 
       </div>
 
-      {/* FOOTER LINK */}
+      {/* FOOTER */}
       <div className="absolute bottom-8 right-8 z-50 text-sm text-white/40 transition hover:text-white">
         See how it works →
       </div>
 
-      {/* STAGE DOTS */}
+      {/* DOTS */}
       <div className="absolute bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3">
 
-        {[0, 1, 2, 3, 4].map((dot) => (
+        {[0, 1, 2].map((dot) => (
 
           <motion.div
             key={dot}
@@ -198,12 +197,16 @@ export default function DemoPage() {
 
       </div>
 
-      {/* MAIN CONTENT */}
+      {/* MAIN */}
       <div className="flex h-full items-center justify-center px-6">
 
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          initial={{
+            opacity: 0,
+          }}
+          animate={{
+            opacity: 1,
+          }}
           className="relative w-full max-w-7xl"
           style={{
             perspective: "1200px",
@@ -223,7 +226,10 @@ export default function DemoPage() {
 
             <AnimatePresence mode="wait">
 
-              {/* STAGE 1 */}
+              {/* =========================
+                 STAGE 1
+              ========================= */}
+
               {stage === 0 && (
                 <motion.div
                   key="stage1"
@@ -239,9 +245,6 @@ export default function DemoPage() {
                     opacity: 0,
                     y: -30,
                   }}
-                  transition={{
-                    duration: 0.4,
-                  }}
                   className="flex h-[650px] flex-col items-center justify-center"
                 >
 
@@ -254,7 +257,8 @@ export default function DemoPage() {
                       ],
                     }}
                     transition={{
-                      repeat: Infinity,
+                      repeat:
+                        Infinity,
                       duration: 2,
                     }}
                     className="w-full max-w-3xl rounded-[2rem] border border-blue-300/20 bg-[#111827]/90 p-5"
@@ -276,10 +280,15 @@ export default function DemoPage() {
 
                   <motion.button
                     animate={{
-                      scale: [1, 1.03, 1],
+                      scale: [
+                        1,
+                        1.03,
+                        1,
+                      ],
                     }}
                     transition={{
-                      repeat: Infinity,
+                      repeat:
+                        Infinity,
                       duration: 1.8,
                     }}
                     className="mt-10 rounded-2xl bg-violet-300 px-8 py-4 font-semibold text-[#020617] shadow-[0_0_40px_rgba(167,139,250,0.4)]"
@@ -292,7 +301,10 @@ export default function DemoPage() {
                 </motion.div>
               )}
 
-              {/* STAGE 2 */}
+              {/* =========================
+                 STAGE 2
+              ========================= */}
+
               {stage === 1 && (
                 <motion.div
                   key="stage2"
@@ -321,13 +333,23 @@ export default function DemoPage() {
                         y: -120,
                       }}
                       animate={{
-                        opacity: [0, 1, 0],
+                        opacity: [
+                          0,
+                          1,
+                          0,
+                        ],
+
                         y: 320,
                       }}
                       transition={{
-                        duration: p.duration,
-                        delay: p.delay,
-                        repeat: Infinity,
+                        duration:
+                          p.duration,
+
+                        delay:
+                          p.delay,
+
+                        repeat:
+                          Infinity,
                       }}
                       className="absolute top-[10%] h-2 w-2 rounded-full bg-blue-300"
                       style={{
@@ -337,103 +359,109 @@ export default function DemoPage() {
 
                   ))}
 
-                  {/* PROCESS FLOW */}
+                  {/* FLOW */}
                   <div className="flex flex-col items-center gap-12 lg:flex-row">
 
                     {[
                       {
-                        title: "Scraping",
+                        title:
+                          "Scraping",
+
                         icon: Globe,
                       },
+
                       {
-                        title: "Chunking",
+                        title:
+                          "Chunking",
+
                         icon: Scissors,
                       },
+
                       {
-                        title: "Embedding",
+                        title:
+                          "Embedding",
+
                         icon: Brain,
                       },
-                    ].map((item, i) => {
+                    ].map(
+                      (item, i) => {
 
-                      const Icon = item.icon
+                        const Icon =
+                          item.icon
 
-                      return (
-                        <div
-                          key={item.title}
-                          className="relative flex items-center"
-                        >
-
-                          <motion.div
-                            initial={{
-                              opacity: 0,
-                              scale: 0.8,
-                            }}
-                            animate={{
-                              opacity: 1,
-                              scale: 1,
-                            }}
-                            transition={{
-                              delay: i * 0.5,
-                            }}
-                            className="w-[260px] rounded-[2rem] border border-white/10 bg-[#111827]/80 p-8"
+                        return (
+                          <div
+                            key={
+                              item.title
+                            }
+                            className="relative flex items-center"
                           >
 
-                            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-400/10">
-
-                              <Icon className="h-8 w-8 text-blue-300" />
-
-                            </div>
-
-                            <h2 className="mb-4 text-2xl font-bold">
-                              {item.title}
-                            </h2>
-
-                            <div className="h-2 overflow-hidden rounded-full bg-white/10">
-
-                              <motion.div
-                                initial={{
-                                  width: 0,
-                                }}
-                                animate={{
-                                  width: "100%",
-                                }}
-                                transition={{
-                                  duration: 1.2,
-                                  delay: i * 0.5,
-                                }}
-                                className="h-full rounded-full bg-gradient-to-r from-blue-300 to-violet-300"
-                              />
-
-                            </div>
-
-                          </motion.div>
-
-                          {i !== 2 && (
                             <motion.div
                               initial={{
-                                width: 0,
+                                opacity: 0,
+                                scale: 0.8,
                               }}
                               animate={{
-                                width: 100,
+                                opacity: 1,
+                                scale: 1,
                               }}
                               transition={{
-                                duration: 0.8,
-                                delay: i * 0.5 + 0.5,
+                                delay:
+                                  i * 0.5,
                               }}
-                              className="mx-4 hidden h-[2px] bg-gradient-to-r from-blue-300 to-violet-300 lg:block"
-                            />
-                          )}
+                              className="w-[260px] rounded-[2rem] border border-white/10 bg-[#111827]/80 p-8"
+                            >
 
-                        </div>
-                      )
-                    })}
+                              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-400/10">
+
+                                <Icon className="h-8 w-8 text-blue-300" />
+
+                              </div>
+
+                              <h2 className="mb-4 text-2xl font-bold">
+                                {
+                                  item.title
+                                }
+                              </h2>
+
+                              <div className="h-2 overflow-hidden rounded-full bg-white/10">
+
+                                <motion.div
+                                  initial={{
+                                    width: 0,
+                                  }}
+                                  animate={{
+                                    width:
+                                      "100%",
+                                  }}
+                                  transition={{
+                                    duration: 1.2,
+                                    delay:
+                                      i *
+                                      0.5,
+                                  }}
+                                  className="h-full rounded-full bg-gradient-to-r from-blue-300 to-violet-300"
+                                />
+
+                              </div>
+
+                            </motion.div>
+
+                          </div>
+                        )
+                      }
+                    )}
 
                   </div>
 
                 </motion.div>
               )}
 
-              {/* STAGE 3 */}
+              {/* =========================
+                 STAGE 3
+              ========================= */}
+
               {stage === 2 && (
                 <motion.div
                   key="stage3"
@@ -452,36 +480,53 @@ export default function DemoPage() {
                   className="relative flex h-[650px] flex-col items-center justify-center"
                 >
 
-                  {/* CHUNKS */}
-                  {[...Array(26)].map((_, i) => (
+                  {[...Array(26)].map(
+                    (_, i) => (
 
-                    <motion.div
-                      key={i}
-                      initial={{
-                        opacity: 0,
-                        y: -250,
-                      }}
-                      animate={{
-                        opacity: [0, 1, 0],
-                        y: 0,
-                        x: Math.random() * 120 - 60,
-                      }}
-                      transition={{
-                        duration: 1.8,
-                        delay: i * 0.05,
-                        repeat: Infinity,
-                      }}
-                      className="absolute h-2 w-2 rounded-full bg-cyan-300"
-                    />
+                      <motion.div
+                        key={i}
+                        initial={{
+                          opacity: 0,
+                          y: -250,
+                        }}
+                        animate={{
+                          opacity: [
+                            0,
+                            1,
+                            0,
+                          ],
 
-                  ))}
+                          y: 0,
+
+                          x:
+                            Math.random() *
+                              120 -
+                            60,
+                        }}
+                        transition={{
+                          duration: 1.8,
+                          delay:
+                            i * 0.05,
+                          repeat:
+                            Infinity,
+                        }}
+                        className="absolute h-2 w-2 rounded-full bg-cyan-300"
+                      />
+
+                    )
+                  )}
 
                   <motion.div
                     animate={{
-                      scale: [1, 1.05, 1],
+                      scale: [
+                        1,
+                        1.05,
+                        1,
+                      ],
                     }}
                     transition={{
-                      repeat: Infinity,
+                      repeat:
+                        Infinity,
                       duration: 2,
                     }}
                     className="flex h-56 w-56 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-400/10 shadow-[0_0_60px_rgba(34,211,238,0.2)]"
@@ -491,10 +536,7 @@ export default function DemoPage() {
 
                   </motion.div>
 
-                  <motion.h2
-                    key={chunkCount}
-                    className="mt-10 text-5xl font-black"
-                  >
+                  <motion.h2 className="mt-10 text-5xl font-black">
 
                     {chunkCount.toLocaleString()}
 
@@ -507,10 +549,14 @@ export default function DemoPage() {
                 </motion.div>
               )}
 
-              {/* STAGE 4 */}
+              
+              {/* =========================
+                 STAGE 3 — DEPLOY
+              ========================= */}
+
               {stage === 3 && (
                 <motion.div
-                  key="stage4"
+                  key="stage3-deploy"
                   initial={{
                     opacity: 0,
                     y: 40,
@@ -526,234 +572,62 @@ export default function DemoPage() {
                   className="relative flex h-[650px] flex-col items-center justify-center"
                 >
 
-                  {/* MATRIX */}
-                  <div className="pointer-events-none absolute inset-0 overflow-hidden opacity-20">
+                  <div className="relative z-10 w-full max-w-4xl rounded-[2rem] border border-white/10 bg-black/40 p-8 backdrop-blur-2xl">
 
-                    {[...Array(40)].map((_, i) => (
+                    <div className="mb-6 flex items-center justify-between">
+
+                      <div>
+
+                        <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-300/60">
+                          MCP GENERATION
+                        </p>
+
+                        <h2 className="mt-2 text-4xl font-black">
+                          Deploying Runtime
+                        </h2>
+
+                      </div>
 
                       <motion.div
-                        key={i}
-                        initial={{
-                          y: -100,
-                        }}
                         animate={{
-                          y: "120vh",
+                          rotate: 360,
                         }}
                         transition={{
-                          duration: 2 + Math.random() * 3,
                           repeat: Infinity,
-                          delay: Math.random() * 2,
+                          duration: 5,
                           ease: "linear",
                         }}
-                        className="absolute top-0 font-mono text-sm text-green-300"
-                        style={{
-                          left: `${i * 3}%`,
-                        }}
+                        className="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10"
                       >
-                        10110101
+
+                        <Rocket className="h-8 w-8 text-cyan-200" />
+
                       </motion.div>
 
-                    ))}
+                    </div>
 
-                  </div>
+                    <div className="rounded-2xl border border-white/10 bg-[#020617]/80 p-6 font-mono text-sm">
 
-                  {/* CODE */}
-                  <div className="relative z-10 w-full max-w-3xl rounded-[2rem] border border-white/10 bg-black/40 p-8 font-mono">
+                      <p className="text-blue-300">SERVER_ID = "abc-123"</p>
 
-                    <p className="text-blue-300">
-                      SERVER_ID = "abc-123"
-                    </p>
+                      <p className="mt-4 text-violet-300">TOOL = "Search Tailwind CSS docs"</p>
 
-                    <p className="mt-4 text-violet-300">
-                      TOOL = "Search Tailwind CSS docs"
-                    </p>
+                      <p className="mt-4 text-cyan-300">VECTOR_DB = CONNECTED</p>
 
-                  </div>
+                      <p className="mt-4 text-green-300">DEPLOYMENT_STATUS = SUCCESS</p>
 
-                  {/* ROCKET */}
-                  <motion.div
-                    animate={{
-                      y: [-20, -240],
-                      opacity: [1, 0],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                    }}
-                    className="mt-12"
-                  >
+                    </div>
 
-                    <Rocket className="h-20 w-20 text-cyan-300" />
-
-                  </motion.div>
-
-                  {/* DEPLOYED */}
-                  <motion.div
-                    initial={{
-                      scale: 0.7,
-                      rotate: -6,
-                    }}
-                    animate={{
-                      scale: [1, 1.05, 1],
-                      rotate: [-2, 2, -2],
-                    }}
-                    transition={{
-                      duration: 0.5,
-                    }}
-                    className="absolute bottom-24 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-8 py-5 text-4xl font-black tracking-[0.2em] text-emerald-300 shadow-[0_0_50px_rgba(74,222,128,0.2)]"
-                  >
-
-                    DEPLOYED
-
-                  </motion.div>
-
-                </motion.div>
-              )}
-
-              {/* STAGE 5 */}
-              {stage === 4 && (
-                <motion.div
-                  key="stage5"
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -30,
-                  }}
-                  className="flex h-[650px] items-center justify-center"
-                >
-
-                  <div className="flex w-full max-w-6xl flex-col items-center justify-between gap-16 lg:flex-row">
-
-                    {/* MCP CARD */}
                     <motion.div
-                      initial={{
-                        x: -120,
-                        opacity: 0,
-                      }}
-                      animate={{
-                        x: 0,
-                        opacity: 1,
-                      }}
-                      className="relative w-full max-w-sm rounded-[2rem] border border-violet-300/10 bg-violet-400/10 p-8"
+                      initial={{ scale: 0.8, opacity: 0, y: 10 }}
+                      animate={{ scale: [1, 1.03, 1], opacity: 1, y: 0 }}
+                      transition={{ delay: 1, duration: 0.6 }}
+                      className="mx-auto mt-8 w-fit rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-8 py-4 text-3xl font-black tracking-[0.2em] text-emerald-300 shadow-[0_0_30px_rgba(74,222,128,0.18)]"
                     >
 
-                      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl bg-violet-400/10">
-
-                        <Server className="h-10 w-10 text-violet-200" />
-
-                      </div>
-
-                      <h2 className="text-3xl font-bold">
-                        MCP Runtime
-                      </h2>
-
-                      <p className="mt-3 text-white/50">
-                        Search Tailwind CSS docs
-                      </p>
+                      DEPLOYED
 
                     </motion.div>
-
-                    {/* CONNECTION */}
-                    <div className="relative flex flex-1 items-center justify-center">
-
-                      <motion.div
-                        initial={{
-                          width: 0,
-                        }}
-                        animate={{
-                          width: "100%",
-                        }}
-                        transition={{
-                          duration: 1,
-                        }}
-                        className="hidden border-t-2 border-dashed border-cyan-300/50 lg:block"
-                      />
-
-                      {[...Array(8)].map((_, i) => (
-
-                        <motion.div
-                          key={i}
-                          animate={{
-                            x: [0, 500],
-                            opacity: [0, 1, 0],
-                          }}
-                          transition={{
-                            duration: 2,
-                            repeat: Infinity,
-                            delay: i * 0.2,
-                          }}
-                          className="absolute hidden h-2 w-2 rounded-full bg-cyan-300 lg:block"
-                        />
-
-                      ))}
-
-                    </div>
-
-                    {/* AI CARD */}
-                    <motion.div
-                      initial={{
-                        x: 120,
-                        opacity: 0,
-                      }}
-                      animate={{
-                        x: 0,
-                        opacity: 1,
-                      }}
-                      className="relative w-full max-w-sm rounded-[2rem] border border-cyan-300/10 bg-cyan-400/10 p-8"
-                    >
-
-                      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-cyan-400/10">
-
-                        <Sparkles className="h-10 w-10 text-cyan-200" />
-
-                      </div>
-
-                      <h2 className="text-3xl font-bold">
-                        AI Assistant
-                      </h2>
-
-                      <p className="mt-3 text-white/50">
-                        Connected to MCP runtime
-                      </p>
-
-                    </motion.div>
-
-                  </div>
-
-                  {/* CHAT */}
-                  <div className="absolute bottom-16 right-12 w-[380px] rounded-[2rem] border border-white/10 bg-[#111827]/90 p-6 shadow-[0_0_50px_rgba(59,130,246,0.15)]">
-
-                    <div className="mb-5 flex items-center gap-3">
-
-                      <MessageSquare className="h-5 w-5 text-cyan-300" />
-
-                      <p className="font-semibold">
-                        Live Query
-                      </p>
-
-                    </div>
-
-                    <div className="space-y-4">
-
-                      <div className="ml-auto max-w-[85%] rounded-2xl bg-violet-400/10 px-4 py-3 text-sm text-violet-100">
-
-                        What is flex-row?
-
-                      </div>
-
-                      <div className="max-w-[90%] rounded-2xl bg-cyan-400/10 px-4 py-3 text-sm text-cyan-100">
-
-                        {chatText}
-
-                      </div>
-
-                    </div>
 
                   </div>
 

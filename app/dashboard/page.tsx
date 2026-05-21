@@ -5,7 +5,7 @@ import TopNavbar from "../../components/dashboard/top-navbar"
 import FloatingButton from "../../components/dashboard/floating-button"
 import PageLoader from "@/components/PageLoader"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -16,12 +16,22 @@ export default function DashboardPage() {
     if (loading) return 
     setLoading(true)
 
-    document.body.style.overflow = "hidden"
-
     setTimeout(() => {
       router.push("/create")
     }, 1200)
   }
+  
+  useEffect(() => {
+    if (loading) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [loading])
   return (
     <main className="min-h-screen bg-[#020617] text-white">
 

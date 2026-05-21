@@ -2,7 +2,7 @@
 
 import PageLoader from "../PageLoader"
 import { useRouter, usePathname } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function Sidebar() {
 
@@ -17,12 +17,24 @@ export default function Sidebar() {
 
     setLoading(true)
 
-    document.body.style.overflow = "hidden"
-
+    // navigate after short delay to show loader
     setTimeout(() => {
       router.push(path)
     }, 650)
   }
+
+  // ensure body overflow is restored when loading changes
+  useEffect(() => {
+    if (loading) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = 'auto'
+    }
+
+    return () => {
+      document.body.style.overflow = 'auto'
+    }
+  }, [loading])
 
   const isActive = (path: string) => {
     return pathname.startsWith(path)
@@ -180,3 +192,5 @@ export default function Sidebar() {
     </>
   )
 }
+
+ 

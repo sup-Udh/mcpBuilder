@@ -132,7 +132,7 @@ export default function CreatePage() {
       {/* ========================================= */}
 
       <div
-        className="pointer-events-none fixed inset-0 z-0 opacity-70"
+        className="pointer-events-none absolute inset-0 z-0 opacity-70"
         style={{
           backgroundSize: "40px 40px",
           backgroundImage:
@@ -143,9 +143,9 @@ export default function CreatePage() {
       />
 
       {/* GLOW ORBS */}
-      <div className="pointer-events-none fixed left-[-10%] top-[-10%] z-0 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[140px]" />
+      <div className="pointer-events-none absolute left-[-10%] top-[-10%] z-0 h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[140px]" />
 
-      <div className="pointer-events-none fixed bottom-[-10%] right-[-10%] z-0 h-[400px] w-[400px] rounded-full bg-violet-500/10 blur-[120px]" />
+      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] z-0 h-[400px] w-[400px] rounded-full bg-violet-500/10 blur-[120px]" />
 
       {/* ========================================= */}
       {/* MAIN */}
