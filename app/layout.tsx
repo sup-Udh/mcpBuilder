@@ -56,8 +56,8 @@ export default function RootLayout({
 
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider>
-          <GlobalDisclaimer />
           {children}
+          <GlobalDisclaimer />
         </ThemeProvider>
       </body>
     </html>

@@ -1,5 +1,7 @@
 // app/api/mcp/delete/route.ts
 
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import {
   NextRequest,
   NextResponse,
@@ -33,9 +35,6 @@ export async function POST(
     const authHeader =
       req.headers.get('authorization');
 
-    const cookieHeader =
-      req.headers.get('cookie');
-
     let userId: string | null = null;
 
     if (authHeader) {
@@ -54,43 +53,36 @@ export async function POST(
       }
     }
 
-    if (!userId && cookieHeader) {
-      const cookies = cookieHeader
-        .split(';')
-        .map((c) => c.trim());
-
-      for (const cookie of cookies) {
-        if (
-          cookie.includes('sb-') &&
-          cookie.includes('-auth-token')
-        ) {
-          try {
-            const value =
-              cookie.split('=').slice(1).join('=');
-
-            const decoded = decodeURIComponent(value);
-            const parsed = JSON.parse(decoded);
-
-            const accessToken =
-              parsed?.access_token ||
-              (Array.isArray(parsed) ? parsed[0] : null);
-
-            if (accessToken) {
-              const {
-                data: { user },
-              } = await supabase.auth.getUser(
-                accessToken
-              );
-
-              if (user) {
-                userId = user.id;
-                break;
-              }
-            }
-          } catch {
-            // Continue trying other cookies
-          }
+    if (!userId) {
+      const cookieStore = await cookies();
+      const clientSupabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            get(name: string) {
+              return cookieStore.get(name)?.value;
+            },
+            set(name: string, value: string, options: any) {
+              try {
+                cookieStore.set({ name, value, ...options });
+              } catch {}
+            },
+            remove(name: string, options: any) {
+              try {
+                cookieStore.set({ name, value: "", ...options });
+              } catch {}
+            },
+          },
         }
+      );
+
+      const {
+        data: { user },
+      } = await clientSupabase.auth.getUser();
+
+      if (user) {
+        userId = user.id;
       }
     }
 

@@ -20,7 +20,7 @@ export default function GlobalDisclaimer() {
   if (dismissed) return null
 
   return (
-    <div className="fixed top-4 left-0 right-0 z-50 flex flex-col items-center gap-2 px-4 pointer-events-none">
+    <div className="fixed top-20 left-0 right-0 z-[99] flex flex-col items-center gap-2 px-4 pointer-events-none">
       <div
         className="flex items-center gap-2.5 px-4 py-2 rounded-full text-[10px] font-mono tracking-wider uppercase border shadow-md backdrop-blur-md pointer-events-auto transition-all duration-300 group"
         style={{
