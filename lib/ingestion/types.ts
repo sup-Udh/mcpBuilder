@@ -7,7 +7,7 @@ export interface IngestedItem {
   // MULTI TENANT
   // ==========================================
 
-  serverId: string;
+  serverId?: string;
 
   // ==========================================
   // CONTENT

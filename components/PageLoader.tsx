@@ -3,38 +3,38 @@
 export default function PageLoader() {
   return (
     <>
-      <div className="page-loader fixed inset-0 z-[9999] flex items-center justify-center bg-[#020617]">
+      <div className="page-loader fixed inset-0 z-[9999] flex items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
 
         {/* GRID */}
         <div className="absolute inset-0 opacity-40 grid-bg" />
 
         {/* GLOW */}
-        <div className="absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-500/10 blur-[120px]" />
+        <div className="absolute left-1/2 top-1/2 h-[350px] w-[350px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]" style={{ background: 'var(--gradient-glow-1)' }} />
 
         {/* CONTENT */}
         <div className="relative z-10 flex flex-col items-center">
 
           {/* LOGO */}
-          <div className="loader-ring mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-blue-300/20 bg-blue-400/10 backdrop-blur-xl">
+          <div className="loader-ring mb-6 flex h-20 w-20 items-center justify-center rounded-3xl backdrop-blur-xl" style={{ border: '1px solid var(--border-accent)', background: 'rgba(var(--accent-rgb), 0.1)' }}>
 
-            <span className="material-symbols-outlined text-5xl text-blue-200">
+            <span className="material-symbols-outlined text-5xl" style={{ color: 'var(--accent-primary)' }}>
               dns
             </span>
 
           </div>
 
           {/* TITLE */}
-          <h1 className="mb-3 text-3xl font-bold tracking-tight text-white">
+          <h1 className="mb-3 text-3xl font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
             MCP Builder
           </h1>
 
           {/* SUBTEXT */}
-          <p className="font-mono text-xs uppercase tracking-[0.35em] text-blue-200/60">
+          <p className="font-mono text-xs uppercase tracking-[0.35em]" style={{ color: 'var(--text-muted)' }}>
             Loading Workspace
           </p>
 
           {/* LOADING BAR */}
-          <div className="mt-8 h-[3px] w-[220px] rounded-full bg-white/10">
+          <div className="mt-8 h-[3px] w-[220px] rounded-full" style={{ background: 'var(--bg-elevated)' }}>
 
             <div className="loading-bar h-full w-full" />
 
@@ -43,12 +43,6 @@ export default function PageLoader() {
         </div>
 
       </div>
-
-      {/* GOOGLE ICONS */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-      />
 
       <style jsx global>{`
         .grid-bg {
@@ -64,14 +58,15 @@ export default function PageLoader() {
 
         .loader-ring {
           animation: pulseGlow 2s ease-in-out infinite;
-          box-shadow: 0 0 40px rgba(59,130,246,0.15);
+          box-shadow: 0 0 40px rgba(var(--accent-rgb), 0.15);
         }
 
         .loading-bar {
           background: linear-gradient(
             to right,
             transparent,
-            #93c5fd,
+            var(--accent-primary),
+            var(--accent-secondary),
             transparent
           );
 
@@ -79,35 +74,18 @@ export default function PageLoader() {
         }
 
         @keyframes loadingMove {
-          0% {
-            transform: translateX(-100%);
-          }
-
-          100% {
-            transform: translateX(100%);
-          }
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(100%); }
         }
 
         @keyframes pulseGlow {
-          0%, 100% {
-            transform: scale(1);
-            opacity: 1;
-          }
-
-          50% {
-            transform: scale(1.05);
-            opacity: 0.9;
-          }
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.05); opacity: 0.9; }
         }
 
         @keyframes fadeIn {
-          from {
-            opacity: 0;
-          }
-
-          to {
-            opacity: 1;
-          }
+          from { opacity: 0; }
+          to { opacity: 1; }
         }
       `}</style>
     </>

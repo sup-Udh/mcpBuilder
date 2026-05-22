@@ -166,7 +166,7 @@ export async function POST(
             sourceType || 'Website',
           deployment_status: 'pending',
           ingest_status: 'pending',
-        })
+        } as any)
         .select('id')
         .single();
 
@@ -186,7 +186,7 @@ export async function POST(
       );
     }
 
-    const serverId = serverData.id;
+    const serverId = (serverData as any).id;
 
     console.log(
       `Created MCP Server: ${serverId}`

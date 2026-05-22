@@ -1,6 +1,5 @@
 import { EmbeddingChunk } from "../embeddings/types";
-
-import { embedText } from "../embeddings/proivders/bge";
+import { embedText } from "../embeddings/proivders/openai";
 
 // ==========================================
 // COSINE SIMILARITY

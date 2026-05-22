@@ -1,13 +1,20 @@
 import type { Metadata } from "next"
 import {
-  Geist,
-  Geist_Mono,
+  Inter,
+  Manrope,
 } from "next/font/google"
+import { Geist_Mono } from "next/font/google"
 
 import "./globals.css"
+import { ThemeProvider } from "@/lib/theme-context"
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
+  subsets: ["latin"],
+})
+
+const manrope = Manrope({
+  variable: "--font-manrope",
   subsets: ["latin"],
 })
 
@@ -18,7 +25,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "MCP Builder",
-  description: "AI Infrastructure for the AI Generation",
+  description:
+    "Build, deploy, and manage AI-native MCP infrastructure",
 }
 
 export default function RootLayout({
@@ -29,15 +37,26 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      data-theme="dark"
+      data-scroll-behavior="smooth"
       className={`
-        ${geistSans.variable}
+        ${inter.variable}
+        ${manrope.variable}
         ${geistMono.variable}
         antialiased
       `}
-      data-scroll-behavior="smooth"
     >
-      <body className="min-h-screen overflow-x-hidden bg-[#020617] text-white">
-        {children}
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+        />
+      </head>
+
+      <body className="min-h-screen overflow-x-hidden">
+        <ThemeProvider>
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   )

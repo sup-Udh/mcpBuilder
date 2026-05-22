@@ -18,6 +18,8 @@ import {
   createClient,
 } from "@/lib/vector/client";
 
+import { useTheme } from "@/lib/theme-context";
+
 export default function MCPServersPage() {
 
   const supabase =
@@ -25,6 +27,8 @@ export default function MCPServersPage() {
 
   const router =
     useRouter();
+
+  const { isDark } = useTheme();
 
   // ==========================================
   // STATE
@@ -91,13 +95,19 @@ export default function MCPServersPage() {
   if (loading) {
 
     return (
-      <div className="flex min-h-screen items-center justify-center bg-[#020617] text-white">
+      <div
+        className="flex min-h-screen items-center justify-center"
+        style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+      >
 
         <div className="flex items-center gap-4">
 
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-blue-300 border-t-transparent" />
+          <div
+            className="h-6 w-6 animate-spin rounded-full border-2 border-t-transparent"
+            style={{ borderColor: 'var(--accent-primary)', borderTopColor: 'transparent' }}
+          />
 
-          <span className="text-white/60">
+          <span style={{ color: 'var(--text-muted)' }}>
             Loading MCP Servers...
           </span>
 
@@ -108,13 +118,10 @@ export default function MCPServersPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#020617] text-white">
-
-      {/* MATERIAL ICONS */}
-      <link
-        rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-      />
+    <main
+      className="min-h-screen"
+      style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+    >
 
       <Sidebar />
 
@@ -127,7 +134,7 @@ export default function MCPServersPage() {
 
           {/* GRID */}
           <div
-            className="pointer-events-none absolute inset-0 opacity-40"
+            className="pointer-events-none absolute inset-0 opacity-20"
             style={{
               backgroundSize:
                 "40px 40px",
@@ -141,9 +148,15 @@ export default function MCPServersPage() {
           />
 
           {/* GLOWS */}
-          <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full bg-blue-500/10 blur-[140px]" />
+          <div
+            className="pointer-events-none absolute left-[-10%] top-[-10%] h-[500px] w-[500px] rounded-full blur-[140px]"
+            style={{ background: 'var(--gradient-glow-1)', opacity: 0.15 }}
+          />
 
-          <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-violet-500/10 blur-[140px]" />
+          <div
+            className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full blur-[140px]"
+            style={{ background: 'var(--gradient-glow-2)', opacity: 0.15 }}
+          />
 
           {/* CONTENT */}
           <div className="relative z-10">
@@ -153,15 +166,24 @@ export default function MCPServersPage() {
 
               <div>
 
-                <p className="mb-3 font-mono text-[11px] uppercase tracking-[0.3em] text-blue-200/50">
+                <p
+                  className="mb-3 font-mono text-[11px] uppercase tracking-[0.3em]"
+                  style={{ color: 'var(--text-muted)' }}
+                >
                   MCP INFRASTRUCTURE
                 </p>
 
-                <h1 className="text-6xl font-bold tracking-tight">
+                <h1
+                  className="text-6xl font-bold tracking-tight"
+                  style={{ color: 'var(--text-primary)' }}
+                >
                   MCP Servers
                 </h1>
 
-                <p className="mt-4 max-w-3xl text-xl leading-relaxed text-white/50">
+                <p
+                  className="mt-4 max-w-3xl text-xl leading-relaxed"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
                   Manage deployed runtimes, ingestion sources,
                   embeddings, vector indexing, and live MCP infrastructure.
                 </p>
@@ -172,10 +194,11 @@ export default function MCPServersPage() {
                 onClick={() =>
                   router.push("/create")
                 }
-                className="rounded-2xl bg-blue-200 px-8 py-5 font-semibold text-[#020617] shadow-[0_0_35px_rgba(173,198,255,0.25)] transition hover:scale-[1.02] hover:brightness-110"
+                className="rounded-xl px-5 py-2.5 text-xs font-semibold text-white shadow-md transition hover:scale-[1.02] hover:brightness-110 active:scale-[0.98]"
+                style={{ background: 'var(--gradient-primary)' }}
               >
 
-                + Create MCP Server
+                Create MCP Server
 
               </button>
 
@@ -184,23 +207,38 @@ export default function MCPServersPage() {
             {/* EMPTY */}
             {mcps.length === 0 && (
 
-              <div className="flex min-h-[500px] flex-col items-center justify-center rounded-[2rem] border border-dashed border-white/10 bg-white/[0.02] text-center">
+              <div
+                className="flex min-h-[500px] flex-col items-center justify-center rounded-2xl border border-dashed text-center"
+                style={{ borderColor: 'var(--border-primary)', background: 'var(--bg-card)' }}
+              >
 
-                <div className="mb-8 flex h-28 w-28 items-center justify-center rounded-[2rem] border border-white/10 bg-white/[0.03]">
+                <div
+                  className="mb-8 flex h-24 w-24 items-center justify-center rounded-xl"
+                  style={{ border: '1px solid var(--border-primary)', background: 'var(--bg-elevated)' }}
+                >
 
-                  <span className="material-symbols-outlined text-6xl text-blue-200">
+                  <span
+                    className="material-symbols-outlined text-4xl"
+                    style={{ color: 'var(--accent-primary)' }}
+                  >
                     dns
                   </span>
 
                 </div>
 
-                <h2 className="mb-4 text-5xl font-bold">
+                <h2
+                  className="mb-4 text-3xl font-bold"
+                  style={{ color: 'var(--text-primary)' }}
+                >
                   No MCP Servers Found
                 </h2>
 
-                <p className="max-w-2xl text-lg leading-relaxed text-white/50">
+                <p
+                  className="max-w-xl text-sm leading-relaxed"
+                  style={{ color: 'var(--text-secondary)' }}
+                >
 
-                  You haven't deployed any MCP infrastructure yet.
+                  You haven&apos;t deployed any MCP infrastructure yet.
 
                 </p>
 
@@ -221,21 +259,37 @@ export default function MCPServersPage() {
                         `/dashboard/mcp-servers/${server.id}`
                       )
                     }
-                    className="group relative overflow-hidden rounded-[2rem] border border-white/10 bg-[#0B1120]/70 p-8 text-left backdrop-blur-xl transition hover:-translate-y-1 hover:border-blue-300/20"
+                    className="group relative overflow-hidden rounded-2xl p-6 text-left backdrop-blur-xl transition hover:-translate-y-1 hover:border-[var(--border-hover)] hover:shadow-lg"
+                    style={{
+                      background: 'var(--bg-card)',
+                      border: '1px solid var(--border-primary)',
+                    }}
                   >
 
-                    <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-violet-500/10 opacity-0 transition group-hover:opacity-100" />
+                    <div
+                      className="absolute inset-0 opacity-0 transition group-hover:opacity-100"
+                      style={{ background: 'var(--gradient-glow-1)' }}
+                    />
 
                     <div className="relative z-10">
 
                       {/* TOP */}
-                      <div className="mb-8 flex items-start justify-between">
+                      <div className="mb-6 flex items-start justify-between">
 
-                        <div className="flex items-center gap-5">
+                        <div className="flex items-center gap-4">
 
-                          <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-blue-300/10 bg-blue-400/10">
+                          <div
+                            className="flex h-12 w-12 items-center justify-center rounded-xl"
+                            style={{
+                              border: '1px solid var(--border-primary)',
+                              background: 'var(--bg-elevated)',
+                            }}
+                          >
 
-                            <span className="material-symbols-outlined text-3xl text-blue-200">
+                            <span
+                              className="material-symbols-outlined text-2xl"
+                              style={{ color: 'var(--accent-primary)' }}
+                            >
 
                               {
                                 server.source_type === "Website"
@@ -251,21 +305,37 @@ export default function MCPServersPage() {
 
                           <div>
 
-                            <h2 className="text-3xl font-bold">
+                            <h2
+                              className="text-xl font-bold tracking-tight"
+                              style={{ color: 'var(--text-primary)' }}
+                            >
                               {server.name}
                             </h2>
 
-                            <div className="mt-3 flex items-center gap-3">
+                            <div className="mt-2 flex items-center gap-3">
 
-                              <span className="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-white/50">
+                              <span
+                                className="rounded-full px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider"
+                                style={{
+                                  border: '1px solid var(--border-primary)',
+                                  background: 'var(--bg-elevated)',
+                                  color: 'var(--text-muted)',
+                                }}
+                              >
                                 {server.source_type}
                               </span>
 
-                              <div className="flex items-center gap-2">
+                              <div className="flex items-center gap-1.5">
 
-                                <div className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
+                                <div
+                                  className="h-1.5 w-1.5 animate-pulse rounded-full"
+                                  style={{ background: 'var(--status-success)' }}
+                                />
 
-                                <span className="font-mono text-[10px] uppercase tracking-widest text-green-300">
+                                <span
+                                  className="font-mono text-[9px] uppercase tracking-wider"
+                                  style={{ color: 'var(--status-success)' }}
+                                >
                                   Running
                                 </span>
 
@@ -277,41 +347,66 @@ export default function MCPServersPage() {
 
                         </div>
 
-                        <span className="material-symbols-outlined text-white/30">
+                        <span
+                          className="material-symbols-outlined"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
                           more_vert
                         </span>
 
                       </div>
 
                       {/* URL */}
-                      <div className="mb-8 rounded-2xl border border-white/5 bg-white/[0.02] p-4">
+                      <div
+                        className="mb-6 rounded-xl p-4"
+                        style={{
+                          border: '1px solid var(--border-primary)',
+                          background: 'var(--bg-elevated)',
+                        }}
+                      >
 
-                        <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                        <p
+                          className="mb-1.5 font-mono text-[9px] uppercase tracking-wider"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
                           Source URL
                         </p>
 
-                        <p className="line-clamp-2 text-sm text-white/70">
+                        <p
+                          className="line-clamp-1 text-xs"
+                          style={{ color: 'var(--text-secondary)' }}
+                        >
                           {server.source_url}
                         </p>
 
                       </div>
 
                       {/* FOOTER */}
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between border-t border-[var(--border-primary)] pt-4">
 
                         <div>
 
-                          <p className="mb-1 font-mono text-[10px] uppercase tracking-widest text-white/40">
+                          <p
+                            className="mb-1 font-mono text-[9px] uppercase tracking-wider"
+                            style={{ color: 'var(--text-muted)' }}
+                          >
                             Endpoint
                           </p>
 
-                          <code className="text-sm text-blue-200">
+                          <code className="text-xs" style={{ color: 'var(--accent-secondary)' }}>
                             {server.endpoint}
                           </code>
 
                         </div>
 
-                        <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-2 text-sm text-white/60 transition group-hover:border-blue-300/20 group-hover:text-white">
+                        <div
+                          className="rounded-xl px-4 py-2 text-xs transition group-hover:brightness-110"
+                          style={{
+                            border: '1px solid var(--border-primary)',
+                            background: 'var(--bg-elevated)',
+                            color: 'var(--text-secondary)',
+                          }}
+                        >
 
                           Open Runtime →
 

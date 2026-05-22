@@ -1,35 +1,27 @@
-import { cn } from "../lib/utils"
+"use client"
 
-interface GlowButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  children: React.ReactNode
-}
+import Link from "next/link"
 
 export default function GlowButton({
   children,
-  className,
-  ...props
-}: GlowButtonProps) {
+}: {
+  children: React.ReactNode
+}) {
   return (
-    <button
-      className={cn(
-        "cursor-pointer",
-        "relative rounded-xl",
-        "bg-[#3B82F6] text-white",
-        "px-8 py-4 font-semibold",
-        "transition-all duration-300",
-        "hover:scale-105 active:scale-95",
-        "shadow-[0_0_40px_rgba(59,130,246,0.35)]",
-        "before:absolute before:inset-0",
-        "before:bg-white/10 before:opacity-0",
-        "before:transition-opacity hover:before:opacity-100",
-        className
-      )}
-      {...props}
-    >
-      <span className="relative z-10">
-        {children}
-      </span>
-    </button>
+    <Link href="/login">
+      <button
+        className="group relative cursor-pointer overflow-hidden rounded-xl px-8 py-3.5 font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_4px_20px_rgba(var(--accent-rgb),0.2)] active:scale-[0.98]"
+        style={{
+          background: 'var(--gradient-primary)',
+          boxShadow: '0 2px 10px rgba(var(--accent-rgb), 0.12)',
+        }}
+      >
+        <div className="absolute inset-0 bg-white/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
+        <span className="relative z-10 flex items-center justify-center gap-2">
+          {children}
+        </span>
+      </button>
+    </Link>
   )
 }

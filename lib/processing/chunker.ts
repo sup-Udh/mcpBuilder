@@ -500,7 +500,7 @@ export function chunkDocument(
         id: chunkId,
 
         serverId:
-          document.serverId,
+          document.serverId!,
 
         text: chunkText,
 

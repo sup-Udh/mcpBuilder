@@ -63,25 +63,25 @@ export async function GET(
       success: true,
 
       server: {
-        id: data.id,
-        name: data.name,
-        sourceUrl: data.source_url,
-        sourceType: data.source_type,
+        id: (data as any).id,
+        name: (data as any).name,
+        sourceUrl: (data as any).source_url,
+        sourceType: (data as any).source_type,
         deploymentStatus:
-          data.deployment_status,
+          (data as any).deployment_status,
         ingestStatus:
-          data.ingest_status,
-        endpoint: data.endpoint,
+          (data as any).ingest_status,
+        endpoint: (data as any).endpoint,
         totalDocuments:
-          data.total_documents,
+          (data as any).total_documents,
         totalChunks:
-          data.total_chunks,
+          (data as any).total_chunks,
         totalEmbeddings:
-          data.total_embeddings,
+          (data as any).total_embeddings,
         errorMessage:
-          data.error_message,
-        createdAt: data.created_at,
-        updatedAt: data.updated_at,
+          (data as any).error_message,
+        createdAt: (data as any).created_at,
+        updatedAt: (data as any).updated_at,
       },
     });
   } catch (error: any) {
