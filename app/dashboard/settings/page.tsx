@@ -14,6 +14,7 @@ export default function SettingsPage() {
 
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function loadUser() {
@@ -32,6 +33,38 @@ export default function SettingsPage() {
     }
     loadUser()
   }, [])
+
+  const handleDeleteAccount = async () => {
+    const confirmed = window.confirm(
+      "Are you sure you want to permanently delete your account? This will also delete all of your created MCP servers and data, and this action cannot be undone."
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setDeleting(true);
+
+      const response = await fetch("/api/user/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete account");
+      }
+
+      // Success, sign out client-side session
+      await supabase.auth.signOut();
+      router.push("/login");
+    } catch (err: any) {
+      console.error("Failed to delete account:", err);
+      alert(err.message || "An error occurred while deleting your account.");
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -328,8 +361,12 @@ export default function SettingsPage() {
                   </p>
                 </div>
 
-                <button className="rounded-xl border border-[var(--status-error)]/30 bg-[var(--status-error)]/10 px-4 py-2 text-xs font-semibold text-[var(--status-error)] transition hover:bg-[var(--status-error)]/20 active:scale-[0.98]">
-                  Delete Account
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="rounded-xl border border-[var(--status-error)]/30 bg-[var(--status-error)]/10 px-4 py-2 text-xs font-semibold text-[var(--status-error)] transition hover:bg-[var(--status-error)]/20 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {deleting ? "Deleting..." : "Delete Account"}
                 </button>
               </div>
             </div>

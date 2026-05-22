@@ -43,6 +43,9 @@ export default function MCPServersPage() {
   const [loading, setLoading] =
     useState(true);
 
+  const [activeDropdownId, setActiveDropdownId] =
+    useState<string | null>(null);
+
   // ==========================================
   // AUTH + FETCH
   // ==========================================
@@ -87,6 +90,58 @@ export default function MCPServersPage() {
     loadData();
 
   }, []);
+
+  // ==========================================
+  // DROPDOWN CLICK OUTSIDE
+  // ==========================================
+
+  useEffect(() => {
+    const handleOutsideClick = () => {
+      setActiveDropdownId(null);
+    };
+    document.addEventListener("click", handleOutsideClick);
+    return () => {
+      document.removeEventListener("click", handleOutsideClick);
+    };
+  }, []);
+
+  // ==========================================
+  // DELETE SERVER HANDLER
+  // ==========================================
+
+  const handleDeleteServer = async (serverId: string, serverName: string) => {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete the server "${serverName}"? This action cannot be undone.`
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await fetch("/api/mcp/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          serverId,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Failed to delete server");
+        return;
+      }
+
+      // Remove from local state
+      setMcps((prev) => prev.filter((s) => s.id !== serverId));
+    } catch (err: any) {
+      console.error("Error deleting server:", err);
+      alert(err.message || "An error occurred while deleting the server.");
+    } finally {
+      setActiveDropdownId(null);
+    }
+  };
 
   // ==========================================
   // LOADING
@@ -252,14 +307,14 @@ export default function MCPServersPage() {
 
                 {mcps.map((server) => (
 
-                  <button
+                  <div
                     key={server.id}
                     onClick={() =>
                       router.push(
                         `/dashboard/mcp-servers/${server.id}`
                       )
                     }
-                    className="group relative overflow-hidden rounded-2xl p-6 text-left backdrop-blur-xl transition hover:-translate-y-1 hover:border-[var(--border-hover)] hover:shadow-lg"
+                    className="group relative cursor-pointer overflow-hidden rounded-2xl p-6 text-left backdrop-blur-xl transition hover:-translate-y-1 hover:border-[var(--border-hover)] hover:shadow-lg"
                     style={{
                       background: 'var(--bg-card)',
                       border: '1px solid var(--border-primary)',
@@ -347,12 +402,49 @@ export default function MCPServersPage() {
 
                         </div>
 
-                        <span
-                          className="material-symbols-outlined"
-                          style={{ color: 'var(--text-muted)' }}
-                        >
-                          more_vert
-                        </span>
+                        <div className="relative">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setActiveDropdownId(
+                                activeDropdownId === server.id ? null : server.id
+                              );
+                            }}
+                            className="flex h-8 w-8 items-center justify-center rounded-lg hover:bg-white/10 transition active:scale-95"
+                          >
+                            <span
+                              className="material-symbols-outlined"
+                              style={{ color: 'var(--text-muted)' }}
+                            >
+                              more_vert
+                            </span>
+                          </button>
+
+                          {activeDropdownId === server.id && (
+                            <div
+                              onClick={(e) => e.stopPropagation()}
+                              className="absolute right-0 top-9 z-20 w-32 rounded-xl p-1 shadow-lg backdrop-blur-md"
+                              style={{
+                                background: 'var(--bg-card)',
+                                border: '1px solid var(--border-primary)',
+                              }}
+                            >
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDeleteServer(server.id, server.name);
+                                }}
+                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-xs font-semibold transition hover:bg-[var(--status-error)]/10"
+                                style={{ color: 'var(--status-error)' }}
+                              >
+                                <span className="material-symbols-outlined text-sm">
+                                  delete
+                                </span>
+                                Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
 
                       </div>
 
@@ -416,7 +508,7 @@ export default function MCPServersPage() {
 
                     </div>
 
-                  </button>
+                  </div>
                 ))}
 
               </div>
