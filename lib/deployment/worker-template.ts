@@ -38,6 +38,9 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 };
 
+// Global SSE Session Store
+const activeSessions = new Map();
+
 // ==========================================
 // EMBED QUERY VIA OPENAI
 // ==========================================
@@ -95,6 +98,181 @@ async function searchChunks(embedding, matchCount = 10) {
 }
 
 // ==========================================
+// MCP JSON-RPC HANDLER
+// ==========================================
+
+async function handleJsonRpc(message) {
+  const { jsonrpc, id, method, params } = message;
+
+  if (jsonrpc !== '2.0') {
+    return {
+      jsonrpc: '2.0',
+      id: id || null,
+      error: {
+        code: -32600,
+        message: 'Invalid Request',
+      },
+    };
+  }
+
+  // Handle initialize request
+  if (method === 'initialize') {
+    return {
+      jsonrpc: '2.0',
+      id,
+      result: {
+        protocolVersion: '2024-11-05',
+        capabilities: {
+          tools: {},
+        },
+        serverInfo: {
+          name: SERVER_NAME,
+          version: '1.0.0',
+        },
+      },
+    };
+  }
+
+  // Handle initialized notification
+  if (method === 'notifications/initialized') {
+    return null; // Notifications do not receive a response
+  }
+
+  // Handle tools/list request
+  if (method === 'tools/list') {
+    return {
+      jsonrpc: '2.0',
+      id,
+      result: {
+        tools: [
+          {
+            name: 'query',
+            description: 'Search the knowledge base of ' + SERVER_NAME + ' for relevant information using semantic search.',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                query: {
+                  type: 'string',
+                  description: 'The search query to match against the document chunks.',
+                },
+                topK: {
+                  type: 'integer',
+                  description: 'Number of results to return (default 8)',
+                  default: 8,
+                },
+              },
+              required: ['query'],
+            },
+          },
+        ],
+      },
+    };
+  }
+
+  // Handle tools/call request
+  if (method === 'tools/call') {
+    const toolName = params?.name;
+    const args = params?.arguments || {};
+
+    if (toolName === 'query') {
+      const query = args.query;
+      const topK = args.topK || 8;
+
+      if (!query) {
+        return {
+          jsonrpc: '2.0',
+          id,
+          error: {
+            code: -32602,
+            message: 'Invalid params: query is required',
+          },
+        };
+      }
+
+      try {
+        // Embed query
+        const embedding = await embedQuery(query);
+
+        // Search vectors
+        const chunks = await searchChunks(embedding, topK);
+
+        // Format response content
+        const results = (chunks || []).map((chunk, index) => ({
+          rank: index + 1,
+          text: chunk.text,
+          heading: chunk.heading,
+          source_url: chunk.source_url,
+          similarity: chunk.similarity,
+        }));
+
+        let textContent = 'Search results for "' + query + '":\\n\\n';
+        if (results.length === 0) {
+          textContent += 'No relevant documents found.';
+        } else {
+          results.forEach(r => {
+            textContent += '[Rank ' + r.rank + '] ' + (r.heading || 'Untitled') + '\\n';
+            if (r.source_url) {
+              textContent += 'Source: ' + r.source_url + '\\n';
+            }
+            textContent += 'Similarity: ' + r.similarity.toFixed(4) + '\\n';
+            textContent += 'Content:\\n' + r.text + '\\n\\n';
+          });
+        }
+
+        return {
+          jsonrpc: '2.0',
+          id,
+          result: {
+            content: [
+              {
+                type: 'text',
+                text: textContent,
+              },
+            ],
+          },
+        };
+      } catch (error) {
+        return {
+          jsonrpc: '2.0',
+          id,
+          error: {
+            code: -32603,
+            message: 'Internal error: ' + error.message,
+          },
+        };
+      }
+    }
+
+    return {
+      jsonrpc: '2.0',
+      id,
+      error: {
+        code: -32601,
+        message: 'Method not found: ' + toolName,
+      },
+    };
+  }
+
+  // Fallback for ping or other methods
+  if (method === 'ping') {
+    return {
+      jsonrpc: '2.0',
+      id,
+      result: {},
+    };
+  }
+
+  return {
+    jsonrpc: '2.0',
+    id,
+    error: {
+      code: -32601,
+      message: 'Method not found: ' + method,
+    },
+  };
+}
+
+// ==========================================
 // HANDLE REQUEST
 // ==========================================
 
@@ -108,6 +286,146 @@ export default {
         status: 204,
         headers: corsHeaders,
       });
+    }
+
+    // ======================================
+    // GET /sse - ESTABLISH SSE CONNECTION
+    // ======================================
+
+    if (url.pathname === '/sse' && request.method === 'GET') {
+      // Clean up old sessions (> 1 hour)
+      const now = Date.now();
+      for (const [id, sess] of activeSessions.entries()) {
+        if (now - sess.timestamp > 3600000) {
+          try { sess.writer.close(); } catch (e) {}
+          activeSessions.delete(id);
+        }
+      }
+
+      const sessionId = crypto.randomUUID();
+      const { readable, writable } = new TransformStream();
+      const writer = writable.getWriter();
+      const encoder = new TextEncoder();
+
+      // Absolute message path is safer
+      const messageUrl = new URL('/message?sessionId=' + sessionId, request.url).toString();
+      const initPayload = 'event: endpoint\\ndata: ' + messageUrl + '\\n\\n';
+
+      activeSessions.set(sessionId, {
+        writer,
+        encoder,
+        timestamp: now,
+      });
+
+      // Write initial endpoint event
+      await writer.write(encoder.encode(initPayload));
+
+      // Keepalive ping interval (every 30s)
+      const pingInterval = setInterval(() => {
+        try {
+          writer.write(encoder.encode(':\\n\\n'));
+        } catch (e) {
+          clearInterval(pingInterval);
+          activeSessions.delete(sessionId);
+        }
+      }, 30000);
+
+      request.signal.addEventListener('abort', () => {
+        clearInterval(pingInterval);
+        activeSessions.delete(sessionId);
+      });
+
+      return new Response(readable, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/event-stream',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          ...corsHeaders,
+        },
+      });
+    }
+
+    // ======================================
+    // POST /message - INCOMING MESSAGES FOR SSE
+    // ======================================
+
+    if (url.pathname === '/message' && request.method === 'POST') {
+      const sessionId = url.searchParams.get('sessionId');
+      if (!sessionId) {
+        return new Response(
+          JSON.stringify({ error: 'Session ID is required' }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+
+      const session = activeSessions.get(sessionId);
+      if (!session) {
+        return new Response(
+          JSON.stringify({ error: 'Session not found or expired' }),
+          { status: 404, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+
+      try {
+        const message = await request.json();
+        const response = await handleJsonRpc(message);
+        
+        if (response) {
+          const ssePayload = 'event: message\\ndata: ' + JSON.stringify(response) + '\\n\\n';
+          await session.writer.write(session.encoder.encode(ssePayload));
+        }
+
+        return new Response('Accepted', {
+          status: 202,
+          headers: corsHeaders,
+        });
+      } catch (error) {
+        return new Response(
+          JSON.stringify({ error: 'Invalid JSON request: ' + error.message }),
+          { status: 400, headers: { 'Content-Type': 'application/json', ...corsHeaders } }
+        );
+      }
+    }
+
+    // ======================================
+    // POST /sse or /mcp - STATELESS JSON-RPC
+    // ======================================
+
+    if (request.method === 'POST' && (url.pathname === '/sse' || url.pathname === '/mcp' || url.pathname === '/')) {
+      try {
+        const message = await request.json();
+        const response = await handleJsonRpc(message);
+        
+        return new Response(
+          JSON.stringify(response),
+          {
+            status: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              ...corsHeaders,
+            },
+          }
+        );
+      } catch (error) {
+        return new Response(
+          JSON.stringify({
+            jsonrpc: '2.0',
+            id: null,
+            error: {
+              code: -32700,
+              message: 'Parse error: ' + error.message,
+            },
+          }),
+          {
+            status: 400,
+            headers: {
+              'Content-Type': 'application/json',
+              ...corsHeaders,
+            },
+          }
+        );
+      }
     }
 
     // ======================================
@@ -134,7 +452,7 @@ export default {
     }
 
     // ======================================
-    // QUERY ENDPOINT
+    // QUERY ENDPOINT (REST BACKWARDS COMPATIBILITY)
     // ======================================
 
     if (url.pathname === '/query' && request.method === 'POST') {
@@ -202,7 +520,7 @@ export default {
     return new Response(
       JSON.stringify({
         error: 'Not found',
-        available_endpoints: ['/health', '/query'],
+        available_endpoints: ['/health', '/query', '/sse', '/message'],
       }),
       {
         status: 404,
