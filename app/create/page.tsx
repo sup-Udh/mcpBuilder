@@ -65,10 +65,18 @@ export default function CreatePage() {
     endpoint?: string
   }>({})
 
+  // PDF file upload state
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [pdfFileName, setPdfFileName] = useState("")
+
+  // Multi-page scraping state
+  const [crawlSubpages, setCrawlSubpages] = useState(false)
+
   // Connection Guide state
   const [showConnect, setShowConnect] = useState(false)
 
   const pollRef = useRef<NodeJS.Timeout | null>(null)
+  const fileInputRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     return () => {
@@ -86,9 +94,29 @@ export default function CreatePage() {
       return
     }
     if (step === 2) {
-      if (!sourceUrl.trim() || !serverName.trim()) {
-        setError("Please fill all fields.")
+      if (!serverName.trim()) {
+        setError("Please enter a server name.")
         return
+      }
+
+      // Validate PDF upload
+      if (selectedSource === "PDF") {
+        if (!pdfFile) {
+          setError("Please select a PDF file.")
+          return
+        }
+        // Check file size (10MB limit)
+        const MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
+        if (pdfFile.size > MAX_FILE_SIZE) {
+          setError(`PDF file size must be under 10MB. Your file is ${(pdfFile.size / 1024 / 1024).toFixed(2)}MB.`)
+          return
+        }
+      } else {
+        // Validate URL for other sources
+        if (!sourceUrl.trim()) {
+          setError("Please enter a URL.")
+          return
+        }
       }
       setStep(3)
       return
@@ -115,69 +143,102 @@ export default function CreatePage() {
         return
       }
 
-      const response = await fetch("/api/deploy", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${session.access_token}`,
-        },
-        body: JSON.stringify({
-          name: serverName,
-          sourceUrl,
-          sourceType: selectedSource,
-        }),
-      })
+      // For PDF uploads, use FormData
+      if (selectedSource === "PDF" && pdfFile) {
+        const formData = new FormData()
+        formData.append("name", serverName)
+        formData.append("sourceType", selectedSource)
+        formData.append("pdfFile", pdfFile)
 
-      const data = await response.json()
+        const response = await fetch("/api/deploy", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: formData,
+        })
 
-      if (!response.ok || !data.success) {
-        setError(data.error || "Deployment failed")
-        setDeploying(false)
-        return
-      }
+        const data = await response.json()
 
-      const serverId = data.serverId
-      setDeployServerId(serverId)
-
-      pollRef.current = setInterval(async () => {
-        try {
-          const statusRes = await fetch(
-            `/api/deploy/status?serverId=${serverId}`
-          )
-          const statusData = await statusRes.json()
-
-          if (statusData.success && statusData.server) {
-            const server = statusData.server
-            setDeployStatus(server.deploymentStatus)
-            setDeployStats({
-              totalDocuments: server.totalDocuments,
-              totalChunks: server.totalChunks,
-              totalEmbeddings: server.totalEmbeddings,
-              endpoint: server.endpoint,
-            })
-
-            if (
-              server.deploymentStatus === "operational" ||
-              server.deploymentStatus === "failed"
-            ) {
-              if (pollRef.current) clearInterval(pollRef.current)
-
-              if (server.deploymentStatus === "failed") {
-                setError(server.errorMessage || "Deployment failed")
-                setDeploying(false)
-              }
-              // Don't auto-redirect — let user see Connect button
-            }
-          }
-        } catch {
-          // Continue polling
+        if (!response.ok || !data.success) {
+          setError(data.error || "Deployment failed")
+          setDeploying(false)
+          return
         }
-      }, 2000)
+
+        const serverId = data.serverId
+        setDeployServerId(serverId)
+        startPolling(serverId)
+      } else {
+        // For URL-based sources, use JSON
+        const response = await fetch("/api/deploy", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            name: serverName,
+            sourceUrl,
+            sourceType: selectedSource,
+            crawlSubpages,
+          }),
+        })
+
+        const data = await response.json()
+
+        if (!response.ok || !data.success) {
+          setError(data.error || "Deployment failed")
+          setDeploying(false)
+          return
+        }
+
+        const serverId = data.serverId
+        setDeployServerId(serverId)
+        startPolling(serverId)
+      }
     } catch (err) {
       console.error(err)
       setError("Something went wrong.")
       setDeploying(false)
     }
+  }
+
+  const startPolling = (serverId: string) => {
+    pollRef.current = setInterval(async () => {
+      try {
+        const statusRes = await fetch(
+          `/api/deploy/status?serverId=${serverId}`
+        )
+        const statusData = await statusRes.json()
+
+        if (statusData.success && statusData.server) {
+          const server = statusData.server
+          setDeployStatus(server.deploymentStatus)
+          setDeployStats({
+            totalDocuments: server.totalDocuments,
+            totalChunks: server.totalChunks,
+            totalEmbeddings: server.totalEmbeddings,
+            endpoint: server.endpoint,
+          })
+
+          if (
+            server.deploymentStatus === "operational" ||
+            server.deploymentStatus === "failed"
+          ) {
+            if (pollRef.current) clearInterval(pollRef.current)
+
+            if (server.deploymentStatus === "failed") {
+              setError(server.errorMessage || "Deployment failed")
+              setDeploying(false)
+            }
+            // Don't auto-redirect — let user see Connect button
+          }
+        }
+      } catch {
+        // Continue polling
+      }
+    }, 2000)
   }
 
   return (
@@ -297,21 +358,97 @@ export default function CreatePage() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="mb-3 block font-mono text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--accent-primary)' }}>
-                    {selectedSource} URL
-                  </label>
-                  <div className="rounded-xl p-2" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
+                {selectedSource === "PDF" ? (
+                  // PDF FILE UPLOAD
+                  <div>
+                    <label className="mb-3 block font-mono text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--accent-primary)' }}>
+                      PDF File (Max 10MB)
+                    </label>
                     <input
-                      type="text"
-                      value={sourceUrl}
-                      onChange={(e) => setSourceUrl(e.target.value)}
-                      placeholder="https://example.com/docs"
-                      className="w-full bg-transparent px-4 py-4 outline-none"
-                      style={{ color: 'var(--text-primary)' }}
+                      ref={fileInputRef}
+                      type="file"
+                      accept=".pdf"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) {
+                          setPdfFile(file)
+                          setPdfFileName(file.name)
+                        }
+                      }}
+                      className="hidden"
                     />
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="w-full rounded-xl p-4 transition-all"
+                      style={{
+                        background: 'var(--bg-card)',
+                        border: '2px dashed var(--border-primary)',
+                        color: pdfFileName ? 'var(--accent-primary)' : 'var(--text-secondary)',
+                      }}
+                    >
+                      <div className="flex items-center justify-center gap-3">
+                        <span className="material-symbols-outlined">file_upload</span>
+                        <div className="text-left">
+                          <p className="font-mono text-xs uppercase tracking-[0.1em]">
+                            {pdfFileName || "Click to select PDF file"}
+                          </p>
+                          {!pdfFileName && (
+                            <p style={{ color: 'var(--text-muted)' }} className="text-xs">
+                              or drag and drop a PDF here
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                    {pdfFile && (
+                      <p style={{ color: 'var(--status-success)' }} className="mt-2 text-xs">
+                        ✓ File selected: {(pdfFile.size / 1024).toFixed(2)} KB
+                      </p>
+                    )}
                   </div>
-                </div>
+                ) : (
+                  // URL INPUT FOR OTHER SOURCES
+                  <>
+                    <div>
+                      <label className="mb-3 block font-mono text-xs uppercase tracking-[0.2em]" style={{ color: 'var(--accent-primary)' }}>
+                        {selectedSource} URL
+                      </label>
+                      <div className="rounded-xl p-2" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-primary)' }}>
+                        <input
+                          type="text"
+                          value={sourceUrl}
+                          onChange={(e) => setSourceUrl(e.target.value)}
+                          placeholder="https://example.com/docs"
+                          className="w-full bg-transparent px-4 py-4 outline-none"
+                          style={{ color: 'var(--text-primary)' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* CRAWL SUBPAGES CHECKBOX - Only for Website and Docs */}
+                    {(selectedSource === "Website" || selectedSource === "Docs") && (
+                      <div className="rounded-xl p-4" style={{ background: 'rgba(var(--accent-rgb), 0.05)', border: '1px solid var(--border-primary)' }}>
+                        <label className="flex items-center gap-3 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={crawlSubpages}
+                            onChange={(e) => setCrawlSubpages(e.target.checked)}
+                            className="h-5 w-5 rounded accent-current"
+                            style={{ accentColor: 'var(--accent-primary)' }}
+                          />
+                          <div>
+                            <p style={{ color: 'var(--text-primary)' }} className="font-semibold text-sm">
+                              Scrape Multiple Pages
+                            </p>
+                            <p style={{ color: 'var(--text-muted)' }} className="text-xs">
+                              Crawl up to 15 related pages from the same domain to capture more content
+                            </p>
+                          </div>
+                        </label>
+                      </div>
+                    )}
+                  </>
+                )}
               </div>
             </div>
           )}
@@ -350,10 +487,25 @@ export default function CreatePage() {
                   <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Source Type</p>
                   <p style={{ color: 'var(--text-secondary)' }}>{selectedSource}</p>
                 </div>
-                <div>
-                  <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Source URL</p>
-                  <p className="break-all" style={{ color: 'var(--text-secondary)' }}>{sourceUrl}</p>
-                </div>
+                {selectedSource === "PDF" ? (
+                  <div>
+                    <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>PDF File</p>
+                    <p className="break-all" style={{ color: 'var(--text-secondary)' }}>{pdfFileName}</p>
+                  </div>
+                ) : (
+                  <>
+                    <div>
+                      <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Source URL</p>
+                      <p className="break-all" style={{ color: 'var(--text-secondary)' }}>{sourceUrl}</p>
+                    </div>
+                    {(selectedSource === "Website" || selectedSource === "Docs") && (
+                      <div>
+                        <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--text-muted)' }}>Multi-Page Scraping</p>
+                        <p style={{ color: 'var(--text-secondary)' }}>{crawlSubpages ? "✓ Enabled (up to 15 pages)" : "Disabled (single page only)"}</p>
+                      </div>
+                    )}
+                  </>
+                )}
 
                 {/* DEPLOYMENT STATUS */}
                 {deploying && (

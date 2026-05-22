@@ -13,6 +13,100 @@ import { deployToCloudflare } from '@/lib/deployment/deploy';
 
 import { updateServerStatus } from '@/lib/vector/supabase';
 
+import { storeDocuments, storeEmbeddedChunks } from '@/lib/vector/supabase';
+
+import { chunkDocuments } from '@/lib/processing/chunker';
+
+import { embedChunks } from '@/lib/embeddings/embedder';
+
+import pdfParse from 'pdf-parse';
+
+// ==========================================
+// PDF PROCESSING
+// ==========================================
+
+async function processPdf(
+  serverId: string,
+  pdfBuffer: Buffer,
+  fileName: string
+): Promise<any> {
+  console.log(`\n====================================`);
+  console.log(`STARTING PDF PROCESSING`);
+  console.log(`====================================`);
+
+  try {
+    // Parse PDF
+    console.log(`Parsing PDF: ${fileName}`);
+    const pdfData = await pdfParse(pdfBuffer);
+
+    console.log(`PDF has ${pdfData.numpages} pages`);
+    console.log(`Extracted text length: ${pdfData.text.length} characters`);
+
+    // Create a document from the PDF
+    const document = {
+      serverId,
+      title: fileName.replace(/\.pdf$/i, ''),
+      url: `pdf:${fileName}`,
+      content: pdfData.text,
+      sourceType: 'pdf' as const,
+      metadata: {
+        pages: pdfData.numpages,
+        wordCount: pdfData.text.split(/\s+/).length,
+        extractedAt: new Date().toISOString(),
+        fileName,
+      },
+    };
+
+    console.log(`Document created: ${document.title}`);
+
+    // Store document
+    console.log(`\n====================================`);
+    console.log(`STORING DOCUMENTS`);
+    console.log(`====================================`);
+
+    const storedDocs = await storeDocuments(serverId, [document]);
+
+    console.log(`Stored ${storedDocs.length} documents`);
+
+    // Chunk documents
+    console.log(`\n====================================`);
+    console.log(`STARTING CHUNKING`);
+    console.log(`====================================`);
+
+    const chunks = chunkDocuments([document]);
+
+    console.log(`Created ${chunks.length} chunks`);
+
+    // Embed chunks
+    console.log(`\n====================================`);
+    console.log(`STARTING EMBEDDING`);
+    console.log(`====================================`);
+
+    const embeddedChunks = await embedChunks(chunks);
+
+    console.log(`Embedded ${embeddedChunks.length} chunks`);
+
+    // Store embeddings
+    console.log(`\n====================================`);
+    console.log(`STORING EMBEDDINGS`);
+    console.log(`====================================`);
+
+    await storeEmbeddedChunks(embeddedChunks);
+
+    console.log(`Stored embeddings in Supabase`);
+
+    return {
+      serverId,
+      documents: [document],
+      chunks,
+      embeddedChunks,
+    };
+  } catch (error) {
+    console.error(`PDF Processing Error:`, error);
+    throw error;
+  }
+}
+
 // ==========================================
 // POST /api/deploy
 // ==========================================
@@ -34,24 +128,57 @@ export async function POST(
     );
 
     // ======================================
-    // PARSE BODY
+    // PARSE BODY - Handle both JSON and FormData
     // ======================================
 
-    const {
-      name,
-      sourceUrl,
-      sourceType,
-    } = await req.json();
+    let name: string = '';
+    let sourceUrl: string = '';
+    let sourceType: string = 'Website';
+    let crawlSubpages: boolean = false;
+    let pdfFile: Buffer | null = null;
+    let pdfFileName: string = '';
+
+    const contentType = req.headers.get('content-type') || '';
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData (PDF file upload)
+      const formData = await req.formData();
+      name = formData.get('name') as string;
+      sourceType = formData.get('sourceType') as string;
+      const file = formData.get('pdfFile') as File;
+
+      if (file) {
+        const arrayBuffer = await file.arrayBuffer();
+        pdfFile = Buffer.from(arrayBuffer);
+        pdfFileName = file.name;
+        sourceUrl = `pdf:${pdfFileName}`; // Use special protocol for PDFs
+      }
+    } else {
+      // Handle JSON (URL-based sources)
+      const body = await req.json();
+      name = body.name;
+      sourceUrl = body.sourceUrl;
+      sourceType = body.sourceType || 'Website';
+      crawlSubpages = body.crawlSubpages || false;
+    }
 
     // ======================================
     // VALIDATION
     // ======================================
 
-    if (!name || !sourceUrl) {
+    if (!name) {
       return NextResponse.json(
         {
-          error:
-            'Name and source URL are required',
+          error: 'Server name is required',
+        },
+        { status: 400 }
+      );
+    }
+
+    if (!sourceUrl && !pdfFile) {
+      return NextResponse.json(
+        {
+          error: 'Source URL or PDF file is required',
         },
         { status: 400 }
       );
@@ -146,10 +273,13 @@ export async function POST(
 
     console.log(`User ID: ${userId}`);
     console.log(`Server Name: ${name}`);
-    console.log(`Source URL: ${sourceUrl}`);
-    console.log(
-      `Source Type: ${sourceType || 'Website'}`
-    );
+    console.log(`Source Type: ${sourceType}`);
+    if (pdfFile) {
+      console.log(`PDF File: ${pdfFileName} (${pdfFile.length} bytes)`);
+    } else {
+      console.log(`Source URL: ${sourceUrl}`);
+      console.log(`Crawl Subpages: ${crawlSubpages ? 'YES' : 'NO'}`);
+    }
 
     // ======================================
     // CREATE MCP SERVER ROW
@@ -161,9 +291,8 @@ export async function POST(
         .insert({
           user_id: userId,
           name,
-          source_url: sourceUrl,
-          source_type:
-            sourceType || 'Website',
+          source_url: pdfFile ? `pdf:${pdfFileName}` : sourceUrl,
+          source_type: sourceType,
           deployment_status: 'pending',
           ingest_status: 'pending',
         } as any)
@@ -202,7 +331,10 @@ export async function POST(
       serverId,
       name,
       sourceUrl,
-      sourceType || 'Website'
+      sourceType,
+      pdfFile,
+      pdfFileName,
+      crawlSubpages
     ).catch((err) => {
       console.error(
         'Pipeline failed:',
@@ -241,7 +373,10 @@ async function runPipeline(
   serverId: string,
   serverName: string,
   sourceUrl: string,
-  sourceType: string
+  sourceType: string,
+  pdfFile?: Buffer | null,
+  pdfFileName?: string,
+  crawlSubpages: boolean = false
 ) {
   try {
     console.log(
@@ -267,15 +402,18 @@ async function runPipeline(
 
     console.log('Pipeline step: SCRAPING');
 
-    const crawlSubpages =
-      sourceType === 'Website' ||
-      sourceType === 'Docs';
+    let result;
 
-    const result = await processUrl(
-      serverId,
-      sourceUrl,
-      crawlSubpages
-    );
+    // Handle PDF or URL processing
+    if (pdfFile) {
+      // For PDFs: store the file and process it
+      console.log(`Processing PDF: ${pdfFileName} (${pdfFile.length} bytes)`);
+      result = await processPdf(serverId, pdfFile, pdfFileName || 'document.pdf');
+    } else {
+      // For URLs: use the existing processUrl function
+      const shouldCrawl = crawlSubpages || sourceType === 'Website' || sourceType === 'Docs';
+      result = await processUrl(serverId, sourceUrl, shouldCrawl);
+    }
 
     // ======================================
     // STEP 2: UPDATE STATS
