@@ -1,13 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { createClient } from "../../lib/vector/client"
 import { useTheme } from "@/lib/theme-context"
 
 export default function LoginPage() {
   const supabase = createClient()
-  const { isDark } = useTheme()
+  const { isDark, rotatePalette } = useTheme()
 
   const [loading, setLoading] =
     useState(false)
@@ -17,6 +17,11 @@ export default function LoginPage() {
 
   const [error, setError] =
     useState("")
+
+  // Rotate color palette on every login page load
+  useEffect(() => {
+    rotatePalette()
+  }, [])
 
   async function signInWithGoogle() {
     if (!acceptedTerms) {

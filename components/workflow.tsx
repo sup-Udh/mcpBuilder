@@ -10,13 +10,13 @@ const steps = [
     tag: "SOURCE INGEST",
     icon: "database_schema",
     element: (
-      <div className="rounded-xl border border-white/5 bg-[#050308]/60 p-4 font-mono text-[10px] text-white/50 space-y-2 mt-4">
+      <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 font-mono text-[10px] text-[var(--text-secondary)] space-y-2 mt-4">
         <div className="flex items-center justify-between text-[#FF6B35]">
           <span>GET https://docs.mcp.io/api</span>
           <span className="text-green-400">200 OK</span>
         </div>
-        <div className="text-[9px] text-white/30 truncate">➔ Fetching DOM structure...</div>
-        <div className="text-[9px] text-white/30 truncate">➔ Found 12 header tags, 4 code blocks</div>
+        <div className="text-[9px] text-[var(--text-muted)] truncate">➔ Fetching DOM structure...</div>
+        <div className="text-[9px] text-[var(--text-muted)] truncate">➔ Found 12 header tags, 4 code blocks</div>
         <div className="text-[#FF4081]">✓ Text successfully extracted (4.2 KB clean Markdown)</div>
       </div>
     )
@@ -28,22 +28,22 @@ const steps = [
     tag: "COGNITIVE PIPELINE",
     icon: "flowsheet",
     element: (
-      <div className="rounded-xl border border-white/5 bg-[#050308]/60 p-4 font-mono text-[10px] text-white/50 space-y-2.5 mt-4">
-        <div className="flex items-center justify-between text-white/40">
+      <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 font-mono text-[10px] text-[var(--text-secondary)] space-y-2.5 mt-4">
+        <div className="flex items-center justify-between text-[var(--text-muted)]">
           <span>VECTOR PIPELINE</span>
           <span className="text-[#7C4DFF] animate-pulse">INDEXING</span>
         </div>
-        <div className="w-full bg-white/5 h-[3px] rounded-full overflow-hidden">
+        <div className="w-full bg-[var(--border-primary)] h-[3px] rounded-full overflow-hidden">
           <div className="bg-gradient-to-r from-[#FF6B35] to-[#7C4DFF] h-full w-[80%] rounded-full animate-loading-bar" />
         </div>
         <div className="grid grid-cols-2 gap-2 text-[9px]">
-          <div className="bg-white/[0.02] border border-white/5 p-1 rounded">
-            <span className="text-white/30 block">CHUNKS</span>
-            <span className="text-white">18 Blocks</span>
+          <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] p-1 rounded">
+            <span className="text-[var(--text-muted)] block">CHUNKS</span>
+            <span className="text-[var(--text-primary)]">18 Blocks</span>
           </div>
-          <div className="bg-white/[0.02] border border-white/5 p-1 rounded">
-            <span className="text-white/30 block">DIMENSION</span>
-            <span className="text-white">1536 (Float32)</span>
+          <div className="bg-[var(--bg-primary)] border border-[var(--border-primary)] p-1 rounded">
+            <span className="text-[var(--text-muted)] block">DIMENSION</span>
+            <span className="text-[var(--text-primary)]">1536 (Float32)</span>
           </div>
         </div>
       </div>
@@ -56,12 +56,12 @@ const steps = [
     tag: "SERVER RUNTIME",
     icon: "lan",
     element: (
-      <div className="rounded-xl border border-white/5 bg-[#050308]/60 p-4 font-mono text-[10px] text-white/50 space-y-2 mt-4">
-        <div className="flex items-center justify-between text-white/40">
+      <div className="rounded-xl border border-[var(--border-primary)] bg-[var(--bg-secondary)] p-4 font-mono text-[10px] text-[var(--text-secondary)] space-y-2 mt-4">
+        <div className="flex items-center justify-between text-[var(--text-muted)]">
           <span>mcp.json CONFIG</span>
           <span className="text-green-400">READY</span>
         </div>
-        <pre className="text-[9px] text-[#A69EAF] leading-tight overflow-x-hidden">
+        <pre className="text-[9px] text-[var(--text-secondary)] leading-tight overflow-x-hidden">
 {`{
   "mcpServers": {
     "my-server": {
@@ -87,12 +87,12 @@ export default function Workflow() {
           Orchestration Process
         </span>
         <h2 
-          className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl"
-          style={{ fontFamily: 'var(--font-display)' }}
+          className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
         >
           From Docs to Live AI Tools
         </h2>
-        <p className="mx-auto mt-6 max-w-2xl text-base text-[#A69EAF]">
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
           A robust developer experience that bridges static knowledge with real-time agentic execution.
         </p>
       </div>
@@ -106,7 +106,11 @@ export default function Workflow() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-100px" }}
             transition={{ duration: 0.6, delay: index * 0.15 }}
-            className="group relative flex flex-col justify-between rounded-3xl border border-white/5 bg-[#0D081D]/35 p-6 backdrop-blur-xl transition-all duration-300 hover:border-white/10 hover:bg-[#0D081D]/55 hover:shadow-[0_8px_30px_rgba(0,0,0,0.4)]"
+            className="landing-card group relative flex flex-col justify-between rounded-3xl border p-6 backdrop-blur-xl transition-all duration-300"
+            style={{
+              backgroundColor: 'var(--bg-card)',
+              borderColor: 'var(--border-primary)',
+            }}
           >
             {/* Ambient inner soft background glow on hover */}
             <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-[#FF4081]/0 via-transparent to-[#7C4DFF]/0 group-hover:from-[#FF4081]/[0.015] group-hover:to-[#7C4DFF]/[0.02] pointer-events-none transition-all duration-500" />
@@ -119,10 +123,13 @@ export default function Workflow() {
                 </span>
                 
                 <div className="flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px] text-white/30 group-hover:text-[#FF4081] transition-colors duration-300">
+                  <span 
+                    className="material-symbols-outlined text-[18px] group-hover:text-[#FF4081] transition-colors duration-300"
+                    style={{ color: 'var(--text-muted)' }}
+                  >
                     {step.icon}
                   </span>
-                  <span className="font-mono text-sm text-white/20 font-bold">
+                  <span className="font-mono text-sm font-bold" style={{ color: 'var(--text-muted)', opacity: 0.5 }}>
                     {step.step}
                   </span>
                 </div>
@@ -130,14 +137,14 @@ export default function Workflow() {
 
               {/* TITLE */}
               <h3 
-                className="mb-4 text-2xl font-bold text-white tracking-tight"
-                style={{ fontFamily: 'var(--font-display)' }}
+                className="mb-4 text-2xl font-bold tracking-tight"
+                style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
               >
                 {step.title}
               </h3>
 
               {/* DESCRIPTION */}
-              <p className="text-sm text-[#A69EAF] leading-relaxed">
+              <p className="text-sm leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 {step.description}
               </p>
             </div>

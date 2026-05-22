@@ -7,6 +7,7 @@ import { Geist_Mono } from "next/font/google"
 
 import "./globals.css"
 import { ThemeProvider } from "@/lib/theme-context"
+import GlobalDisclaimer from "@/components/global-disclaimer"
 
 const inter = Inter({
   variable: "--font-inter",
@@ -55,6 +56,7 @@ export default function RootLayout({
 
       <body className="min-h-screen overflow-x-hidden">
         <ThemeProvider>
+          <GlobalDisclaimer />
           {children}
         </ThemeProvider>
       </body>

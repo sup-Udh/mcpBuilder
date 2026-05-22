@@ -35,6 +35,44 @@
   --scrollbar-thumb: rgba(255, 64, 129, 0.12);
   --scrollbar-thumb-hover: rgba(255, 64, 129, 0.24);
   --scrollbar-thumb-active: rgba(255, 64, 129, 0.36);
+
+  --l-grid-line: rgba(255, 255, 255, 0.015);
+}
+
+[data-theme="light"] .landing-theme {
+  --bg-primary: #FAF9FB;
+  --bg-secondary: #F4F0F8;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #ECE6F3;
+  --bg-elevated: #ECE6F3;
+  --bg-elevated-hover: #DFD7E9;
+
+  --text-primary: #150E22;
+  --text-secondary: #584F65;
+  --text-muted: #8E839E;
+
+  --accent-primary: #FF4081; /* magenta */
+  --accent-secondary: #FF6B35; /* coral */
+  --accent-highlight: #6200EE; /* bright purple */
+  --accent-rgb: 255, 64, 129;
+  --highlight-rgb: 255, 107, 53;
+
+  --border-primary: rgba(21, 14, 34, 0.08);
+  --border-hover: rgba(255, 64, 129, 0.25);
+  --border-accent: rgba(255, 107, 53, 0.3);
+
+  --gradient-primary: linear-gradient(135deg, #FF6B35 0%, #FF4081 50%, #6200EE 100%);
+  --gradient-subtle: linear-gradient(135deg, rgba(255, 107, 53, 0.08), rgba(255, 64, 129, 0.04));
+  --gradient-card: linear-gradient(135deg, rgba(255, 107, 53, 0.02), rgba(98, 0, 238, 0.01));
+  --gradient-glow-1: rgba(255, 107, 53, 0.03);
+  --gradient-glow-2: rgba(255, 64, 129, 0.02);
+  --gradient-glow-3: rgba(98, 0, 238, 0.02);
+
+  --scrollbar-thumb: rgba(255, 64, 129, 0.08);
+  --scrollbar-thumb-hover: rgba(255, 64, 129, 0.16);
+  --scrollbar-thumb-active: rgba(255, 64, 129, 0.24);
+
+  --l-grid-line: rgba(21, 14, 34, 0.03);
 }
 
 /* Premium Card & Styling Utilities */
@@ -44,6 +82,12 @@
   border: 1px solid rgba(255, 255, 255, 0.05);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .landing-theme .landing-card {
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(21, 14, 34, 0.08);
+  box-shadow: 0 4px 30px rgba(21, 14, 34, 0.05), inset 0 1px 1px rgba(255, 255, 255, 0.85);
 }
 
 .landing-theme .landing-card:hover {

@@ -4,6 +4,7 @@ import Features from "@/components/features"
 import Workflow from "@/components/workflow"
 import ConnectionEcosystem from "@/components/ecosystem"
 import Footer from "@/components/footer"
+import GitHubBadge from "@/components/github-badge"
 
 export default function HomePage() {
   return (
@@ -14,7 +15,12 @@ export default function HomePage() {
       {/* CINEMATIC BACKGROUND SYSTEM */}
       <div className="absolute inset-0 pointer-events-none z-0">
         {/* Layer 1: Fine-mesh structure grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:48px_48px] opacity-70" />
+        <div 
+          className="absolute inset-0 bg-[size:48px_48px] opacity-70" 
+          style={{
+            backgroundImage: 'linear-gradient(var(--l-grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--l-grid-line) 1px, transparent 1px)'
+          }}
+        />
         
         {/* Layer 2: Subtle light grids alignment */}
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(255,107,53,0.07)_0%,transparent_70%)]" />
@@ -22,7 +28,12 @@ export default function HomePage() {
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_80%_90%,rgba(124,77,255,0.06)_0%,transparent_60%)]" />
 
         {/* Layer 3: Vignette for depth */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_30%,#030008_100%)] opacity-90" />
+        <div 
+          className="absolute inset-0 opacity-95 transition-all duration-500" 
+          style={{
+            backgroundImage: 'radial-gradient(circle at center, transparent 30%, var(--bg-primary) 100%)'
+          }}
+        />
       </div>
 
       {/* CORE NAVIGATION */}
@@ -45,6 +56,9 @@ export default function HomePage() {
 
       {/* FOOTER */}
       <Footer />
+
+      {/* FLOATING GITHUB BADGE */}
+      <GitHubBadge />
     </main>
   )
 }

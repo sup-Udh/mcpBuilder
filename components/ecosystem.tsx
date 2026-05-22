@@ -121,12 +121,12 @@ export default function ConnectionEcosystem() {
           Integrations & SDKs
         </span>
         <h2 
-          className="mt-4 text-4xl font-bold tracking-tight text-white sm:text-5xl"
-          style={{ fontFamily: 'var(--font-display)' }}
+          className="mt-4 text-4xl font-bold tracking-tight sm:text-5xl"
+          style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
         >
           Connect Any AI Client
         </h2>
-        <p className="mx-auto mt-6 max-w-2xl text-base text-[#A69EAF]">
+        <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
           Whether you use Cursor, Claude Desktop, VS Code, or custom agent systems built with official SDKs.
         </p>
       </div>
@@ -135,14 +135,15 @@ export default function ConnectionEcosystem() {
         
         {/* LEFT COLUMN: Client Config (7 cols) */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="flex border-b border-white/5 pb-4 gap-6">
+          <div className="flex pb-4 gap-6 border-b" style={{ borderColor: 'var(--border-primary)' }}>
             {clients.map((c) => (
               <button
                 key={c.id}
                 onClick={() => setActiveClient(c.id)}
-                className={`relative pb-4 text-sm font-semibold tracking-tight transition-all duration-300 cursor-pointer flex items-center gap-2 ${
-                  activeClient === c.id ? "text-white" : "text-[#A69EAF]"
-                }`}
+                className="relative pb-4 text-sm font-semibold tracking-tight transition-all duration-300 cursor-pointer flex items-center gap-2"
+                style={{
+                  color: activeClient === c.id ? 'var(--text-primary)' : 'var(--text-secondary)'
+                }}
               >
                 <span className="material-symbols-outlined text-[18px]">
                   {c.icon}
@@ -167,24 +168,29 @@ export default function ConnectionEcosystem() {
               transition={{ duration: 0.3 }}
               className="space-y-6"
             >
-              <p className="text-base text-[#A69EAF] leading-relaxed">
+              <p className="text-base leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
                 {selectedClient.desc}
               </p>
 
               {/* Code/Config block */}
-              <div className="relative rounded-2xl border border-white/5 bg-[#06030c]/70 p-5 font-mono text-xs overflow-hidden">
+              <div className="relative rounded-2xl border p-5 font-mono text-xs overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
                 <div className="absolute top-4 right-4 flex items-center gap-2 z-10">
-                  <span className="text-[10px] text-white/30 uppercase tracking-widest font-mono">JSON Config</span>
+                  <span className="text-[10px] uppercase tracking-widest font-mono" style={{ color: 'var(--text-muted)' }}>JSON Config</span>
                   <button 
                     onClick={() => handleCopy(selectedClient.config)}
-                    className="flex items-center justify-center h-8 w-8 rounded-lg bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer text-white transition active:scale-95"
+                    className="flex items-center justify-center h-8 w-8 rounded-lg border cursor-pointer transition active:scale-95"
+                    style={{
+                      backgroundColor: 'var(--bg-elevated)',
+                      borderColor: 'var(--border-primary)',
+                      color: 'var(--text-primary)'
+                    }}
                   >
                     <span className="material-symbols-outlined text-[16px]">
                       {copied ? "check" : "content_copy"}
                     </span>
                   </button>
                 </div>
-                <pre className="text-white/80 leading-relaxed overflow-x-auto pt-4 select-all">
+                <pre className="leading-relaxed overflow-x-auto pt-4 select-all" style={{ color: 'var(--text-primary)' }}>
                   {selectedClient.config}
                 </pre>
               </div>
@@ -193,7 +199,13 @@ export default function ConnectionEcosystem() {
         </div>
 
         {/* RIGHT COLUMN: Code SDKs (5 cols) */}
-        <div className="lg:col-span-5 rounded-[2rem] border border-white/5 bg-[#0D081D]/30 p-6 backdrop-blur-xl flex flex-col justify-between hover:border-white/10 transition-all duration-300 relative group">
+        <div 
+          className="landing-card lg:col-span-5 rounded-[2rem] border p-6 backdrop-blur-xl flex flex-col justify-between transition-all duration-300 relative group"
+          style={{
+            backgroundColor: 'var(--bg-card)',
+            borderColor: 'var(--border-primary)'
+          }}
+        >
           <div>
             <div className="flex items-center justify-between mb-6">
               <span className="font-mono text-[10px] uppercase tracking-widest text-[#FF4081]">Code SDKs</span>
@@ -203,11 +215,12 @@ export default function ConnectionEcosystem() {
                   <button
                     key={s.lang}
                     onClick={() => setActiveSdk(s.lang)}
-                    className={`px-2.5 py-1 rounded-md text-[10px] font-mono font-bold cursor-pointer transition ${
-                      activeSdk === s.lang 
-                        ? "bg-[#FF4081]/15 text-[#FF4081] border border-[#FF4081]/30"
-                        : "bg-white/5 text-[#A69EAF] border border-transparent hover:bg-white/10"
-                    }`}
+                    className="px-2.5 py-1 rounded-md text-[10px] font-mono font-bold cursor-pointer transition"
+                    style={{
+                      backgroundColor: activeSdk === s.lang ? 'rgba(255, 64, 129, 0.15)' : 'var(--bg-secondary)',
+                      color: activeSdk === s.lang ? '#FF4081' : 'var(--text-secondary)',
+                      border: activeSdk === s.lang ? '1px solid rgba(255, 64, 129, 0.3)' : '1px solid transparent'
+                    }}
                   >
                     {s.lang}
                   </button>
@@ -215,32 +228,37 @@ export default function ConnectionEcosystem() {
               </div>
             </div>
 
-            <p className="text-xs text-[#A69EAF] leading-relaxed mb-4">
+            <p className="text-xs leading-relaxed mb-4" style={{ color: 'var(--text-secondary)' }}>
               Access the server endpoint programmatically in your favorite codebase context with standard SDK adapters.
             </p>
 
             {/* SDK Code Snippet */}
-            <div className="relative rounded-xl border border-white/5 bg-[#050308]/60 p-4 font-mono text-[10px] text-white/70 overflow-hidden">
+            <div className="relative rounded-xl border p-4 font-mono text-[10px] overflow-hidden" style={{ backgroundColor: 'var(--bg-secondary)', borderColor: 'var(--border-primary)' }}>
               <div className="absolute top-2 right-2 z-10">
                 <button 
                   onClick={() => handleCopy(selectedSdk.code)}
-                  className="flex items-center justify-center h-6 w-6 rounded bg-white/5 hover:bg-white/10 border border-white/5 cursor-pointer text-white/50 hover:text-white transition"
+                  className="flex items-center justify-center h-6 w-6 rounded border cursor-pointer transition"
+                  style={{
+                    backgroundColor: 'var(--bg-elevated)',
+                    borderColor: 'var(--border-primary)',
+                    color: 'var(--text-muted)'
+                  }}
                 >
                   <span className="material-symbols-outlined text-[13px]">
                     {copied ? "check" : "content_copy"}
                   </span>
                 </button>
               </div>
-              <pre className="overflow-x-auto leading-relaxed select-all pt-2 whitespace-pre text-[#A69EAF]">
+              <pre className="overflow-x-auto leading-relaxed select-all pt-2 whitespace-pre" style={{ color: 'var(--text-secondary)' }}>
                 {selectedSdk.code}
               </pre>
             </div>
           </div>
 
           {/* Installation Tag */}
-          <div className="mt-4 pt-4 border-t border-white/5 flex items-center justify-between text-[10px] font-mono">
-            <span className="text-white/40">INSTALLATION:</span>
-            <code className="text-[#FF6B35] font-bold bg-[#FF6B35]/5 border border-[#FF6B35]/15 px-2 py-0.5 rounded">
+          <div className="mt-4 pt-4 border-t flex items-center justify-between text-[10px] font-mono" style={{ borderColor: 'var(--border-primary)' }}>
+            <span style={{ color: 'var(--text-muted)' }}>INSTALLATION:</span>
+            <code className="text-[#FF6B35] font-bold px-2 py-0.5 rounded" style={{ backgroundColor: 'rgba(255, 107, 53, 0.05)', border: '1px solid rgba(255, 107, 53, 0.15)' }}>
               {selectedSdk.install}
             </code>
           </div>

@@ -4,38 +4,25 @@ import {
   AnimatePresence,
   motion,
 } from "framer-motion"
-
 import { Brain, Database, Globe, Scissors, Rocket } from "lucide-react"
-
-import {
-  useEffect,
-  useMemo,
-  useState,
-} from "react"
-
+import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
+import { useTheme } from "@/lib/theme-context"
 
 const url = "https://tailwindcss.com/docs"
 
 export default function DemoPage() {
-
-  const [stage, setStage] =
-    useState(0)
-
-  const [typedUrl, setTypedUrl] =
-    useState("")
-
-  const [chunkCount, setChunkCount] =
-    useState(0)
+  const router = useRouter()
+  const { isDark, toggleTheme } = useTheme()
+  const [stage, setStage] = useState(0)
+  const [typedUrl, setTypedUrl] = useState("")
+  const [chunkCount, setChunkCount] = useState(0)
 
   /* =========================
      STAGE LOOP
   ========================= */
-
-  const router = useRouter()
-
   useEffect(() => {
-
     const timers: number[] = []
 
     // Stage progression scheduled once on mount
@@ -62,586 +49,419 @@ export default function DemoPage() {
     )
 
     return () => timers.forEach(clearTimeout)
-
-    // run once
-  }, [])
+  }, [router])
 
   /* URL TYPING */
   useEffect(() => {
-
     if (stage !== 0) return
 
     let i = 0
+    const interval = setInterval(() => {
+      setTypedUrl(url.slice(0, i + 1))
+      i++
+      if (i >= url.length) {
+        clearInterval(interval)
+      }
+    }, 55)
 
-    const interval =
-      setInterval(() => {
-
-        setTypedUrl(
-          url.slice(0, i + 1)
-        )
-
-        i++
-
-        if (i >= url.length) {
-          clearInterval(interval)
-        }
-
-      }, 55)
-
-    return () =>
-      clearInterval(interval)
-
+    return () => clearInterval(interval)
   }, [stage])
 
   /* COUNTER */
   useEffect(() => {
-
     if (stage !== 2) return
 
     let current = 0
-
     const target = 1247
+    const interval = setInterval(() => {
+      current += 37
+      if (current >= target) {
+        current = target
+        clearInterval(interval)
+      }
+      setChunkCount(current)
+    }, 40)
 
-    const interval =
-      setInterval(() => {
-
-        current += 37
-
-        if (current >= target) {
-
-          current = target
-
-          clearInterval(interval)
-
-        }
-
-        setChunkCount(current)
-
-      }, 40)
-
-    return () =>
-      clearInterval(interval)
-
+    return () => clearInterval(interval)
   }, [stage])
-
-  /* CHAT removed: demo now redirects after chunks stored */
 
   /* PARTICLES */
   const particles = useMemo(() => {
-
     return Array.from({
       length: 28,
     }).map((_, i) => ({
       id: i,
       left: Math.random() * 100,
-      delay:
-        Math.random() * 0.5,
-      duration:
-        1 +
-        Math.random() * 1.5,
+      delay: Math.random() * 0.5,
+      duration: 1 + Math.random() * 1.5,
     }))
-
   }, [])
 
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#020617] text-white">
-
-      {/* GRID */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+    <main 
+      className="landing-theme relative min-h-screen overflow-x-hidden flex flex-col justify-center items-center py-20 px-6 transition-colors duration-300 selection:bg-[#FF4081]/30 selection:text-[var(--text-primary)]"
+      style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}
+    >
+      {/* MESH GRID */}
+      <div 
+        className="absolute inset-0 bg-[size:48px_48px] opacity-70 pointer-events-none z-0" 
         style={{
-          backgroundSize:
-            "40px 40px",
-
-          backgroundImage:
-            "linear-gradient(to right, rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.08) 1px, transparent 1px)",
+          backgroundImage: 'linear-gradient(var(--l-grid-line) 1px, transparent 1px), linear-gradient(90deg, var(--l-grid-line) 1px, transparent 1px)'
+        }}
+      />
+      
+      {/* Vignette for depth */}
+      <div 
+        className="absolute inset-0 opacity-95 transition-all duration-500 pointer-events-none z-0" 
+        style={{
+          backgroundImage: 'radial-gradient(circle at center, transparent 30%, var(--bg-primary) 100%)'
         }}
       />
 
       {/* GLOWS */}
-      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[600px] w-[600px] rounded-full bg-blue-500/10 blur-[160px]" />
+      <div className="pointer-events-none absolute left-[-10%] top-[-10%] h-[600px] w-[600px] rounded-full blur-[160px] opacity-70 transition-all duration-300 z-0" style={{ background: 'var(--gradient-glow-1)' }} />
+      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full blur-[180px] opacity-70 transition-all duration-300 z-0" style={{ background: 'var(--gradient-glow-2)' }} />
 
-      <div className="pointer-events-none absolute bottom-[-10%] right-[-10%] h-[600px] w-[600px] rounded-full bg-violet-500/10 blur-[180px]" />
+      {/* HEADER NAVBAR MOCK FOR DEMO PAGE */}
+      <div className="absolute left-0 right-0 top-6 z-50 flex items-center justify-between px-8">
+        <Link href="/" className="group flex items-center gap-3 cursor-pointer">
+          <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-tr from-[#FF6B35] via-[#FF4081] to-[#7C4DFF] p-[1.5px] transition-all duration-300 group-hover:scale-105">
+            <div 
+              className="h-full w-full rounded-[6px] flex items-center justify-center"
+              style={{ background: 'var(--bg-primary)' }}
+            >
+              <span className="material-symbols-outlined text-[15px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B35] to-[#FF4081]">
+                polymer
+              </span>
+            </div>
+          </div>
+          <span 
+            className="text-lg font-bold tracking-tight transition-all duration-300"
+            style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}
+          >
+            MCP <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4081] to-[#FF6B35]">Builder</span>
+          </span>
+        </Link>
 
-      {/* TOP */}
-      <div className="absolute left-8 top-8 z-50 flex items-center gap-3">
-
-        <div className="h-2.5 w-2.5 animate-pulse rounded-full bg-violet-400" />
-
-        <h1 className="text-xl font-bold tracking-tight text-violet-300">
-          MCP Builder
-        </h1>
-
+        {/* THEME TOGGLE FOR DEMO PAGE */}
+        <button
+          onClick={toggleTheme}
+          className="flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 hover:bg-[var(--bg-card-hover)] cursor-pointer"
+          style={{
+            background: 'rgba(255, 255, 255, 0.04)',
+            border: '1px solid var(--border-primary)',
+            color: 'var(--text-secondary)',
+          }}
+          title={isDark ? "Switch to light mode" : "Switch to dark mode"}
+        >
+          <span className="material-symbols-outlined text-[18px]">
+            {isDark ? "light_mode" : "dark_mode"}
+          </span>
+        </button>
       </div>
 
-      {/* FOOTER */}
-      <div className="absolute bottom-8 right-8 z-50 text-sm text-white/40 transition hover:text-white">
-        See how it works →
+      {/* FOOTER SEE HOW IT WORKS */}
+      <div 
+        className="absolute bottom-8 right-8 z-50 text-sm font-semibold tracking-tight transition-all duration-300 cursor-pointer"
+        style={{ color: 'var(--text-muted)' }}
+      >
+        <Link href="/" className="hover:text-[var(--text-primary)] transition-colors">
+          See how it works →
+        </Link>
       </div>
 
-      {/* DOTS */}
+      {/* DOTS INDICATOR */}
       <div className="absolute bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3">
-
-        {[0, 1, 2].map((dot) => (
-
+        {[0, 1, 2, 3].map((dot) => (
           <motion.div
             key={dot}
             animate={{
-              width: stage === dot ? 38 : 10,
+              width: stage === dot ? 32 : 8,
               opacity: stage === dot ? 1 : 0.3,
             }}
-            className="h-2 rounded-full bg-violet-300"
+            className="h-1.5 rounded-full transition-all duration-300"
+            style={{
+              background: stage === dot ? 'var(--gradient-primary)' : 'var(--text-muted)',
+            }}
           />
-
         ))}
-
       </div>
 
-      {/* MAIN */}
-      <div className="flex h-full items-center justify-center px-6">
-
+      {/* MAIN CONTAINER */}
+      <div className="relative w-full max-w-5xl z-10 flex items-center justify-center">
         <motion.div
-          initial={{
-            opacity: 0,
-          }}
-          animate={{
-            opacity: 1,
-          }}
-          className="relative w-full max-w-7xl"
-          style={{
-            perspective: "1200px",
-          }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="w-full"
+          style={{ perspective: "1200px" }}
         >
-
           <motion.div
-            animate={{
-              rotateX: 5,
-              rotateY: -4,
+            animate={{ rotateX: 2, rotateY: -2 }}
+            transition={{ duration: 2 }}
+            className="relative rounded-[2.5rem] border p-10 backdrop-blur-3xl transition-colors duration-500 flex flex-col justify-center items-center min-h-[550px]"
+            style={{
+              background: 'var(--bg-card)',
+              borderColor: 'var(--border-primary)',
+              boxShadow: isDark 
+                ? '0 25px 70px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.05)'
+                : '0 25px 70px rgba(21, 14, 34, 0.04), inset 0 1px 1px rgba(255, 255, 255, 0.85)',
             }}
-            transition={{
-              duration: 2,
-            }}
-            className="relative rounded-[3rem] border border-white/10 bg-[#0B1120]/60 p-10 shadow-[0_0_100px_rgba(0,0,0,0.5)] backdrop-blur-2xl"
           >
-
             <AnimatePresence mode="wait">
-
-              {/* =========================
-                 STAGE 1
-              ========================= */}
-
+              {/* STAGE 0: TYPING URL */}
               {stage === 0 && (
                 <motion.div
-                  key="stage1"
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -30,
-                  }}
-                  className="flex h-[650px] flex-col items-center justify-center"
+                  key="stage0"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="flex flex-col items-center justify-center w-full max-w-2xl text-center"
                 >
-
                   <motion.div
                     animate={{
-                      boxShadow: [
-                        "0 0 0px rgba(59,130,246,0.1)",
-                        "0 0 40px rgba(59,130,246,0.25)",
-                        "0 0 0px rgba(59,130,246,0.1)",
+                      boxShadow: isDark ? [
+                        "0 0 0px rgba(255, 64, 129, 0.05)",
+                        "0 0 30px rgba(255, 64, 129, 0.15)",
+                        "0 0 0px rgba(255, 64, 129, 0.05)",
+                      ] : [
+                        "0 0 0px rgba(255, 64, 129, 0.02)",
+                        "0 0 20px rgba(255, 64, 129, 0.06)",
+                        "0 0 0px rgba(255, 64, 129, 0.02)",
                       ],
                     }}
-                    transition={{
-                      repeat:
-                        Infinity,
-                      duration: 2,
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="w-full rounded-2xl border p-4 flex items-center gap-4 transition-colors duration-300"
+                    style={{
+                      background: 'var(--bg-elevated)',
+                      borderColor: 'var(--border-primary)'
                     }}
-                    className="w-full max-w-3xl rounded-[2rem] border border-blue-300/20 bg-[#111827]/90 p-5"
                   >
-
-                    <div className="flex items-center gap-4">
-
-                      <Globe className="h-6 w-6 text-blue-300" />
-
-                      <input
-                        readOnly
-                        value={typedUrl}
-                        className="w-full bg-transparent text-lg text-white outline-none"
-                      />
-
-                    </div>
-
+                    <Globe className="h-5 w-5" style={{ color: 'var(--accent-primary)' }} />
+                    <input
+                      readOnly
+                      value={typedUrl}
+                      className="w-full bg-transparent text-base outline-none font-medium"
+                      style={{ color: 'var(--text-primary)' }}
+                    />
                   </motion.div>
 
                   <motion.button
-                    animate={{
-                      scale: [
-                        1,
-                        1.03,
-                        1,
-                      ],
+                    animate={{ scale: [1, 1.02, 1] }}
+                    transition={{ repeat: Infinity, duration: 1.8 }}
+                    className="mt-10 rounded-xl px-8 py-4 font-semibold text-white transition-all duration-300 shadow-md"
+                    style={{
+                      background: 'var(--gradient-primary)',
+                      boxShadow: '0 6px 20px rgba(255, 64, 129, 0.25)',
                     }}
-                    transition={{
-                      repeat:
-                        Infinity,
-                      duration: 1.8,
-                    }}
-                    className="mt-10 rounded-2xl bg-violet-300 px-8 py-4 font-semibold text-[#020617] shadow-[0_0_40px_rgba(167,139,250,0.4)]"
                   >
-
                     Build MCP Server
-
                   </motion.button>
-
                 </motion.div>
               )}
 
-              {/* =========================
-                 STAGE 2
-              ========================= */}
-
+              {/* STAGE 1: CRAWLER / FLOW */}
               {stage === 1 && (
                 <motion.div
-                  key="stage2"
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -30,
-                  }}
-                  className="relative flex h-[650px] flex-col items-center justify-center"
+                  key="stage1"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="relative flex flex-col items-center justify-center w-full"
                 >
-
                   {/* PARTICLES */}
                   {particles.map((p) => (
-
                     <motion.div
                       key={p.id}
-                      initial={{
-                        opacity: 0,
-                        y: -120,
-                      }}
+                      initial={{ opacity: 0, y: -100 }}
                       animate={{
-                        opacity: [
-                          0,
-                          1,
-                          0,
-                        ],
-
-                        y: 320,
+                        opacity: [0, 1, 0],
+                        y: 200,
                       }}
                       transition={{
-                        duration:
-                          p.duration,
-
-                        delay:
-                          p.delay,
-
-                        repeat:
-                          Infinity,
+                        duration: p.duration,
+                        delay: p.delay,
+                        repeat: Infinity,
                       }}
-                      className="absolute top-[10%] h-2 w-2 rounded-full bg-blue-300"
+                      className="absolute top-[10%] h-1.5 w-1.5 rounded-full"
                       style={{
                         left: `${p.left}%`,
+                        background: 'var(--accent-primary)',
                       }}
                     />
-
                   ))}
 
-                  {/* FLOW */}
-                  <div className="flex flex-col items-center gap-12 lg:flex-row">
-
+                  <div className="flex flex-col items-center gap-8 lg:flex-row">
                     {[
-                      {
-                        title:
-                          "Scraping",
-
-                        icon: Globe,
-                      },
-
-                      {
-                        title:
-                          "Chunking",
-
-                        icon: Scissors,
-                      },
-
-                      {
-                        title:
-                          "Embedding",
-
-                        icon: Brain,
-                      },
-                    ].map(
-                      (item, i) => {
-
-                        const Icon =
-                          item.icon
-
-                        return (
-                          <div
-                            key={
-                              item.title
-                            }
-                            className="relative flex items-center"
+                      { title: "Scraping", icon: Globe },
+                      { title: "Chunking", icon: Scissors },
+                      { title: "Embedding", icon: Brain },
+                    ].map((item, i) => {
+                      const Icon = item.icon
+                      return (
+                        <div key={item.title} className="relative flex items-center">
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: i * 0.4 }}
+                            className="w-[240px] rounded-2xl border p-6 backdrop-blur-xl transition-all duration-300"
+                            style={{
+                              background: 'var(--bg-elevated)',
+                              borderColor: 'var(--border-primary)',
+                            }}
                           >
-
-                            <motion.div
-                              initial={{
-                                opacity: 0,
-                                scale: 0.8,
-                              }}
-                              animate={{
-                                opacity: 1,
-                                scale: 1,
-                              }}
-                              transition={{
-                                delay:
-                                  i * 0.5,
-                              }}
-                              className="w-[260px] rounded-[2rem] border border-white/10 bg-[#111827]/80 p-8"
+                            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--accent-primary)]/10 border border-[var(--accent-primary)]/20">
+                              <Icon className="h-5 w-5" style={{ color: 'var(--accent-primary)' }} />
+                            </div>
+                            <h2 
+                              className="mb-4 text-xl font-bold tracking-tight"
+                              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
                             >
-
-                              <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-blue-400/10">
-
-                                <Icon className="h-8 w-8 text-blue-300" />
-
-                              </div>
-
-                              <h2 className="mb-4 text-2xl font-bold">
-                                {
-                                  item.title
-                                }
-                              </h2>
-
-                              <div className="h-2 overflow-hidden rounded-full bg-white/10">
-
-                                <motion.div
-                                  initial={{
-                                    width: 0,
-                                  }}
-                                  animate={{
-                                    width:
-                                      "100%",
-                                  }}
-                                  transition={{
-                                    duration: 1.2,
-                                    delay:
-                                      i *
-                                      0.5,
-                                  }}
-                                  className="h-full rounded-full bg-gradient-to-r from-blue-300 to-violet-300"
-                                />
-
-                              </div>
-
-                            </motion.div>
-
-                          </div>
-                        )
-                      }
-                    )}
-
+                              {item.title}
+                            </h2>
+                            <div className="h-1.5 overflow-hidden rounded-full" style={{ background: 'var(--border-primary)' }}>
+                              <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: "100%" }}
+                                transition={{ duration: 1.2, delay: i * 0.4 }}
+                                className="h-full rounded-full"
+                                style={{ background: 'var(--gradient-primary)' }}
+                              />
+                            </div>
+                          </motion.div>
+                        </div>
+                      )
+                    })}
                   </div>
-
                 </motion.div>
               )}
 
-              {/* =========================
-                 STAGE 3
-              ========================= */}
-
+              {/* STAGE 2: CHUNKS STORED */}
               {stage === 2 && (
                 <motion.div
-                  key="stage3"
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -30,
-                  }}
-                  className="relative flex h-[650px] flex-col items-center justify-center"
+                  key="stage2"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="relative flex flex-col items-center justify-center w-full"
                 >
-
-                  {[...Array(26)].map(
-                    (_, i) => (
-
-                      <motion.div
-                        key={i}
-                        initial={{
-                          opacity: 0,
-                          y: -250,
-                        }}
-                        animate={{
-                          opacity: [
-                            0,
-                            1,
-                            0,
-                          ],
-
-                          y: 0,
-
-                          x:
-                            Math.random() *
-                              120 -
-                            60,
-                        }}
-                        transition={{
-                          duration: 1.8,
-                          delay:
-                            i * 0.05,
-                          repeat:
-                            Infinity,
-                        }}
-                        className="absolute h-2 w-2 rounded-full bg-cyan-300"
-                      />
-
-                    )
-                  )}
+                  {/* CHUNKING PARTICLES */}
+                  {[...Array(26)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, y: -180 }}
+                      animate={{
+                        opacity: [0, 1, 0],
+                        y: 0,
+                        x: Math.random() * 120 - 60,
+                      }}
+                      transition={{
+                        duration: 1.8,
+                        delay: i * 0.05,
+                        repeat: Infinity,
+                      }}
+                      className="absolute h-1.5 w-1.5 rounded-full"
+                      style={{ background: 'var(--accent-primary)' }}
+                    />
+                  ))}
 
                   <motion.div
-                    animate={{
-                      scale: [
-                        1,
-                        1.05,
-                        1,
-                      ],
+                    animate={{ scale: [1, 1.04, 1] }}
+                    transition={{ repeat: Infinity, duration: 2 }}
+                    className="flex h-44 w-44 items-center justify-center rounded-full border shadow-xl"
+                    style={{
+                      background: 'var(--bg-elevated)',
+                      borderColor: 'var(--border-accent)',
+                      boxShadow: '0 0 50px rgba(var(--accent-rgb), 0.12)',
                     }}
-                    transition={{
-                      repeat:
-                        Infinity,
-                      duration: 2,
-                    }}
-                    className="flex h-56 w-56 items-center justify-center rounded-full border border-cyan-300/20 bg-cyan-400/10 shadow-[0_0_60px_rgba(34,211,238,0.2)]"
                   >
-
-                    <Database className="h-24 w-24 text-cyan-200" />
-
+                    <Database className="h-16 w-16" style={{ color: 'var(--accent-primary)' }} />
                   </motion.div>
 
-                  <motion.h2 className="mt-10 text-5xl font-black">
-
+                  <motion.h2 
+                    className="mt-10 text-5xl font-extrabold tracking-tight"
+                    style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
+                  >
                     {chunkCount.toLocaleString()}
-
                   </motion.h2>
 
-                  <p className="mt-3 text-white/50">
+                  <p className="mt-3 text-xs font-semibold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>
                     chunks stored
                   </p>
-
                 </motion.div>
               )}
 
-              
-              {/* =========================
-                 STAGE 3 — DEPLOY
-              ========================= */}
-
+              {/* STAGE 3: DEPLOYMENT STATUS */}
               {stage === 3 && (
                 <motion.div
-                  key="stage3-deploy"
-                  initial={{
-                    opacity: 0,
-                    y: 40,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    opacity: 0,
-                    y: -30,
-                  }}
-                  className="relative flex h-[650px] flex-col items-center justify-center"
+                  key="stage3"
+                  initial={{ opacity: 0, y: 30 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  className="relative flex flex-col items-center justify-center w-full"
                 >
-
-                  <div className="relative z-10 w-full max-w-4xl rounded-[2rem] border border-white/10 bg-black/40 p-8 backdrop-blur-2xl">
-
+                  <div 
+                    className="relative z-10 w-full max-w-2xl rounded-2xl border p-8 backdrop-blur-2xl transition-all duration-300"
+                    style={{
+                      background: 'var(--bg-elevated)',
+                      borderColor: 'var(--border-primary)',
+                    }}
+                  >
                     <div className="mb-6 flex items-center justify-between">
-
                       <div>
-
-                        <p className="font-mono text-xs uppercase tracking-[0.3em] text-violet-300/60">
+                        <p className="font-mono text-[10px] uppercase tracking-[0.25em]" style={{ color: 'var(--accent-primary)' }}>
                           MCP GENERATION
                         </p>
-
-                        <h2 className="mt-2 text-4xl font-black">
+                        <h2 className="mt-2 text-2xl font-extrabold tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}>
                           Deploying Runtime
                         </h2>
-
                       </div>
 
                       <motion.div
-                        animate={{
-                          rotate: 360,
+                        animate={{ rotate: 360 }}
+                        transition={{ repeat: Infinity, duration: 6, ease: "linear" }}
+                        className="flex h-11 w-11 items-center justify-center rounded-xl border transition-all duration-300"
+                        style={{
+                          background: 'var(--bg-secondary)',
+                          borderColor: 'var(--border-primary)',
                         }}
-                        transition={{
-                          repeat: Infinity,
-                          duration: 5,
-                          ease: "linear",
-                        }}
-                        className="flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10"
                       >
-
-                        <Rocket className="h-8 w-8 text-cyan-200" />
-
+                        <Rocket className="h-5 w-5" style={{ color: 'var(--accent-primary)' }} />
                       </motion.div>
-
                     </div>
 
-                    <div className="rounded-2xl border border-white/10 bg-[#020617]/80 p-6 font-mono text-sm">
-
-                      <p className="text-blue-300">SERVER_ID = "abc-123"</p>
-
-                      <p className="mt-4 text-violet-300">TOOL = "Search Tailwind CSS docs"</p>
-
-                      <p className="mt-4 text-cyan-300">VECTOR_DB = CONNECTED</p>
-
-                      <p className="mt-4 text-green-300">DEPLOYMENT_STATUS = SUCCESS</p>
-
+                    <div 
+                      className="rounded-xl border p-5 font-mono text-xs space-y-3 transition-all duration-300"
+                      style={{
+                        background: 'var(--bg-secondary)',
+                        borderColor: 'var(--border-primary)',
+                        color: 'var(--text-secondary)'
+                      }}
+                    >
+                      <p><span style={{ color: 'var(--accent-highlight)' }}>SERVER_ID</span> = "abc-123"</p>
+                      <p><span style={{ color: 'var(--accent-secondary)' }}>TOOL</span> = "Search Tailwind CSS docs"</p>
+                      <p><span style={{ color: 'var(--accent-primary)' }}>VECTOR_DB</span> = CONNECTED</p>
+                      <p className="text-green-500 font-bold">DEPLOYMENT_STATUS = SUCCESS</p>
                     </div>
 
                     <motion.div
                       initial={{ scale: 0.8, opacity: 0, y: 10 }}
-                      animate={{ scale: [1, 1.03, 1], opacity: 1, y: 0 }}
+                      animate={{ scale: [1, 1.02, 1], opacity: 1, y: 0 }}
                       transition={{ delay: 1, duration: 0.6 }}
-                      className="mx-auto mt-8 w-fit rounded-2xl border border-emerald-300/20 bg-emerald-400/10 px-8 py-4 text-3xl font-black tracking-[0.2em] text-emerald-300 shadow-[0_0_30px_rgba(74,222,128,0.18)]"
+                      className="mx-auto mt-8 w-fit rounded-xl border px-8 py-3 text-base font-bold tracking-[0.25em] text-green-500 shadow-sm"
+                      style={{
+                        background: 'rgba(16, 185, 129, 0.05)',
+                        borderColor: 'rgba(16, 185, 129, 0.15)',
+                      }}
                     >
-
                       DEPLOYED
-
                     </motion.div>
-
                   </div>
-
                 </motion.div>
               )}
-
             </AnimatePresence>
-
           </motion.div>
-
         </motion.div>
-
       </div>
-
     </main>
   )
 }

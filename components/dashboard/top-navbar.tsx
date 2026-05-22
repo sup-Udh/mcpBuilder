@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/vector/client"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useTheme } from "@/lib/theme-context"
 
 interface TopNavbarProps {
@@ -16,6 +16,25 @@ export default function TopNavbar({
   const router = useRouter()
   const { isDark, toggleTheme } = useTheme()
   const [loggingOut, setLoggingOut] = useState(false)
+  const [logoutStatus, setLogoutStatus] = useState("De-authenticating credentials...")
+
+  useEffect(() => {
+    if (!loggingOut) return
+    const statuses = [
+      "De-authenticating credentials...",
+      "Safeguarding cached states...",
+      "Disconnecting session...",
+      "Session terminated."
+    ]
+    let current = 0
+    const interval = setInterval(() => {
+      current++
+      if (current < statuses.length) {
+        setLogoutStatus(statuses[current])
+      }
+    }, 450)
+    return () => clearInterval(interval)
+  }, [loggingOut])
 
   const avatar =
     user?.user_metadata?.picture ||
@@ -133,89 +152,93 @@ export default function TopNavbar({
       {/* ===================================== */}
       {loggingOut && (
         <div
-          className="fixed inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden"
-          style={{ background: 'var(--bg-primary)' }}
+          className="fixed inset-0 z-[999] flex flex-col items-center justify-center overflow-hidden backdrop-blur-2xl transition-all duration-700 animate-fade-in"
+          style={{ 
+            background: isDark ? 'rgba(8, 5, 15, 0.95)' : 'rgba(250, 249, 251, 0.96)',
+          }}
         >
-          {/* GRID */}
-          <div
-            className="absolute inset-0 opacity-10"
+          {/* Layer 1: Fine-mesh structure grid */}
+          <div 
+            className="absolute inset-0 bg-[size:32px_32px] opacity-40 pointer-events-none" 
             style={{
-              backgroundSize: "40px 40px",
-              backgroundImage:
-                "linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px)",
+              backgroundImage: 'linear-gradient(var(--border-primary) 1px, transparent 1px), linear-gradient(90deg, var(--border-primary) 1px, transparent 1px)'
             }}
           />
 
-          {/* GLOWS */}
-          <div className="absolute h-[500px] w-[500px] rounded-full bg-[var(--status-error)]/5 blur-[140px]" />
-          <div className="absolute bottom-[-20%] right-[-10%] h-[500px] w-[500px] rounded-full blur-[140px]" style={{ background: 'var(--gradient-glow-1)' }} />
+          {/* Glowing accents matching current themes */}
+          <div className="pointer-events-none absolute h-[400px] w-[400px] rounded-full blur-[120px] opacity-20" style={{ background: 'var(--accent-primary)', top: '10%', left: '15%' }} />
+          <div className="pointer-events-none absolute h-[450px] w-[450px] rounded-full blur-[140px] opacity-20" style={{ background: 'var(--accent-highlight)', bottom: '5%', right: '15%' }} />
 
           {/* CONTENT */}
-          <div className="relative z-10 flex flex-col items-center">
-            {/* SPINNER */}
-            <div className="relative mb-8">
-              <div className="absolute inset-0 animate-ping rounded-full bg-[var(--status-error)]/10 blur-xl" />
-              <div className="relative flex h-24 w-24 items-center justify-center rounded-full border border-[var(--status-error)]/20 bg-[var(--status-error)]/5 backdrop-blur-xl">
-                <div className="h-10 w-10 animate-spin rounded-full border-2 border-[var(--status-error)] border-t-transparent" />
-              </div>
+          <div className="relative z-10 flex flex-col items-center text-center px-6">
+            
+            {/* Elegant thin loader circle */}
+            <div className="relative mb-12 flex h-14 w-14 items-center justify-center">
+              {/* Spinning Accent Arc */}
+              <svg className="absolute h-full w-full animate-spin" viewBox="0 0 32 32">
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="14"
+                  fill="none"
+                  stroke="var(--border-primary)"
+                  strokeWidth="1"
+                />
+                <circle
+                  cx="16"
+                  cy="16"
+                  r="14"
+                  fill="none"
+                  stroke="var(--accent-primary)"
+                  strokeWidth="1.5"
+                  strokeDasharray="88"
+                  strokeDashoffset="60"
+                  strokeLinecap="round"
+                />
+              </svg>
+              <span className="material-symbols-outlined text-[18px] text-[var(--accent-primary)] animate-pulse">
+                lock
+              </span>
             </div>
 
             {/* LABEL */}
-            <p className="font-mono text-[9px] uppercase tracking-[0.35em] text-[var(--status-error)]">
-              TERMINATING SESSION
+            <p 
+              className="font-mono text-[10px] uppercase tracking-[0.4em] font-medium"
+              style={{ color: 'var(--text-muted)' }}
+            >
+              Signout Sequence
             </p>
 
             {/* TITLE */}
             <h1
-              className="mt-4 text-center text-4xl font-bold tracking-tight"
-              style={{ color: 'var(--text-primary)' }}
+              className="mt-4 text-center text-3xl font-extrabold tracking-tight sm:text-4xl"
+              style={{ color: 'var(--text-primary)', fontFamily: 'var(--font-display)' }}
             >
-              Shutting Down
-              <span className="text-[var(--status-error)]">
-                {" "}Control Plane
-              </span>
+              Disconnecting from Control Plane
             </h1>
 
-            {/* SUBTEXT */}
-            <p
-              className="mt-4 max-w-xl text-center text-sm leading-relaxed"
-              style={{ color: 'var(--text-muted)' }}
-            >
-              Revoking active authentication credentials, clearing caches, and closing transport sockets.
-            </p>
-
-            {/* TERMINAL */}
-            <div
-              className="mt-10 w-[450px] rounded-2xl p-6 shadow-xl backdrop-blur-xl"
-              style={{
-                background: 'rgba(0,0,0,0.15)',
-                border: '1px solid var(--border-primary)',
+            {/* STATUS CONTAINER */}
+            <div 
+              className="mt-8 flex items-center justify-center gap-3 rounded-full border px-6 py-2.5 backdrop-blur-md shadow-sm"
+              style={{ 
+                background: 'var(--bg-secondary)', 
+                borderColor: 'var(--border-primary)',
               }}
             >
-              {/* TOP BAR */}
-              <div className="mb-4 flex items-center gap-2 border-b pb-3" style={{ borderColor: 'var(--border-primary)' }}>
-                <div className="h-2.5 w-2.5 rounded-full bg-[var(--status-error)]" />
-                <div className="h-2.5 w-2.5 rounded-full bg-[var(--status-warning)]" />
-                <div className="h-2.5 w-2.5 rounded-full bg-[var(--status-success)]" />
-                <span
-                  className="ml-2 font-mono text-[9px]"
-                  style={{ color: 'var(--text-muted)' }}
-                >
-                  runtime-shutdown.log
-                </span>
-              </div>
-
-              {/* LOGS */}
-              <div
-                className="space-y-2.5 font-mono text-[11px]"
+              {/* Accent indicator blinking soft */}
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--accent-primary)] opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-[var(--accent-primary)]"></span>
+              </span>
+              
+              <span 
+                className="font-mono text-xs font-medium tracking-wide transition-all duration-300 min-w-[240px] text-center"
                 style={{ color: 'var(--text-secondary)' }}
               >
-                <p className="animate-pulse">&gt; Closing active vector channel...</p>
-                <p className="animate-pulse delay-75">&gt; Revoking user token keys...</p>
-                <p className="animate-pulse delay-150">&gt; Closing Worker worker-threads...</p>
-                <p className="animate-pulse delay-300 text-[var(--status-error)]">&gt; Terminated session successfully.</p>
-              </div>
+                {logoutStatus}
+              </span>
             </div>
+
           </div>
         </div>
       )}
