@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { useTheme } from "@/lib/theme-context"
+import Logo from "@/components/logo"
 
 const url = "https://tailwindcss.com/docs"
 
@@ -125,16 +126,7 @@ export default function DemoPage() {
       {/* HEADER NAVBAR MOCK FOR DEMO PAGE */}
       <div className="absolute left-0 right-0 top-6 z-50 flex items-center justify-between px-8">
         <Link href="/" className="group flex items-center gap-3 cursor-pointer">
-          <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-tr from-[#FF6B35] via-[#FF4081] to-[#7C4DFF] p-[1.5px] transition-all duration-300 group-hover:scale-105">
-            <div 
-              className="h-full w-full rounded-[6px] flex items-center justify-center"
-              style={{ background: 'var(--bg-primary)' }}
-            >
-              <span className="material-symbols-outlined text-[15px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B35] to-[#FF4081]">
-                polymer
-              </span>
-            </div>
-          </div>
+          <Logo size={32} className="transition-all duration-300 group-hover:scale-105" />
           <span 
             className="text-lg font-bold tracking-tight transition-all duration-300"
             style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}

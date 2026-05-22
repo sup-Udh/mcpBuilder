@@ -4,6 +4,7 @@ import PageLoader from "../PageLoader"
 import { useRouter, usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
 import { useTheme } from "@/lib/theme-context"
+import Logo from "../logo"
 
 export default function Sidebar() {
   const router = useRouter()
@@ -54,16 +55,7 @@ export default function Sidebar() {
         {/* LOGO */}
         <div className="mb-10 flex items-center gap-3 px-2">
           {/* Deep green + champagne accent logo */}
-          <div
-            className="flex h-10 w-10 items-center justify-center rounded-xl"
-            style={{
-              background: 'linear-gradient(135deg, var(--accent-primary), var(--accent-highlight))',
-            }}
-          >
-            <span className="material-symbols-outlined text-white" style={{ fontSize: 20 }}>
-              dns
-            </span>
-          </div>
+          <Logo size={38} />
 
           <div>
             <h1

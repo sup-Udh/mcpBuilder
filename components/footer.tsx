@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Logo from "./logo"
 
 export default function Footer() {
   return (
@@ -11,13 +12,7 @@ export default function Footer() {
           {/* BRAND COLUMN */}
           <div className="space-y-4 md:col-span-2">
             <Link href="/" className="flex items-center gap-3">
-              <div className="relative flex h-8 w-8 items-center justify-center overflow-hidden rounded-lg bg-gradient-to-tr from-[#FF6B35] via-[#FF4081] to-[#7C4DFF] p-[1.5px]">
-                <div className="h-full w-full rounded-[6px] flex items-center justify-center" style={{ backgroundColor: 'var(--bg-primary)' }}>
-                  <span className="material-symbols-outlined text-[15px] font-bold text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B35] to-[#FF4081]">
-                    polymer
-                  </span>
-                </div>
-              </div>
+              <Logo size={32} />
               <span className="text-lg font-bold tracking-tight" style={{ fontFamily: 'var(--font-display)', color: 'var(--text-primary)' }}>
                 MCP <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF4081] to-[#FF6B35]">Builder</span>
               </span>
