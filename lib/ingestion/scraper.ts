@@ -2,7 +2,7 @@
 
 import * as cheerio from "cheerio";
 
-import { JSDOM } from "jsdom";
+import { parseHTML } from "linkedom";
 
 import { Readability } from "@mozilla/readability";
 
@@ -411,13 +411,8 @@ function extractReadableContent(
   url: string
 ) {
 
-  const dom =
-    new JSDOM(html, {
-      url,
-    });
-
-  const document =
-    dom.window.document;
+  const { document } =
+    parseHTML(html);
 
   removeJunkElements(
     document
