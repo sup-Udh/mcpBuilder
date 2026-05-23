@@ -1,42 +1,42 @@
 // lib/vector/supabase.ts
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 import { EmbeddingChunk } from '../embeddings/types';
 
 import { IngestedItem } from '../ingestion/types';
 
 // ==========================================
-// ENV VALIDATION
+// CLIENT LAZY INITIALIZATION
 // ==========================================
 
-const supabaseUrl =
-  process.env.SUPABASE_URL ||
-  process.env.NEXT_PUBLIC_SUPABASE_URL;
+let supabaseClient: SupabaseClient | null = null;
 
-const supabaseKey =
-  process.env.SUPABASE_SERVICE_ROLE_KEY;
+function getSupabase() {
+  if (supabaseClient) return supabaseClient;
 
-if (!supabaseUrl) {
-  throw new Error(
-    'Missing SUPABASE_URL environment variable'
-  );
+  const supabaseUrl =
+    process.env.SUPABASE_URL ||
+    process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+  const supabaseKey =
+    process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl) {
+    throw new Error(
+      'Missing SUPABASE_URL environment variable'
+    );
+  }
+
+  if (!supabaseKey) {
+    throw new Error(
+      'Missing SUPABASE_SERVICE_ROLE_KEY environment variable'
+    );
+  }
+
+  supabaseClient = createClient(supabaseUrl, supabaseKey);
+  return supabaseClient;
 }
-
-if (!supabaseKey) {
-  throw new Error(
-    'Missing SUPABASE_SERVICE_ROLE_KEY environment variable'
-  );
-}
-
-// ==========================================
-// CLIENT
-// ==========================================
-
-export const supabase = createClient(
-  supabaseUrl,
-  supabaseKey
-);
 
 // ==========================================
 // UPDATE SERVER STATUS
@@ -54,6 +54,7 @@ export async function updateServerStatus(
     total_embeddings?: number;
   }
 ) {
+  const supabase = getSupabase();
   const { error } = await supabase
     .from('mcp_servers')
     .update(updates)
@@ -90,6 +91,7 @@ export async function storeDocuments(
     metadata: doc.metadata || {},
   }));
 
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from('mcp_documents')
     .insert(rows)
@@ -150,6 +152,7 @@ export async function storeEmbeddedChunks(
 
   const BATCH_SIZE = 50;
 
+  const supabase = getSupabase();
   for (let i = 0; i < rows.length; i += BATCH_SIZE) {
     const batch = rows.slice(i, i + BATCH_SIZE);
 
@@ -200,6 +203,7 @@ export async function searchSimilarChunks(
 
   const fetchCount = Math.max(topK * 3, 30);
 
+  const supabase = getSupabase();
   const { data, error } = await supabase.rpc(
     'match_mcp_chunks',
     {

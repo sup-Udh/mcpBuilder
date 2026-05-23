@@ -3,6 +3,7 @@
 import {
   NextRequest,
   NextResponse,
+  after,
 } from 'next/server';
 
 import { getServiceSupabase } from '@/lib/supabase/server';
@@ -326,20 +327,25 @@ export async function POST(
     // (pipeline runs asynchronously)
     // ======================================
 
-    // Fire-and-forget the pipeline
-    runPipeline(
-      serverId,
-      name,
-      sourceUrl,
-      sourceType,
-      pdfFile,
-      pdfFileName,
-      crawlSubpages
-    ).catch((err) => {
-      console.error(
-        'Pipeline failed:',
-        err
-      );
+    // Use Next.js after() to keep the serverless container alive
+    // and execute the pipeline after the response has been sent.
+    after(async () => {
+      try {
+        await runPipeline(
+          serverId,
+          name,
+          sourceUrl,
+          sourceType,
+          pdfFile,
+          pdfFileName,
+          crawlSubpages
+        );
+      } catch (err) {
+        console.error(
+          'Pipeline failed:',
+          err
+        );
+      }
     });
 
     return NextResponse.json({
