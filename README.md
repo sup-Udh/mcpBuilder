@@ -17,3 +17,7 @@ More features, ingestion pipelines, and runtime capabilities are coming soon.
 ```txt
 URL → MCP Server → AI Agent
 ```
+
+Video Demo:
+
+https://x.com/Udhay26903569/status/2061004930635468964?s=20
